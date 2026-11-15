@@ -29,13 +29,15 @@ It goes up in seven stages, each started from the control console:
 1. **Foundation Shaft** – clears the site, lays the pad, sinks and lines the shaft in 8 m lifts, with
    a service ladder and a grated platform every 16 m.
 2. **Regulator Valves** – the main riser, its wellhead, and three valve stations with relief ports.
-3. **Injection Pumps** – four pump towers with flywheels on the pad, and their injection lines down
-   the shaft.
+3. **Injection Pumps** – four pump towers with flywheels on the pad, the feed-water ring main that
+   links them, and their injection lines down the shaft.
 4. **Steam Core** – the core vessel, standpipes, distribution header and exhaust line.
 5. **Support Frame (east-west)** – paired columns with raking buttresses, cross-bracing and head beams.
 6. **Support Frame (north-south)** – the second frame, lapped across the first.
-7. **Thermal Hull** – the octagonal shell with doorways and louvres, the shoulder, crown and stack,
-   with a gallery inside.
+7. **Thermal Hull** – the octagonal shell with doorways and louvres, heat-exchange risers up its
+   flanks, the shoulder with its relief valves, the crown, and the stack under a weather cowl. Two
+   outside service galleries (12 m and 24 m up) are reached by a ladder on the south frame, and
+   there is a third gallery inside.
 
 Then the console fires it: the core heart lights up and shows through the louvres, warms anyone near
 it, and the stack steams.

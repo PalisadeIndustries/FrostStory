@@ -363,6 +363,11 @@ def riser(base):
         for k in range(4):
             m.east(k * 90 + 45, (1.0, y0 + 0.85, 0), (0.9, 0.9, 0.12), "band", faces=["north", "south", "east", "up"])
         m.vprism(0, 0, y0 + 1.3, y1, 0.55, "pipe")
+        # finned heat exchanger where the riser leaves the bore
+        y = y0 + 1.55
+        while y < y0 + 4.6:
+            m.vprism(0, 0, y, y + 0.08, 1.05, "band", caps=(True, True), captex="band")
+            y += 0.34
     else:
         m.vprism(0, 0, y0, y1, 0.55, "pipe")
     for y in (y0 + 1.9, y0 + 3.9, y0 + 5.9, y0 + 7.8):
@@ -604,10 +609,44 @@ def hull_ribs(m, a, y0, y1):
             m.east(k * 45, (a + 0.07, (y0 + y1) / 2, z), (0.16, y1 - y0, 0.22), "band", faces=["east", "north", "south"])
 
 
+def gallery(m, y, a0=5.5, a1=6.7):
+    """An outside service gallery: an octagonal grated walkway with a guard rail, braced off the hull.
+
+    A ladder way is left open in the south side, where the outside ladder comes up."""
+    mid, width = (a0 + a1) / 2, a1 - a0
+    half = side(a1) / 2
+    for k in range(8):
+        yy = y - 0.05 - (0.012 if k % 2 else 0)      # neighbours overlap at the corners, so they sit a hair apart
+        spans = [(-half, -1.5), (-0.5, half)] if k == 6 else [(-half, half)]
+        for z0, z1 in spans:
+            m.east(k * 45, (mid, yy, (z0 + z1) / 2), (width, 0.1, z1 - z0), "grating", faces=["up", "down", "east", "west"])
+        m.east(k * 45, (a0 + 0.06, y - 0.2, 0), (0.12, 0.3, side(a0)), "girder", faces=["east", "west", "down"])   # inner stringer
+        m.east(k * 45, (a1 - 0.06, y - 0.2, 0), (0.12, 0.3, side(a1)), "girder", faces=["east", "west", "down"])   # outer stringer
+
+    corners = []
+    for k in range(8):
+        x, z = yaw(k * 45 + 22.5, a1 / C22 - 0.08, 0)
+        corners.append((x, z))
+        m.member((x, y, z), (x, y + 1.1, z), 0.09, 0.09, "steel", caps=True, chunk=1.2)
+        hx, hz = yaw(k * 45 + 22.5, HULL / C22 + 0.05, 0)
+        bx, bz = yaw(k * 45 + 22.5, a1 / C22 - 0.5, 0)
+        m.member((hx, y - 1.9, hz), (bx, y - 0.3, bz), 0.16, 0.16, "girder")                                        # brace
+    for k in range(8):
+        (x0, z0), (x1, z1) = corners[k - 1], corners[k]
+        for h in (0.55, 1.05):
+            m.member((x0, y + h, z0), (x1, y + h, z1), 0.06, 0.06, "steel", chunk=6)
+        m.member(((x0 + x1) / 2, y, (z0 + z1) / 2), ((x0 + x1) / 2, y + 1.05, (z0 + z1) / 2), 0.07, 0.07, "steel", chunk=1.2)
+
+
+RISER_OUT = 0.42      # heat-exchange risers stand this far off the diagonal faces
+RISER_Z = 0.62
+
+
 def hull(level, lit=False):
     """The hull drum in three lifts: 'a' has the doorways, 'b' and 'c' have louvres over the axis faces.
 
-    The two lifts round the core have a lit model, with the heart's glow behind their louvres."""
+    The two lifts round the core have a lit model, with the heart's glow behind their louvres.
+    Outside run the heat-exchange risers, two service galleries and the ladder that reaches them."""
     name = "hull" + "abc"[level] + ("lit" if lit else "")
     m = Model(name, (1, (2, 12, 22)[level], 0))
     y0, y1 = (0.0, 10.0, 19.0)[level], (10.0, 19.0, 28.0)[level]
@@ -617,6 +656,7 @@ def hull(level, lit=False):
     if level == 0:
         m.flange(0.0, 0.5, HULL + 0.3, t=0.55)
     m.flange(y1 - 0.45, y1, HULL + 0.18, t=0.45)
+    m.flange((y0 + y1) / 2 - 0.1, (y0 + y1) / 2 + 0.1, HULL + 0.08, t=0.2)        # stiffening ring
 
     for k in range(8):
         if k % 2:
@@ -645,10 +685,45 @@ def hull(level, lit=False):
             louvre(m, k, HULL, wy0, wy1, lit=lit)
     hull_ribs(m, HULL, y0 + (0.5 if level == 0 else 0), y1 - 0.45)
 
+    # heat-exchange risers up the diagonal faces
+    ra, rb = max(y0, 2.6), min(y1, 27.4)
+    for k in (1, 3, 5, 7):
+        for tz in (-RISER_Z, RISER_Z):
+            x, z = yaw(k * 45, HULL + RISER_OUT, tz)
+            m.vprism(x, z, ra, rb, 0.2, "pipe")
+            if level == 2:
+                ix, iz = yaw(k * 45, HULL - 0.1, tz)
+                m.hprism((x, rb, z), (ix, rb, iz), 0.2, "pipe")                    # back into the hull under the shoulder
+                m.vprism(x, z, rb - 0.2, rb + 0.24, 0.27, "band", caps=(True, True), captex="band")
+        y = math.ceil(ra) + 0.5
+        while y < rb:
+            m.east(k * 45, (HULL + 0.33, y, 0), (0.42, 0.1, 1.8), "steel")         # pipe bracket
+            y += 3
+        if level == 0:
+            # bottom header joining the pair, with its stop valve
+            (xa, za), (xb, zb) = yaw(k * 45, HULL + RISER_OUT, -RISER_Z), yaw(k * 45, HULL + RISER_OUT, RISER_Z)
+            m.hprism((xa, ra, za), (xb, ra, zb), 0.2, "pipe", caps=(True, True), captex="band")
+            cx, cz = yaw(k * 45, HULL + RISER_OUT, 0)
+            ix, iz = yaw(k * 45, HULL - 0.1, 0)
+            m.hprism((cx, ra, cz), (ix, ra, iz), 0.2, "pipe")
+            m.vprism(cx, cz, ra - 0.3, ra + 0.3, 0.3, "red", caps=(True, True), captex="band")
+            m.vprism(cx, cz, ra + 0.3, ra + 0.75, 0.05, "steel")
+            m.handwheel(cx, ra + 0.75, cz, a=0.32)
+        if level == 1:
+            m.east(k * 45, (HULL + 0.05, 14.4, 0), (0.12, 1.2, 0.86), "band")      # inspection hatch
+            for hy in (13.95, 14.85):
+                m.east(k * 45, (HULL + 0.13, hy, 0), (0.08, 0.1, 1.0), "steel")
+
     # service ladder up the inside, standing off the north wall
     ladder_top = (10.0, 19.0, 21.0)[level]
     m.ladder(1.0, -3.44, y0, ladder_top, standoff=-0.75)
+    # and one up the outside of the south frame, to the galleries
+    m.ladder(1.0, 5.6, y0, min(y1, 25.1), standoff=-0.2)
+
+    if level == 1:
+        gallery(m, 12.0)
     if level == 2:
+        gallery(m, 24.0)
         m.deck(21.0, HULL - t - 0.02, hole=1.5, gap=(0.5, 1.5))    # gallery over the manifold
         for sx, sz in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
             m.member((sx * 1.5, 21.0, sz * 1.5), (sx * 1.5, 22.05, sz * 1.5), 0.08, 0.08, "steel", caps=True)
@@ -659,7 +734,7 @@ def hull(level, lit=False):
 
 
 def shoulder():
-    """The 45 degree shoulder and the crown drum above it."""
+    """The 45 degree shoulder with its relief valves, and the crown drum above it."""
     m = Model("shoulder", (1, 30, 0))
     m.flange(28.0, 28.5, HULL + 0.18, t=0.45)
     m.cone(28.5, 30.5, HULL, CROWN, 0.22, "plating")
@@ -670,17 +745,65 @@ def shoulder():
         for z in (-0.3, 0.0, 0.3):
             m.east(k * 45, (CROWN + 0.08, 32.15, z), (0.1, 1.5, 0.08), "band", faces=["east", "north", "south"])
     m.flange(33.5, 34.0, CROWN + 0.2, t=0.45)
+
+    # weighted-lever relief valves standing on the diagonal faces of the shoulder
+    for k in (1, 3, 5, 7):
+        x, z = yaw(k * 45, 3.55, 0)
+        m.vprism(x, z, 29.3, 30.3, 0.16, "pipe")
+        m.vprism(x, z, 30.3, 30.85, 0.3, "red", caps=(True, True), captex="band")
+        m.vprism(x, z, 30.85, 31.5, 0.12, "pipe", caps=(False, True))
+        ox, oz = yaw(k * 45, 4.75, 0)
+        m.member((x, 30.95, z), (ox, 30.95, oz), 0.07, 0.07, "steel", caps=True)
+        m.box((ox, 30.72, oz), (0.3, 0.4, 0.3), "band", rot=(0, k * 45, 0))
     return m
 
 
 def stack():
+    """The stack: a tapered base, the flue, a flared lip, and a weather cowl carried on struts above it."""
     m = Model("stack", (1, 36, 0))
     m.cone(34.0, 35.0, CROWN, STACK, 0.2, "plating", courses=2)
-    m.ring(35.0, 39.0, STACK, 0.2, "plating", rims=False, intex="black")
-    for y in (35.0, 37.0):
+    m.ring(35.0, 38.2, STACK, 0.2, "plating", rims=False, intex="black")
+    for y in (35.0, 36.6):
         m.flange(y, y + 0.3, STACK + 0.12, t=0.3)
-    m.cone(39.0, 39.6, STACK, STACK + 0.5, 0.2, "band", courses=1, ribs=False)   # flared lip
-    m.ring(39.6, 40.0, STACK + 0.5, 0.25, "band", intex="black", chunk=99)
+    m.cone(38.2, 38.8, STACK, STACK + 0.5, 0.2, "band", courses=1, ribs=False)   # flared lip
+    m.ring(38.8, 39.05, STACK + 0.5, 0.25, "band", intex="black", chunk=99)
+    for k in range(8):
+        x, z = yaw(k * 45 + 22.5, (STACK + 0.4) / C22, 0)
+        m.member((x, 39.05, z), (x, 39.5, z), 0.1, 0.1, "steel", chunk=1.0)
+    m.ring(39.4, 39.55, 2.35, 0.3, "band", chunk=99)
+    m.cone(39.5, 40.0, 2.35, 0.5, 0.1, "plating", courses=2)
+    m.vprism(0, 0, 39.9, 40.0, 0.55, "band", caps=(True, True), captex="band")
+    return m
+
+
+def ringmain():
+    """Feed-water ring main round the foot of the tower. It threads the buttresses and the pump bases on
+    the diagonals, and ducks under the pad either side of each doorway approach."""
+    m = Model("ringmain", (6, 1, 0))
+    r, y, a = 6.2, 0.6, 0.3
+    corner = side(r) / 2
+    for q in range(4):
+        def pt(x, z):
+            rx, rz = yaw(-q * 90, x, z)
+            return (rx, y, rz)
+
+        run = [pt(r, 1.9), pt(r, corner), pt(corner, r), pt(1.9, r)]
+        for p0, p1 in zip(run, run[1:]):
+            m.hprism(p0, p1, a, "pipe")
+        for joint in run[1:3]:
+            m.vprism(joint[0], joint[2], y - 0.42, y + 0.42, 0.42, "band", caps=(True, True), captex="band")   # corner fitting
+        for end in (run[0], run[3]):
+            m.vprism(end[0], end[2], 0.0, y + 0.3, a, "pipe", caps=(False, True), captex="band")              # drop into the pad
+            m.vprism(end[0], end[2], 0.0, 0.14, 0.5, "band", caps=(False, True), captex="band")
+        # a stop valve on each straight run, and saddles under the long diagonal
+        for p0, p1 in ((run[0], run[1]), (run[3], run[2])):
+            vx, vz = (p0[0] + p1[0]) / 2, (p0[2] + p1[2]) / 2
+            m.vprism(vx, vz, y - 0.4, y + 0.4, 0.4, "red", caps=(True, True), captex="band")
+            m.vprism(vx, vz, y + 0.4, y + 0.85, 0.05, "steel")
+            m.handwheel(vx, y + 0.85, vz, a=0.34)
+        for f in (0.22, 0.78):
+            sx, sz = run[1][0] + (run[2][0] - run[1][0]) * f, run[1][2] + (run[2][2] - run[1][2]) * f
+            m.box((sx, 0.16, sz), (0.8, 0.32, 0.3), "band", rot=(0, 45 - q * 90, 0))
     return m
 
 
@@ -690,7 +813,7 @@ def build_all():
     return [
         shaft(False), shaft(True), collar(),
         riser(False), riser(True), valvestation(),
-        injectors(), pump(),
+        injectors(), pump(), ringmain(),
         core(True, False), core(True, True), core(False, False), core(False, True), manifold(), exhaust(),
         frame(0), frame(1), frame(2), frame(2, lapped=True),
         hull(0), hull(0, lit=True), hull(1), hull(1, lit=True), hull(2), shoulder(), stack(),

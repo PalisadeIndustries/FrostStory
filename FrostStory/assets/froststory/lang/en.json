@@ -29,11 +29,11 @@
 
 	"stagedesc-shaft": "A lined shaft sunk into warm rock, with a foundation collar at its mouth. Everything above will stand on it, and everything the generator draws will come up through it.",
 	"stagedesc-valves": "The main riser and its heavy gate valves. They bleed surges from the deep off into relief ports, so the pressure stays inside what the machine can bear.",
-	"stagedesc-pumps": "Four pump towers that drive surface water down the injection lines, to where the rock turns it into superheated steam.",
+	"stagedesc-pumps": "Four pump towers on a feed-water ring main. They drive surface water down the injection lines, to where the rock turns it into superheated steam.",
 	"stagedesc-core": "The vessel where rising steam is split through the distribution header into working lines, for pumps, light, heat and industry.",
 	"stagedesc-frame-a": "A riveted portal frame that takes the load of the upper works. The generator needs two, set crosswise.",
 	"stagedesc-frame-b": "The second portal frame, set across the first. Together they carry the hull and the stack.",
-	"stagedesc-hull": "An insulating steel shell around the core. It throws heat back inward and lets the operators decide how much of it escapes.",
+	"stagedesc-hull": "An insulating steel shell around the core, with heat-exchange risers up its flanks, relief valves on the shoulder and two service galleries. It throws heat back inward and lets the operators decide how much of it escapes.",
 
 	"req-stonebricks": "Ashlar blocks (any stone)",
 

@@ -51,7 +51,7 @@ public static class GeneratorBlueprint
 
     public const int HullRadius = 4;
     public const int PadRadius = 8;
-    public const int ClearRadiusUpper = 6;
+    public const int ClearRadiusUpper = 7;
 
     /// <summary>Where the control console stands relative to the centre, before rotation: on the pad rim.</summary>
     public const int ConsoleDistance = 8;
@@ -65,6 +65,11 @@ public static class GeneratorBlueprint
     private const int LadderX = 1;
     private const int LadderZ = -3;
     private const int Gallery = 21;
+
+    // Outside service galleries ring the hull beyond the frames; a ladder on the south frame reaches them.
+    private static readonly int[] OuterGalleries = { 12, 24 };
+    private const int OuterLadderX = 1;
+    private const int OuterLadderZ = 6;
 
     public static int ClampDepth(int depth)
     {
@@ -126,6 +131,14 @@ public static class GeneratorBlueprint
             && !(inShaft && BehindLiner(x, z))
             && Math.Max(Math.Abs(x), Math.Abs(z)) >= 2
             && !(x == LadderX && z == LadderZ);
+    }
+
+    /// <summary>Cells under an outside gallery: an octagonal ring between 5.5 and 6.7 blocks from the axis.</summary>
+    private static bool InOuterGallery(int x, int z)
+    {
+        int ax = Math.Abs(x), az = Math.Abs(z);
+        double r = Math.Max(Math.Max(ax, az), (ax + az) / Math.Sqrt(2));
+        return r >= 5.5 && r <= 6.75;
     }
 
     private static int Modules(int depth) => depth / ShaftModule;
@@ -285,6 +298,9 @@ public static class GeneratorBlueprint
             b.Set(ax, 1, az, Blocks.Segment("pump", k));
         }
 
+        // Feed-water ring main round the foot of the tower.
+        b.Set(6, 1, 0, Blocks.Segment("ringmain"));
+
         return b.Build();
     }
 
@@ -377,6 +393,14 @@ public static class GeneratorBlueprint
                     b.Set(x, y, z, Blocks.FillSolid);
                 });
 
+                if (Array.IndexOf(OuterGalleries, y) >= 0)
+                {
+                    for (int x = -7; x <= 7; x++)
+                        for (int z = -7; z <= 7; z++)
+                            if (InOuterGallery(x, z)) b.Set(x, y, z, Blocks.FillDeck);
+                }
+
+                if (y <= OuterGalleries[^1]) b.Set(OuterLadderX, y, OuterLadderZ, Blocks.FillLadder);
                 if (y <= Gallery) b.Set(LadderX, y, LadderZ, Blocks.FillLadder);
                 if (y == Gallery)
                     ForDisc(HullRadius, (x, z) => { if (IsWalkway(x, z, false)) b.Set(x, y, z, Blocks.FillDeck); });
