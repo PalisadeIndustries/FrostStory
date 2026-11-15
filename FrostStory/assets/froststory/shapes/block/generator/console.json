@@ -1,0 +1,360 @@
+{
+	"editor": {
+		"allAngles": true
+	},
+	"textureWidth": 16,
+	"textureHeight": 16,
+	"textures": {
+		"side": "froststory:block/generator/console-side",
+		"top": "froststory:block/generator/console-top",
+		"front": "froststory:block/generator/console-front",
+		"paint": "froststory:block/generator/paint-red"
+	},
+	"elements": [
+		{
+			"name": "Cabinet",
+			"from": [
+				1,
+				0,
+				4
+			],
+			"to": [
+				15,
+				9,
+				15
+			],
+			"faces": {
+				"north": {
+					"texture": "#side",
+					"uv": [
+						1.0,
+						7.0,
+						15.0,
+						16.0
+					]
+				},
+				"east": {
+					"texture": "#side",
+					"uv": [
+						4.0,
+						7.0,
+						15.0,
+						16.0
+					]
+				},
+				"south": {
+					"texture": "#side",
+					"uv": [
+						1.0,
+						7.0,
+						15.0,
+						16.0
+					]
+				},
+				"west": {
+					"texture": "#side",
+					"uv": [
+						4.0,
+						7.0,
+						15.0,
+						16.0
+					]
+				},
+				"up": {
+					"texture": "#top",
+					"uv": [
+						1.0,
+						4.0,
+						15.0,
+						15.0
+					]
+				},
+				"down": {
+					"texture": "#side",
+					"uv": [
+						1.0,
+						4.0,
+						15.0,
+						15.0
+					]
+				}
+			}
+		},
+		{
+			"name": "Desk",
+			"from": [
+				0.5,
+				9,
+				3
+			],
+			"to": [
+				15.5,
+				11,
+				15.5
+			],
+			"faces": {
+				"north": {
+					"texture": "#side",
+					"uv": [
+						0.5,
+						5.0,
+						15.5,
+						7.0
+					]
+				},
+				"east": {
+					"texture": "#side",
+					"uv": [
+						3.0,
+						5.0,
+						15.5,
+						7.0
+					]
+				},
+				"south": {
+					"texture": "#side",
+					"uv": [
+						0.5,
+						5.0,
+						15.5,
+						7.0
+					]
+				},
+				"west": {
+					"texture": "#side",
+					"uv": [
+						3.0,
+						5.0,
+						15.5,
+						7.0
+					]
+				},
+				"up": {
+					"texture": "#top",
+					"uv": [
+						0.5,
+						3.0,
+						15.5,
+						15.5
+					]
+				},
+				"down": {
+					"texture": "#side",
+					"uv": [
+						0.5,
+						3.0,
+						15.5,
+						15.5
+					]
+				}
+			}
+		},
+		{
+			"name": "Panel",
+			"from": [
+				1,
+				11,
+				11
+			],
+			"to": [
+				15,
+				16,
+				15
+			],
+			"faces": {
+				"north": {
+					"texture": "#front",
+					"uv": [
+						1.0,
+						0.0,
+						15.0,
+						5.0
+					]
+				},
+				"east": {
+					"texture": "#side",
+					"uv": [
+						11.0,
+						0.0,
+						15.0,
+						5.0
+					]
+				},
+				"south": {
+					"texture": "#side",
+					"uv": [
+						1.0,
+						0.0,
+						15.0,
+						5.0
+					]
+				},
+				"west": {
+					"texture": "#side",
+					"uv": [
+						11.0,
+						0.0,
+						15.0,
+						5.0
+					]
+				},
+				"up": {
+					"texture": "#side",
+					"uv": [
+						1.0,
+						11.0,
+						15.0,
+						15.0
+					]
+				},
+				"down": {
+					"texture": "#side",
+					"uv": [
+						1.0,
+						11.0,
+						15.0,
+						15.0
+					]
+				}
+			}
+		},
+		{
+			"name": "Lever",
+			"from": [
+				12,
+				11,
+				6
+			],
+			"to": [
+				13,
+				14.5,
+				7
+			],
+			"faces": {
+				"north": {
+					"texture": "#paint",
+					"uv": [
+						12.0,
+						1.5,
+						13.0,
+						5.0
+					]
+				},
+				"east": {
+					"texture": "#paint",
+					"uv": [
+						6.0,
+						1.5,
+						7.0,
+						5.0
+					]
+				},
+				"south": {
+					"texture": "#paint",
+					"uv": [
+						12.0,
+						1.5,
+						13.0,
+						5.0
+					]
+				},
+				"west": {
+					"texture": "#paint",
+					"uv": [
+						6.0,
+						1.5,
+						7.0,
+						5.0
+					]
+				},
+				"up": {
+					"texture": "#paint",
+					"uv": [
+						12.0,
+						6.0,
+						13.0,
+						7.0
+					]
+				},
+				"down": {
+					"texture": "#paint",
+					"uv": [
+						12.0,
+						6.0,
+						13.0,
+						7.0
+					]
+				}
+			}
+		},
+		{
+			"name": "LeverBase",
+			"from": [
+				11,
+				11,
+				5
+			],
+			"to": [
+				14,
+				11.75,
+				8
+			],
+			"faces": {
+				"north": {
+					"texture": "#side",
+					"uv": [
+						11.0,
+						4.25,
+						14.0,
+						5.0
+					]
+				},
+				"east": {
+					"texture": "#side",
+					"uv": [
+						5.0,
+						4.25,
+						8.0,
+						5.0
+					]
+				},
+				"south": {
+					"texture": "#side",
+					"uv": [
+						11.0,
+						4.25,
+						14.0,
+						5.0
+					]
+				},
+				"west": {
+					"texture": "#side",
+					"uv": [
+						5.0,
+						4.25,
+						8.0,
+						5.0
+					]
+				},
+				"up": {
+					"texture": "#side",
+					"uv": [
+						11.0,
+						5.0,
+						14.0,
+						8.0
+					]
+				},
+				"down": {
+					"texture": "#side",
+					"uv": [
+						11.0,
+						5.0,
+						14.0,
+						8.0
+					]
+				}
+			}
+		}
+	]
+}

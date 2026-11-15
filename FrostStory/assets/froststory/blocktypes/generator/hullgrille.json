@@ -1,0 +1,41 @@
+{
+	"code": "hullgrille",
+	"drawtype": "json",
+	"blockmaterial": "Metal",
+	"creativeinventory": {
+		"general": [
+			"*"
+		],
+		"froststory": [
+			"*"
+		]
+	},
+	"shape": {
+		"base": "block/generator/grille"
+	},
+	"textures": {
+		"steel": {
+			"base": "block/generator/hullplate-riveted"
+		}
+	},
+	"faceCullMode": "NeverCull",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 5,
+	"requiredMiningTier": 3,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

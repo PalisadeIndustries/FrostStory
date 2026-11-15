@@ -1,0 +1,496 @@
+<title>FrostStory Generator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a drawing-office sheet. Title block on top, the model in a fixed dusk viewport, the build sequence as a stepper beside it. */
+:root {
+  --bg: #E7ECF0;
+  --panel: #F4F7F9;
+  --ink: #16202A;
+  --muted: #55626F;
+  --line: #C2CDD6;
+  --accent: #B24C17;
+  --accent-ink: #FFFFFF;
+  --brass: #7F6122;
+  --font-display: "Big Shoulders Display", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F151B; --panel: #172029; --ink: #E2EAF0; --muted: #8E9DAB; --line: #2A3642;
+    --accent: #E9853C; --accent-ink: #1B0E04; --brass: #CBA75F; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F151B; --panel: #172029; --ink: #E2EAF0; --muted: #8E9DAB; --line: #2A3642;
+  --accent: #E9853C; --accent-ink: #1B0E04; --brass: #CBA75F; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-block: 20px 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.sheet { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+
+.titleblock { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 32px; border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
+.eyebrow { font-family: var(--font-data); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 2px; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 6vw, 54px); line-height: 0.95; letter-spacing: 0.01em; text-transform: uppercase; margin: 0; text-wrap: balance; }
+.specs { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; padding: 0; list-style: none; font-family: var(--font-data); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.specs b { display: block; font-weight: 500; font-size: 17px; color: var(--ink); }
+.specs li { color: var(--muted); }
+
+.work { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+@media (max-width: 860px) { .work { grid-template-columns: minmax(0, 1fr); } }
+
+.viewport { position: relative; background: #1A242E; border: 1px solid var(--line); min-width: 0; }
+.viewport canvas { display: block; width: 100%; height: min(72vh, 760px); min-height: 380px; touch-action: none; cursor: grab; outline-offset: 2px; }
+.viewport canvas:active { cursor: grabbing; }
+.viewport canvas:focus-visible { outline: 2px solid var(--accent); }
+@media (max-width: 860px) { .viewport canvas { height: 58vh; } }
+
+.bar { position: absolute; left: 10px; right: 10px; display: flex; flex-wrap: wrap; gap: 8px; pointer-events: none; }
+.bar.top { top: 10px; justify-content: space-between; }
+.bar.bottom { bottom: 10px; justify-content: space-between; align-items: flex-end; }
+.bar > * { pointer-events: auto; }
+.seg { display: inline-flex; background: rgba(12, 18, 24, 0.78); border: 1px solid rgba(226, 234, 240, 0.22); }
+.seg button { font: 500 12px/1 var(--font-data); letter-spacing: 0.04em; text-transform: uppercase; color: #C9D5DE; background: none; border: 0; padding: 9px 11px; cursor: pointer; }
+.seg button + button { border-left: 1px solid rgba(226, 234, 240, 0.16); }
+.seg button[aria-pressed="true"] { background: #E9853C; color: #1B0E04; }
+.seg button:focus-visible { outline: 2px solid #FFFFFF; outline-offset: -2px; }
+.hint { font: 400 11.5px/1.3 var(--font-data); color: #A9B8C4; background: rgba(12, 18, 24, 0.6); padding: 6px 8px; margin: 0; }
+.fallback { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: #C9D5DE; }
+
+.sequence { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.sequence h2 { font-family: var(--font-display); font-weight: 600; font-size: 22px; letter-spacing: 0.03em; text-transform: uppercase; margin: 0; }
+.steps { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.steps li { border-bottom: 1px solid var(--line); }
+.step { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 0 8px; align-items: baseline; width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 9px 8px; cursor: pointer; }
+.step:hover { background: var(--panel); }
+.step:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.step .n { font-family: var(--font-data); font-size: 12px; color: var(--muted); }
+.step .name { font-weight: 600; }
+.step .count { font-family: var(--font-data); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.step.done .n, .step.done .name { color: var(--muted); }
+.step[aria-current="step"] { background: var(--accent); color: var(--accent-ink); }
+.step[aria-current="step"] .n, .step[aria-current="step"] .count { color: inherit; opacity: 0.85; }
+
+.detail { background: var(--panel); border: 1px solid var(--line); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.detail h3 { font-family: var(--font-display); font-weight: 600; font-size: 24px; line-height: 1.05; letter-spacing: 0.02em; text-transform: uppercase; margin: 0; text-wrap: balance; }
+.detail p { margin: 0; max-width: 62ch; }
+.needs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; font-family: var(--font-data); font-size: 13px; font-variant-numeric: tabular-nums; }
+.needs .q { text-align: right; color: var(--brass); font-weight: 500; }
+.label { font-family: var(--font-data); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.foot { color: var(--muted); font-size: 13px; margin: 0; max-width: 70ch; }
+</style>
+
+<div class="sheet">
+  <header class="titleblock">
+    <div>
+      <p class="eyebrow">FrostStory &middot; Vintage Story 1.22 &middot; sheet 1</p>
+      <h1>Geothermal Generator</h1>
+    </div>
+    <ul class="specs" aria-label="Dimensions, one block is one metre">
+      <li><b>40 m</b>above the deck</li>
+      <li><b id="spec-depth">80 m</b>shaft depth</li>
+      <li><b>9 m</b>hull width</li>
+      <li><b>11 m</b>across frames</li>
+      <li><b>17 m</b>foundation pad</li>
+    </ul>
+  </header>
+
+  <div class="work">
+    <div class="viewport">
+      <canvas id="view" tabindex="0" aria-label="3D model of the generator. Drag or use arrow keys to turn, scroll or plus and minus to zoom."></canvas>
+      <div class="bar top">
+        <div class="seg" role="group" aria-label="View">
+          <button type="button" id="view-exterior" aria-pressed="true">Exterior</button>
+          <button type="button" id="view-section" aria-pressed="false">Section</button>
+        </div>
+        <div class="seg" role="group" aria-label="Focus">
+          <button type="button" id="focus-tower" aria-pressed="true">Tower</button>
+          <button type="button" id="focus-whole" aria-pressed="false">Whole</button>
+          <button type="button" id="focus-shaft" aria-pressed="false">Shaft</button>
+        </div>
+      </div>
+      <div class="bar bottom">
+        <p class="hint">Drag to turn &middot; scroll or pinch to zoom &middot; red figure is 1.85 m</p>
+        <div class="seg" role="group" aria-label="Zoom">
+          <button type="button" id="zoom-out" aria-label="Zoom out">&minus;</button>
+          <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+        </div>
+      </div>
+      <p class="fallback" id="fallback" hidden>This browser could not start WebGL, so the model cannot be drawn here.</p>
+    </div>
+
+    <section class="sequence" aria-label="Construction sequence">
+      <h2>Construction sequence</h2>
+      <ol class="steps" id="steps"></ol>
+      <div class="detail" aria-live="polite">
+        <h3 id="d-name"></h3>
+        <p id="d-desc"></p>
+        <p class="label" id="d-label">Delivered to the console</p>
+        <ul class="needs" id="d-needs"></ul>
+      </div>
+    </section>
+  </div>
+
+  <p class="foot">Drawn from the mod's own blueprint, block shapes and textures, so what shows here is what the console builds in the world. Textures are procedural placeholders.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  var D = /*__DATA__*/null;
+  var canvas = document.getElementById("view");
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------------------------------------------------------------- sequence panel
+  var STEPS = [{ name: "Site survey", desc: "Place the control console facing the spot where the generator should stand. The tower rises eight blocks behind it, and the console shows the footprint before any ground is broken.", needs: [], blocks: 1 }]
+    .concat(D.stages)
+    .concat([{ name: "Fired", desc: "The core heart is lit from the console. It gives off light and warmth, and steam leaves the stack.", needs: [], blocks: null }]);
+  var current = STEPS.length - 1;
+  var stepsEl = document.getElementById("steps");
+
+  STEPS.forEach(function (step, i) {
+    var li = document.createElement("li");
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "step";
+    b.id = "step-" + i;
+    var n = document.createElement("span"); n.className = "n"; n.textContent = i === 0 ? "0" : i === STEPS.length - 1 ? "•" : String(i);
+    var name = document.createElement("span"); name.className = "name"; name.textContent = step.name;
+    var count = document.createElement("span"); count.className = "count"; count.textContent = step.blocks ? step.blocks.toLocaleString("en") + (step.blocks === 1 ? " block" : " blocks") : "";
+    b.append(n, name, count);
+    b.addEventListener("click", function () { setStep(i); });
+    li.appendChild(b);
+    stepsEl.appendChild(li);
+  });
+
+  function renderPanel() {
+    STEPS.forEach(function (_, i) {
+      var b = document.getElementById("step-" + i);
+      b.classList.toggle("done", i < current);
+      if (i === current) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
+    });
+    var step = STEPS[current];
+    document.getElementById("d-name").textContent = step.name;
+    document.getElementById("d-desc").textContent = step.desc;
+    var needs = document.getElementById("d-needs");
+    needs.textContent = "";
+    step.needs.forEach(function (need) {
+      var q = document.createElement("li"); q.className = "q"; q.textContent = need[0];
+      var w = document.createElement("li"); w.textContent = need[1];
+      needs.append(q, w);
+    });
+    document.getElementById("d-label").hidden = step.needs.length === 0;
+    needs.hidden = step.needs.length === 0;
+  }
+
+  document.getElementById("spec-depth").textContent = D.depth + " m";
+  renderPanel();
+
+  // ---------------------------------------------------------------- scene
+  var renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+  } catch (e) {
+    document.getElementById("fallback").hidden = false;
+    return;
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+  var SKY = 0x1A242E;
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(SKY);
+  scene.fog = new THREE.Fog(SKY, 260, 620);
+  var camera = new THREE.PerspectiveCamera(32, 1, 1, 1200);
+
+  var atlas = new THREE.TextureLoader().load(D.atlas.uri, function () { dirty = true; });
+  atlas.magFilter = THREE.NearestFilter;
+  atlas.minFilter = THREE.LinearMipmapLinearFilter;
+  var blockMat = new THREE.MeshBasicMaterial({ map: atlas, vertexColors: true, alphaTest: 0.5, side: THREE.DoubleSide });
+  var flatMat = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
+
+  var NB = [[0, 0, -1], [1, 0, 0], [0, 0, 1], [-1, 0, 0], [0, 1, 0], [0, -1, 0]];
+  function key(x, y, z) { return (x + 64) + (z + 64) * 128 + (y + 128) * 16384; }
+
+  var section = false;
+  var group = null;
+  var cache = {};
+  var dirty = true;
+
+  function worldAt(stageCount, lit) {
+    var map = new Map(), voids = new Set();
+    for (var s = 0; s < stageCount; s++) {
+      var c = D.stages[s].cells;
+      for (var i = 0; i < c.length; i += 4) {
+        var k = key(c[i], c[i + 1], c[i + 2]);
+        if (c[i + 3] < 0) { map.delete(k); voids.add(k); } else { map.set(k, c[i + 3]); voids.delete(k); }
+      }
+    }
+    if (lit) for (var h = 0; h < D.heart.length; h += 3) map.set(key(D.heart[h], D.heart[h + 1], D.heart[h + 2]), D.litCode);
+    map.set(key(0, 1, -D.consoleDistance), D.consoleCode);
+    return { map: map, voids: voids };
+  }
+
+  function buildGroup(stageCount, lit, cut) {
+    var w = worldAt(stageCount, lit), map = w.map;
+    var pos = [], uv = [], col = [], idx = [];
+    var cols = D.atlas.cols, rows = D.atlas.rows, eps = 0.02;
+
+    function pushQuad(q, x, y, z, light) {
+      var base = pos.length / 3, t = q[0], tc = t % cols, tr = Math.floor(t / cols), s = q[1] * light;
+      for (var j = 0; j < 4; j++) {
+        var o = 3 + j * 5;
+        pos.push(x + q[o], y + q[o + 1], z + q[o + 2]);
+        uv.push((tc + Math.min(1 - eps, Math.max(eps, q[o + 3]))) / cols, 1 - (tr + Math.min(1 - eps, Math.max(eps, q[o + 4]))) / rows);
+        col.push(s, s, s);
+      }
+      idx.push(base, base + 3, base + 2, base, base + 2, base + 1);
+    }
+
+    function shown(x, y, z) { return cut ? z <= 0 : y >= 0; }
+
+    map.forEach(function (code, k) {
+      var x = (k % 128) - 64, z = (Math.floor(k / 128) % 128) - 64, y = Math.floor(k / 16384) - 128;
+      if (!shown(x, y, z)) return;
+      var def = D.defs[code], light = code === D.litCode ? 1.5 : y < 0 ? 0.86 : 1;
+      for (var i = 0; i < def.q.length; i++) {
+        var q = def.q[i], f = q[2];
+        if (f >= 0) {
+          var nx = x + NB[f][0], ny = y + NB[f][1], nz = z + NB[f][2];
+          var n = map.get(key(nx, ny, nz));
+          if (n !== undefined && D.defs[n].o && shown(nx, ny, nz)) continue;
+        }
+        pushQuad(q, x, y, z, light);
+      }
+    });
+
+    // a figure for scale, beside the console
+    var fig = [D.figureTile, 1, -1], fx = 2.2, fz = -D.consoleDistance + 0.2;
+    [[0.6, 1.85, 0.35]].forEach(function (d) {
+      var x0 = fx, x1 = fx + d[0], y0 = 1, y1 = 1 + d[1], z0 = fz, z1 = fz + d[2];
+      [[x0, y1, z1, x1, y1, z1, x1, y0, z1, x0, y0, z1, 0.9], [x1, y1, z0, x0, y1, z0, x0, y0, z0, x1, y0, z0, 0.7],
+       [x1, y1, z1, x1, y1, z0, x1, y0, z0, x1, y0, z1, 0.8], [x0, y1, z0, x0, y1, z1, x0, y0, z1, x0, y0, z0, 0.6],
+       [x0, y1, z0, x1, y1, z0, x1, y1, z1, x0, y1, z1, 1]].forEach(function (f) {
+        var q = [fig[0], f[12], -1];
+        for (var j = 0; j < 4; j++) q.push(f[j * 3], f[j * 3 + 1], f[j * 3 + 2], j === 1 || j === 2 ? 0.9 : 0.1, j > 1 ? 0.9 : 0.1);
+        pushQuad(q, 0, 0, 0, 1);
+      });
+    });
+
+    var g = new THREE.Group();
+    g.add(mesh(pos, uv, col, idx, blockMat));
+    g.add(ground(w, cut));
+    return g;
+  }
+
+  function mesh(pos, uv, col, idx, mat) {
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    if (uv) geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+    geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+    geo.setIndex(idx);
+    return new THREE.Mesh(geo, mat);
+  }
+
+  function ground(w, cut) {
+    var pos = [], col = [], idx = [], R = 400, top = 0.98;
+    function quad(a, b, c, d, rgb) {
+      var base = pos.length / 3;
+      pos.push.apply(pos, a.concat(b, c, d));
+      for (var j = 0; j < 4; j++) col.push(rgb[0], rgb[1], rgb[2]);
+      idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+    }
+    var snow = [0.74, 0.80, 0.84];
+    var zFront = cut ? 1 : R;
+    quad([-R, top, -R], [R, top, -R], [R, top, zFront], [-R, top, zFront], snow);
+
+    if (cut) {
+      var bottom = -D.depth - 14, near = 12, zf = 1;
+      function strata(y) {
+        if (y >= -1) return [0.62, 0.68, 0.72];
+        var h = Math.sin(y * 12.9898) * 43758.5453; h = h - Math.floor(h);
+        var v = 0.25 + 0.05 * h + (y % 9 === 0 ? 0.04 : 0);
+        return [v * 1.08, v, v * 0.95];
+      }
+      for (var y = 0; y > bottom; y--) {
+        var rgb = strata(y), y1 = y === 0 ? top : y + 1;
+        quad([-R, y1, zf], [-near, y1, zf], [-near, y, zf], [-R, y, zf], rgb);
+        quad([near + 1, y1, zf], [R, y1, zf], [R, y, zf], [near + 1, y, zf], rgb);
+        for (var x = -near; x <= near; x++) {
+          var k = key(x, y, 0);
+          if (w.map.has(k) || w.voids.has(k)) continue;
+          quad([x, y1, zf], [x + 1, y1, zf], [x + 1, y, zf], [x, y, zf], rgb);
+        }
+      }
+    }
+    return mesh(pos, null, col, idx, flatMat);
+  }
+
+  function showState() {
+    var stageCount = Math.min(current, D.stages.length), lit = current === STEPS.length - 1;
+    var id = stageCount + (lit ? "L" : "") + (section ? "S" : "E");
+    if (!cache[id]) cache[id] = buildGroup(stageCount, lit, section);
+    if (group) scene.remove(group);
+    group = cache[id];
+    scene.add(group);
+    steam.visible = lit;
+    dirty = true;
+  }
+
+  // ---------------------------------------------------------------- steam
+  var STEAM = 70, steamPos = new Float32Array(STEAM * 3), steamAge = new Float32Array(STEAM);
+  var steamGeo = new THREE.BufferGeometry();
+  steamGeo.setAttribute("position", new THREE.BufferAttribute(steamPos, 3));
+  var steam = new THREE.Points(steamGeo, new THREE.PointsMaterial({ color: 0xDCE6EC, size: 5, transparent: true, opacity: 0.32, depthWrite: false }));
+  steam.frustumCulled = false;
+  scene.add(steam);
+  function placeSteam(i, age) {
+    steamAge[i] = age;
+    var drift = age * age * 0.9;
+    steamPos[i * 3] = 0.5 + Math.sin(i * 2.4) * (0.3 + age * 1.6) + drift;
+    steamPos[i * 3 + 1] = D.height + 1 + age * 20;
+    steamPos[i * 3 + 2] = 0.5 + Math.cos(i * 1.7) * (0.3 + age * 1.6);
+  }
+  for (var si = 0; si < STEAM; si++) placeSteam(si, si / STEAM);
+
+  // ---------------------------------------------------------------- camera
+  var FOCUS = { tower: { y: 19, r: 105 }, whole: { y: -22, r: 250 }, shaft: { y: -52, r: 130 } };
+  var cam = { theta: 0.62, phi: 1.27, r: FOCUS.tower.r, y: FOCUS.tower.y };
+  var autoTurn = !reduceMotion;
+
+  function applyCamera() {
+    var maxPhi = section ? Math.PI - 0.2 : Math.PI / 2 - 0.03;
+    cam.phi = Math.min(maxPhi, Math.max(0.2, cam.phi));
+    cam.r = Math.min(520, Math.max(18, cam.r));
+    var sp = Math.sin(cam.phi);
+    camera.position.set(0.5 + cam.r * sp * Math.sin(cam.theta), cam.y + cam.r * Math.cos(cam.phi), 0.5 + cam.r * sp * Math.cos(cam.theta));
+    camera.lookAt(0.5, cam.y, 0.5);
+    dirty = true;
+  }
+
+  function press(ids, active) {
+    ids.forEach(function (id) { document.getElementById(id).setAttribute("aria-pressed", String(id === active)); });
+  }
+
+  function setFocus(name) {
+    cam.y = FOCUS[name].y;
+    cam.r = FOCUS[name].r;
+    press(["focus-tower", "focus-whole", "focus-shaft"], "focus-" + name);
+    applyCamera();
+  }
+
+  function setSection(on) {
+    section = on;
+    press(["view-exterior", "view-section"], on ? "view-section" : "view-exterior");
+    if (on) { cam.theta = 0.34; cam.phi = 1.42; autoTurn = false; setFocus("whole"); }
+    else { cam.phi = 1.27; setFocus("tower"); }
+    showState();
+  }
+
+  function setStep(i) {
+    current = i;
+    renderPanel();
+    showState();
+  }
+
+  document.getElementById("view-exterior").addEventListener("click", function () { setSection(false); });
+  document.getElementById("view-section").addEventListener("click", function () { setSection(true); });
+  ["tower", "whole", "shaft"].forEach(function (name) {
+    document.getElementById("focus-" + name).addEventListener("click", function () {
+      if (name !== "tower" && !section) setSection(true);
+      setFocus(name);
+    });
+  });
+  document.getElementById("zoom-in").addEventListener("click", function () { cam.r *= 0.8; applyCamera(); });
+  document.getElementById("zoom-out").addEventListener("click", function () { cam.r *= 1.25; applyCamera(); });
+
+  var pointers = new Map(), pinch = 0;
+  canvas.addEventListener("pointerdown", function (e) {
+    canvas.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    autoTurn = false;
+    pinch = 0;
+  });
+  canvas.addEventListener("pointermove", function (e) {
+    var p = pointers.get(e.pointerId);
+    if (!p) return;
+    var dx = e.clientX - p.x, dy = e.clientY - p.y;
+    p.x = e.clientX; p.y = e.clientY;
+    if (pointers.size === 1) {
+      cam.theta -= dx * 0.006;
+      cam.phi -= dy * 0.005;
+    } else if (pointers.size === 2) {
+      var pts = Array.from(pointers.values());
+      var dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      if (pinch) cam.r *= pinch / dist;
+      pinch = dist;
+    }
+    applyCamera();
+  });
+  function release(e) { pointers.delete(e.pointerId); pinch = 0; }
+  canvas.addEventListener("pointerup", release);
+  canvas.addEventListener("pointercancel", release);
+  canvas.addEventListener("wheel", function (e) {
+    e.preventDefault();
+    autoTurn = false;
+    cam.r *= Math.exp(e.deltaY * 0.0012);
+    applyCamera();
+  }, { passive: false });
+  canvas.addEventListener("keydown", function (e) {
+    var used = true;
+    if (e.key === "ArrowLeft") cam.theta -= 0.12;
+    else if (e.key === "ArrowRight") cam.theta += 0.12;
+    else if (e.key === "ArrowUp") cam.phi -= 0.08;
+    else if (e.key === "ArrowDown") cam.phi += 0.08;
+    else if (e.key === "+" || e.key === "=") cam.r *= 0.85;
+    else if (e.key === "-") cam.r *= 1.18;
+    else used = false;
+    if (used) { e.preventDefault(); autoTurn = false; applyCamera(); }
+  });
+
+  function resize() {
+    var w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    dirty = true;
+  }
+  window.addEventListener("resize", resize);
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(canvas);
+
+  var last = performance.now();
+  function frame(now) {
+    var dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
+    if (autoTurn) { cam.theta += dt * 0.12; applyCamera(); }
+    if (steam.visible && !reduceMotion) {
+      for (var i = 0; i < STEAM; i++) placeSteam(i, (steamAge[i] + dt * 0.11) % 1);
+      steamGeo.attributes.position.needsUpdate = true;
+      dirty = true;
+    }
+    if (dirty) { renderer.render(scene, camera); dirty = false; }
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  applyCamera();
+  showState();
+  requestAnimationFrame(frame);
+
+  // test hook for screenshots
+  window.__preview = { setStep: setStep, setSection: setSection, setFocus: setFocus, cam: cam, apply: applyCamera, stop: function () { autoTurn = false; } };
+})();
+</script>

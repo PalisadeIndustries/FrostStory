@@ -1,0 +1,60 @@
+{
+	"code": "girder",
+	"variantgroups": [
+		{
+			"code": "axis",
+			"states": [
+				"ud",
+				"ns",
+				"we"
+			]
+		}
+	],
+	"drawtype": "json",
+	"blockmaterial": "Metal",
+	"creativeinventory": {
+		"general": [
+			"*-ud"
+		],
+		"froststory": [
+			"*-ud"
+		]
+	},
+	"shapeByType": {
+		"*-ud": {
+			"base": "block/generator/girder"
+		},
+		"*-ns": {
+			"base": "block/generator/girder",
+			"rotateX": 90
+		},
+		"*-we": {
+			"base": "block/generator/girder",
+			"rotateZ": 90
+		}
+	},
+	"textures": {
+		"girder": {
+			"base": "block/generator/girder"
+		}
+	},
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 5,
+	"requiredMiningTier": 3,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

@@ -1,0 +1,223 @@
+{
+	"editor": {
+		"allAngles": true
+	},
+	"textureWidth": 16,
+	"textureHeight": 16,
+	"textures": {
+		"side": "froststory:block/generator/pipe",
+		"end": "froststory:block/generator/pipe-end",
+		"flange": "froststory:block/generator/steel"
+	},
+	"elements": [
+		{
+			"name": "Tube",
+			"from": [
+				2,
+				2,
+				2
+			],
+			"to": [
+				14,
+				14,
+				14
+			],
+			"faces": {
+				"north": {
+					"texture": "#side",
+					"uv": [
+						2.0,
+						2.0,
+						14.0,
+						14.0
+					]
+				},
+				"east": {
+					"texture": "#side",
+					"uv": [
+						2.0,
+						2.0,
+						14.0,
+						14.0
+					]
+				},
+				"south": {
+					"texture": "#side",
+					"uv": [
+						2.0,
+						2.0,
+						14.0,
+						14.0
+					]
+				},
+				"west": {
+					"texture": "#side",
+					"uv": [
+						2.0,
+						2.0,
+						14.0,
+						14.0
+					]
+				},
+				"up": {
+					"texture": "#side",
+					"uv": [
+						2,
+						2,
+						14,
+						14
+					],
+					"enabled": false
+				},
+				"down": {
+					"texture": "#side",
+					"uv": [
+						2,
+						2,
+						14,
+						14
+					],
+					"enabled": false
+				}
+			}
+		},
+		{
+			"name": "FlangeLow",
+			"from": [
+				1,
+				0,
+				1
+			],
+			"to": [
+				15,
+				2,
+				15
+			],
+			"faces": {
+				"north": {
+					"texture": "#flange",
+					"uv": [
+						1.0,
+						14.0,
+						15.0,
+						16.0
+					]
+				},
+				"east": {
+					"texture": "#flange",
+					"uv": [
+						1.0,
+						14.0,
+						15.0,
+						16.0
+					]
+				},
+				"south": {
+					"texture": "#flange",
+					"uv": [
+						1.0,
+						14.0,
+						15.0,
+						16.0
+					]
+				},
+				"west": {
+					"texture": "#flange",
+					"uv": [
+						1.0,
+						14.0,
+						15.0,
+						16.0
+					]
+				},
+				"up": {
+					"texture": "#end",
+					"uv": [
+						1.0,
+						1.0,
+						15.0,
+						15.0
+					]
+				},
+				"down": {
+					"texture": "#end",
+					"uv": [
+						1.0,
+						1.0,
+						15.0,
+						15.0
+					]
+				}
+			}
+		},
+		{
+			"name": "FlangeHigh",
+			"from": [
+				1,
+				14,
+				1
+			],
+			"to": [
+				15,
+				16,
+				15
+			],
+			"faces": {
+				"north": {
+					"texture": "#flange",
+					"uv": [
+						1.0,
+						0.0,
+						15.0,
+						2.0
+					]
+				},
+				"east": {
+					"texture": "#flange",
+					"uv": [
+						1.0,
+						0.0,
+						15.0,
+						2.0
+					]
+				},
+				"south": {
+					"texture": "#flange",
+					"uv": [
+						1.0,
+						0.0,
+						15.0,
+						2.0
+					]
+				},
+				"west": {
+					"texture": "#flange",
+					"uv": [
+						1.0,
+						0.0,
+						15.0,
+						2.0
+					]
+				},
+				"up": {
+					"texture": "#end",
+					"uv": [
+						1.0,
+						1.0,
+						15.0,
+						15.0
+					]
+				},
+				"down": {
+					"texture": "#end",
+					"uv": [
+						1.0,
+						1.0,
+						15.0,
+						15.0
+					]
+				}
+			}
+		}
+	]
+}

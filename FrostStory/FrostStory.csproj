@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>FrostStory</AssemblyName>
+    <RootNamespace>FrostStory</RootNamespace>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!-- Point VINTAGE_STORY at your game (or server) install folder. -->
+    <GameDir>$(VINTAGE_STORY)</GameDir>
+    <ModOutDir>$(MSBuildProjectDirectory)/../dist/froststory</ModOutDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="src/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="VintagestoryAPI">
+      <HintPath>$(GameDir)/VintagestoryAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(GameDir)/Lib/Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="CheckGameDir" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="'$(GameDir)' == '' Or !Exists('$(GameDir)/VintagestoryAPI.dll')"
+           Text="Set the VINTAGE_STORY environment variable to your Vintage Story install folder (the one containing VintagestoryAPI.dll)." />
+  </Target>
+
+  <!-- Assemble a ready-to-run mod folder (and zip) in dist/. -->
+  <Target Name="PackageMod" AfterTargets="Build">
+    <ItemGroup>
+      <ModAssets Include="assets/**/*" />
+    </ItemGroup>
+    <RemoveDir Directories="$(ModOutDir)" />
+    <Copy SourceFiles="$(TargetPath);modinfo.json" DestinationFolder="$(ModOutDir)" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ModOutDir)" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+    <Copy SourceFiles="@(ModAssets)" DestinationFiles="@(ModAssets->'$(ModOutDir)/assets/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <ZipDirectory SourceDirectory="$(ModOutDir)" DestinationFile="$(ModOutDir)/../froststory.zip" Overwrite="true" />
+  </Target>
+
+</Project>

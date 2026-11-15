@@ -1,0 +1,565 @@
+{
+	"editor": {
+		"allAngles": true
+	},
+	"textureWidth": 16,
+	"textureHeight": 16,
+	"textures": {
+		"steel": "froststory:block/generator/steel",
+		"paint": "froststory:block/generator/paint-red"
+	},
+	"elements": [
+		{
+			"name": "Stem",
+			"from": [
+				7,
+				0,
+				7
+			],
+			"to": [
+				9,
+				9.5,
+				9
+			],
+			"faces": {
+				"north": {
+					"texture": "#steel",
+					"uv": [
+						7.0,
+						6.5,
+						9.0,
+						16.0
+					]
+				},
+				"east": {
+					"texture": "#steel",
+					"uv": [
+						7.0,
+						6.5,
+						9.0,
+						16.0
+					]
+				},
+				"south": {
+					"texture": "#steel",
+					"uv": [
+						7.0,
+						6.5,
+						9.0,
+						16.0
+					]
+				},
+				"west": {
+					"texture": "#steel",
+					"uv": [
+						7.0,
+						6.5,
+						9.0,
+						16.0
+					]
+				},
+				"up": {
+					"texture": "#steel",
+					"uv": [
+						7.0,
+						7.0,
+						9.0,
+						9.0
+					]
+				},
+				"down": {
+					"texture": "#steel",
+					"uv": [
+						7.0,
+						7.0,
+						9.0,
+						9.0
+					]
+				}
+			}
+		},
+		{
+			"name": "Hub",
+			"from": [
+				6,
+				9,
+				6
+			],
+			"to": [
+				10,
+				11.5,
+				10
+			],
+			"faces": {
+				"north": {
+					"texture": "#paint",
+					"uv": [
+						6.0,
+						4.5,
+						10.0,
+						7.0
+					]
+				},
+				"east": {
+					"texture": "#paint",
+					"uv": [
+						6.0,
+						4.5,
+						10.0,
+						7.0
+					]
+				},
+				"south": {
+					"texture": "#paint",
+					"uv": [
+						6.0,
+						4.5,
+						10.0,
+						7.0
+					]
+				},
+				"west": {
+					"texture": "#paint",
+					"uv": [
+						6.0,
+						4.5,
+						10.0,
+						7.0
+					]
+				},
+				"up": {
+					"texture": "#paint",
+					"uv": [
+						6.0,
+						6.0,
+						10.0,
+						10.0
+					]
+				},
+				"down": {
+					"texture": "#paint",
+					"uv": [
+						6.0,
+						6.0,
+						10.0,
+						10.0
+					]
+				}
+			}
+		},
+		{
+			"name": "RimN",
+			"from": [
+				1,
+				9.5,
+				1
+			],
+			"to": [
+				15,
+				11,
+				2.5
+			],
+			"faces": {
+				"north": {
+					"texture": "#paint",
+					"uv": [
+						1.0,
+						5.0,
+						15.0,
+						6.5
+					]
+				},
+				"east": {
+					"texture": "#paint",
+					"uv": [
+						1.0,
+						5.0,
+						2.5,
+						6.5
+					]
+				},
+				"south": {
+					"texture": "#paint",
+					"uv": [
+						1.0,
+						5.0,
+						15.0,
+						6.5
+					]
+				},
+				"west": {
+					"texture": "#paint",
+					"uv": [
+						1.0,
+						5.0,
+						2.5,
+						6.5
+					]
+				},
+				"up": {
+					"texture": "#paint",
+					"uv": [
+						1.0,
+						1.0,
+						15.0,
+						2.5
+					]
+				},
+				"down": {
+					"texture": "#paint",
+					"uv": [
+						1.0,
+						1.0,
+						15.0,
+						2.5
+					]
+				}
+			}
+		},
+		{
+			"name": "RimS",
+			"from": [
+				1,
+				9.5,
+				13.5
+			],
+			"to": [
+				15,
+				11,
+				15
+			],
+			"faces": {
+				"north": {
+					"texture": "#paint",
+					"uv": [
+						1.0,
+						5.0,
+						15.0,
+						6.5
+					]
+				},
+				"east": {
+					"texture": "#paint",
+					"uv": [
+						13.5,
+						5.0,
+						15.0,
+						6.5
+					]
+				},
+				"south": {
+					"texture": "#paint",
+					"uv": [
+						1.0,
+						5.0,
+						15.0,
+						6.5
+					]
+				},
+				"west": {
+					"texture": "#paint",
+					"uv": [
+						13.5,
+						5.0,
+						15.0,
+						6.5
+					]
+				},
+				"up": {
+					"texture": "#paint",
+					"uv": [
+						1.0,
+						13.5,
+						15.0,
+						15.0
+					]
+				},
+				"down": {
+					"texture": "#paint",
+					"uv": [
+						1.0,
+						13.5,
+						15.0,
+						15.0
+					]
+				}
+			}
+		},
+		{
+			"name": "RimW",
+			"from": [
+				1,
+				9.5,
+				2.5
+			],
+			"to": [
+				2.5,
+				11,
+				13.5
+			],
+			"faces": {
+				"north": {
+					"texture": "#paint",
+					"uv": [
+						1.0,
+						5.0,
+						2.5,
+						6.5
+					]
+				},
+				"east": {
+					"texture": "#paint",
+					"uv": [
+						2.5,
+						5.0,
+						13.5,
+						6.5
+					]
+				},
+				"south": {
+					"texture": "#paint",
+					"uv": [
+						1.0,
+						5.0,
+						2.5,
+						6.5
+					]
+				},
+				"west": {
+					"texture": "#paint",
+					"uv": [
+						2.5,
+						5.0,
+						13.5,
+						6.5
+					]
+				},
+				"up": {
+					"texture": "#paint",
+					"uv": [
+						1.0,
+						2.5,
+						2.5,
+						13.5
+					]
+				},
+				"down": {
+					"texture": "#paint",
+					"uv": [
+						1.0,
+						2.5,
+						2.5,
+						13.5
+					]
+				}
+			}
+		},
+		{
+			"name": "RimE",
+			"from": [
+				13.5,
+				9.5,
+				2.5
+			],
+			"to": [
+				15,
+				11,
+				13.5
+			],
+			"faces": {
+				"north": {
+					"texture": "#paint",
+					"uv": [
+						13.5,
+						5.0,
+						15.0,
+						6.5
+					]
+				},
+				"east": {
+					"texture": "#paint",
+					"uv": [
+						2.5,
+						5.0,
+						13.5,
+						6.5
+					]
+				},
+				"south": {
+					"texture": "#paint",
+					"uv": [
+						13.5,
+						5.0,
+						15.0,
+						6.5
+					]
+				},
+				"west": {
+					"texture": "#paint",
+					"uv": [
+						2.5,
+						5.0,
+						13.5,
+						6.5
+					]
+				},
+				"up": {
+					"texture": "#paint",
+					"uv": [
+						13.5,
+						2.5,
+						15.0,
+						13.5
+					]
+				},
+				"down": {
+					"texture": "#paint",
+					"uv": [
+						13.5,
+						2.5,
+						15.0,
+						13.5
+					]
+				}
+			}
+		},
+		{
+			"name": "SpokeX",
+			"from": [
+				2.5,
+				9.75,
+				7.25
+			],
+			"to": [
+				13.5,
+				10.75,
+				8.75
+			],
+			"faces": {
+				"north": {
+					"texture": "#paint",
+					"uv": [
+						2.5,
+						5.25,
+						13.5,
+						6.25
+					]
+				},
+				"east": {
+					"texture": "#paint",
+					"uv": [
+						7.25,
+						5.25,
+						8.75,
+						6.25
+					]
+				},
+				"south": {
+					"texture": "#paint",
+					"uv": [
+						2.5,
+						5.25,
+						13.5,
+						6.25
+					]
+				},
+				"west": {
+					"texture": "#paint",
+					"uv": [
+						7.25,
+						5.25,
+						8.75,
+						6.25
+					]
+				},
+				"up": {
+					"texture": "#paint",
+					"uv": [
+						2.5,
+						7.25,
+						13.5,
+						8.75
+					]
+				},
+				"down": {
+					"texture": "#paint",
+					"uv": [
+						2.5,
+						7.25,
+						13.5,
+						8.75
+					]
+				}
+			}
+		},
+		{
+			"name": "SpokeZ",
+			"from": [
+				7.25,
+				9.75,
+				2.5
+			],
+			"to": [
+				8.75,
+				10.75,
+				13.5
+			],
+			"faces": {
+				"north": {
+					"texture": "#paint",
+					"uv": [
+						7.25,
+						5.25,
+						8.75,
+						6.25
+					]
+				},
+				"east": {
+					"texture": "#paint",
+					"uv": [
+						2.5,
+						5.25,
+						13.5,
+						6.25
+					]
+				},
+				"south": {
+					"texture": "#paint",
+					"uv": [
+						7.25,
+						5.25,
+						8.75,
+						6.25
+					]
+				},
+				"west": {
+					"texture": "#paint",
+					"uv": [
+						2.5,
+						5.25,
+						13.5,
+						6.25
+					]
+				},
+				"up": {
+					"texture": "#paint",
+					"uv": [
+						7.25,
+						2.5,
+						8.75,
+						13.5
+					]
+				},
+				"down": {
+					"texture": "#paint",
+					"uv": [
+						7.25,
+						2.5,
+						8.75,
+						13.5
+					]
+				}
+			}
+		}
+	]
+}

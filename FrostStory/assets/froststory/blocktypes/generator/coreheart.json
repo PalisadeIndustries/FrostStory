@@ -1,0 +1,64 @@
+{
+	"code": "coreheart",
+	"variantgroups": [
+		{
+			"code": "state",
+			"states": [
+				"cold",
+				"lit"
+			]
+		}
+	],
+	"drawtype": "cube",
+	"blockmaterial": "Metal",
+	"creativeinventory": {
+		"general": [
+			"*"
+		],
+		"froststory": [
+			"*"
+		]
+	},
+	"textures": {
+		"all": {
+			"base": "block/generator/coreheart-{state}"
+		}
+	},
+	"sidesolid": {
+		"all": true
+	},
+	"sideopaque": {
+		"all": true
+	},
+	"replaceable": 90,
+	"resistance": 8,
+	"requiredMiningTier": 3,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	},
+	"behaviorsByType": {
+		"*-lit": [
+			{
+				"name": "HeatSource",
+				"properties": {
+					"heatStrength": 14
+				}
+			}
+		]
+	},
+	"lightHsvByType": {
+		"*-lit": [
+			5,
+			6,
+			24
+		]
+	},
+	"vertexFlagsByType": {
+		"*-lit": {
+			"glowLevel": 200
+		}
+	}
+}

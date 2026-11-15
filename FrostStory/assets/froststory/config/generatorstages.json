@@ -1,0 +1,60 @@
+{
+	"stages": [
+		{
+			"id": "shaft",
+			"buildSeconds": 120,
+			"requirements": [
+				{ "code": "game:stonebricks-*", "quantity": 256, "name": "froststory:req-stonebricks" },
+				{ "code": "game:metalplate-iron", "quantity": 32 }
+			]
+		},
+		{
+			"id": "valves",
+			"buildSeconds": 60,
+			"requirements": [
+				{ "code": "game:metalplate-steel", "quantity": 32 },
+				{ "code": "game:ingot-iron", "quantity": 48 }
+			]
+		},
+		{
+			"id": "pumps",
+			"buildSeconds": 75,
+			"requirements": [
+				{ "code": "game:metalplate-steel", "quantity": 48 },
+				{ "code": "game:ingot-brass", "quantity": 32 },
+				{ "code": "game:gear-rusty", "quantity": 8 }
+			]
+		},
+		{
+			"id": "core",
+			"buildSeconds": 90,
+			"requirements": [
+				{ "code": "game:metalplate-steel", "quantity": 96 },
+				{ "code": "game:ingot-copper", "quantity": 64 },
+				{ "code": "game:gear-temporal", "quantity": 4 }
+			]
+		},
+		{
+			"id": "frame-a",
+			"buildSeconds": 60,
+			"requirements": [
+				{ "code": "game:ingot-steel", "quantity": 96 }
+			]
+		},
+		{
+			"id": "frame-b",
+			"buildSeconds": 60,
+			"requirements": [
+				{ "code": "game:ingot-steel", "quantity": 96 }
+			]
+		},
+		{
+			"id": "hull",
+			"buildSeconds": 120,
+			"requirements": [
+				{ "code": "game:metalplate-steel", "quantity": 160 },
+				{ "code": "game:metalplate-iron", "quantity": 64 }
+			]
+		}
+	]
+}

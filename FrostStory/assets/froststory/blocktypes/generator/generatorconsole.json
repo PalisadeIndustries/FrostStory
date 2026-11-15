@@ -1,0 +1,85 @@
+{
+	"code": "generatorconsole",
+	"class": "FrostStoryGeneratorConsole",
+	"entityClass": "FrostStoryGeneratorConsole",
+	"variantgroups": [
+		{
+			"code": "side",
+			"states": [
+				"north",
+				"east",
+				"south",
+				"west"
+			]
+		}
+	],
+	"drawtype": "json",
+	"blockmaterial": "Metal",
+	"creativeinventory": {
+		"general": [
+			"*-north"
+		],
+		"froststory": [
+			"*-north"
+		]
+	},
+	"behaviors": [
+		{
+			"name": "HorizontalOrientable",
+			"properties": {
+				"dropBlockFace": "north"
+			}
+		}
+	],
+	"shapeByType": {
+		"*-north": {
+			"base": "block/generator/console",
+			"rotateY": 0
+		},
+		"*-east": {
+			"base": "block/generator/console",
+			"rotateY": 270
+		},
+		"*-south": {
+			"base": "block/generator/console",
+			"rotateY": 180
+		},
+		"*-west": {
+			"base": "block/generator/console",
+			"rotateY": 90
+		}
+	},
+	"textures": {
+		"side": {
+			"base": "block/generator/console-side"
+		},
+		"top": {
+			"base": "block/generator/console-top"
+		},
+		"front": {
+			"base": "block/generator/console-front"
+		},
+		"paint": {
+			"base": "block/generator/paint-red"
+		}
+	},
+	"resistance": 10,
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"requiredMiningTier": 3,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

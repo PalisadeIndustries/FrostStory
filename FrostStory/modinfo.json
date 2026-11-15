@@ -1,0 +1,15 @@
+{
+  "type": "code",
+  "modid": "froststory",
+  "name": "FrostStory",
+  "authors": ["Palisade Industries"],
+  "description": "Raise a colossal geothermal generator, stage by stage, to hold back the cold.",
+  "version": "0.1.0",
+  "side": "Universal",
+  "requiredOnClient": true,
+  "requiredOnServer": true,
+  "dependencies": {
+    "game": "1.22.0",
+    "survival": "1.22.0"
+  }
+}

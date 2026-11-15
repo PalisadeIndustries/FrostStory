@@ -1,0 +1,54 @@
+{
+	"code": "pumpcylinder",
+	"drawtype": "json",
+	"blockmaterial": "Metal",
+	"creativeinventory": {
+		"general": [
+			"*"
+		],
+		"froststory": [
+			"*"
+		]
+	},
+	"shape": {
+		"base": "block/generator/pipe"
+	},
+	"textures": {
+		"side": {
+			"base": "block/generator/pumpcylinder"
+		},
+		"end": {
+			"base": "block/generator/pipe-end"
+		},
+		"flange": {
+			"base": "block/generator/steel"
+		}
+	},
+	"collisionSelectionBox": {
+		"x1": 0.0625,
+		"y1": 0,
+		"z1": 0.0625,
+		"x2": 0.9375,
+		"y2": 1,
+		"z2": 0.9375
+	},
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 5,
+	"requiredMiningTier": 3,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

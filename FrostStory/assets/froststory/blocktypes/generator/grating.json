@@ -1,0 +1,51 @@
+{
+	"code": "grating",
+	"drawtype": "json",
+	"blockmaterial": "Metal",
+	"creativeinventory": {
+		"general": [
+			"*"
+		],
+		"froststory": [
+			"*"
+		]
+	},
+	"shape": {
+		"base": "block/generator/grating"
+	},
+	"textures": {
+		"grating": {
+			"base": "block/generator/grating"
+		}
+	},
+	"renderPass": "OpaqueNoCull",
+	"faceCullMode": "NeverCull",
+	"rainPermeable": true,
+	"collisionSelectionBox": {
+		"x1": 0,
+		"y1": 0.875,
+		"z1": 0,
+		"x2": 1,
+		"y2": 1,
+		"z2": 1
+	},
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 5,
+	"requiredMiningTier": 3,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}
