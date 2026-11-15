@@ -2,19 +2,65 @@
 	{
 		"ingredientPattern": "P,P",
 		"ingredients": {
-			"P": { "type": "item", "code": "game:metalplate-iron" }
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			}
 		},
 		"width": 1,
 		"height": 2,
-		"output": { "type": "block", "code": "froststory:steampipe-ud", "quantity": 4 }
+		"output": {
+			"type": "block",
+			"code": "froststory:steampipe-ud",
+			"quantity": 4
+		}
 	},
 	{
 		"ingredientPattern": "PP,PP",
 		"ingredients": {
-			"P": { "type": "item", "code": "game:metalplate-iron" }
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			}
 		},
 		"width": 2,
 		"height": 2,
-		"output": { "type": "block", "code": "froststory:pipejunction", "quantity": 4 }
+		"output": {
+			"type": "block",
+			"code": "froststory:pipejunction",
+			"quantity": 4
+		}
+	},
+	{
+		"ingredientPattern": "PPP,P_P,PPP",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			}
+		},
+		"width": 3,
+		"height": 3,
+		"output": {
+			"type": "block",
+			"code": "froststory:steammain-we",
+			"quantity": 4
+		}
+	},
+	{
+		"ingredientPattern": "MM,MM",
+		"ingredients": {
+			"M": {
+				"type": "block",
+				"code": "froststory:steammain-we"
+			}
+		},
+		"width": 2,
+		"height": 2,
+		"output": {
+			"type": "block",
+			"code": "froststory:mainjunction",
+			"quantity": 2
+		}
 	}
 ]

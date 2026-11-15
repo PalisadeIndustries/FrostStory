@@ -1,0 +1,54 @@
+{
+	"code": "mainjunction",
+	"class": "FrostStorySteamConduit",
+	"creativeinventory": {
+		"general": [
+			"*"
+		],
+		"froststory": [
+			"*"
+		]
+	},
+	"drawtype": "json",
+	"shape": {
+		"base": "block/generator/mainjunction"
+	},
+	"textures": {
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"red": {
+			"base": "block/generator/paint-red"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"black": {
+			"base": "block/generator/segment/black"
+		}
+	},
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 6,
+	"requiredMiningTier": 3,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

@@ -70,7 +70,19 @@ arrive with the Steam Core stage and go live when the generator is fired.
   and they add up, so a run of pipe along a wall heats a room.
 - Look at a pipe to see whether it is carrying steam.
 
-Recipes: two iron plates make four pipes; four iron plates make four fittings.
+**Large ports and steam mains.** Four large ports, one to a side, come out of the hull through the
+frames with their mouths over the first gallery, 2 m above its deck. They arrive with the Thermal
+Hull stage and go live with the rest.
+
+- A **steam main** is two blocks across. Set one against the mouth of a large port, or the end of
+  another main, and it lines up with it; mains only join when they meet squarely like that.
+- A **steam main fitting** is a 2 x 2 x 2 block that joins mains on every side.
+- An ordinary steam pipe can tap a main or a main fitting anywhere, or butt against the mouth of a
+  large port, so a main can feed many small runs.
+- A main gives three times the warmth of a pipe.
+
+Recipes: two iron plates make four pipes; four iron plates make four fittings; eight iron plates
+in a ring make four mains; four mains make two main fittings.
 
 A pipe is traced back to its port on demand, so the route has to be in loaded chunks. A run that
 leaves the loaded world keeps the state it last had until the server restarts.
@@ -122,7 +134,7 @@ FrostStory/
   src/Generator/GeneratorBuilder.cs     writes blueprint cells into the world
   src/Generator/BlockEntityGeneratorConsole.cs   deliveries, timed construction, firing
   src/Generator/GeneratorCommands.cs    /frostgen
-  src/Steam/                            steam pipes, fittings and ports; tracing a pipe back to a live port
+  src/Steam/                            pipes, mains, fittings and ports; tracing a run back to a live port
   assets/froststory/                    blocktypes, shapes, textures, lang, recipes, stage config
 tools/
   gen_segments.py                       the geometry of the modelled segments; writes their shapes
@@ -154,12 +166,14 @@ textures, stage by stage, with a section view of the shaft. (`pip install pillow
 
 Working and checked on a 1.22.7 dedicated server: assets load without errors, all seven stages
 build through the console, firing and banking swap the lit models and the steam ports, and the
-result matches the blueprint cell for cell. Pipes laid from a port report steam when the generator
-is fired, and go cold downstream of a cut. Every shape file loads cleanly through the game's own
+result matches the blueprint cell for cell. Pipes and mains laid from the ports report steam when
+the generator is fired, taps off a main work, a misaligned main stays cold, and everything goes cold
+downstream of a cut. Every shape file loads cleanly through the game's own
 shape class.
 
 Not yet checked in a game client: how the large segment models render and light in-engine, walking
-and climbing on the invisible collision cells, placing pipes by hand, how much a pipe run actually
+and climbing on the invisible collision cells, placing pipes and mains by hand (including a main
+lining itself up with a port), how the two-block mains look in the inventory, how much a pipe run actually
 warms a player, the footprint highlight, the console's hover text and the stack's steam particles. The preview page mirrors the engine's rotation and texture
 mapping rules, but it is not the engine.
 

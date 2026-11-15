@@ -1,0 +1,49 @@
+{
+	"code": "mainfill",
+	"class": "FrostStorySteamMainFill",
+	"variantgroups": [
+		{
+			"code": "offset",
+			"states": [
+				"o001",
+				"o010",
+				"o011",
+				"o100",
+				"o101",
+				"o110",
+				"o111"
+			]
+		}
+	],
+	"attributes": {
+		"handbook": {
+			"exclude": true
+		}
+	},
+	"drawtype": "json",
+	"shape": {
+		"base": "game:block/basic/nothing"
+	},
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 6,
+	"requiredMiningTier": 3,
+	"drops": [],
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

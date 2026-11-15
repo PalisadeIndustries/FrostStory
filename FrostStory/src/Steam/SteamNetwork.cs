@@ -5,9 +5,9 @@ using Vintagestory.API.MathTools;
 namespace FrostStory.Steam;
 
 /// <summary>
-/// Answers one question: is this pipe connected to a live steam port? Nothing is stored in the world
-/// and nothing ticks. A pipe that is asked traces its run once, and every pipe on that run remembers
-/// the answer for a few seconds.
+/// Answers one question: is this conduit connected to a live steam port? Nothing is stored in the world
+/// and nothing ticks. A conduit that is asked traces its run once, and every conduit on that run
+/// remembers the answer for a few seconds.
 /// </summary>
 public sealed class SteamNetwork
 {
@@ -23,21 +23,72 @@ public sealed class SteamNetwork
         this.world = world;
     }
 
-    /// <summary>Forget everything; called whenever a pipe or port is placed, removed or switched.</summary>
+    /// <summary>Forget everything; called whenever a conduit is placed, removed or switched.</summary>
     public void Invalidate() => known.Clear();
+
+    /// <summary>The conduit occupying a cell, and the cell it lives in (a large conduit spans several).</summary>
+    public static bool Resolve(IBlockAccessor ba, BlockPos pos, out BlockSteamConduit conduit, out BlockPos anchor)
+    {
+        var block = ba.GetBlock(pos);
+        if (block is BlockSteamMainFill fill)
+        {
+            anchor = fill.OwnerPos(pos);
+            block = ba.GetBlock(anchor);
+        }
+        else
+        {
+            anchor = pos;
+        }
+
+        conduit = (block as BlockSteamConduit)!;
+        return conduit != null;
+    }
+
+    /// <summary>Two large conduits meet squarely when they share a whole face: same bore, lined up.</summary>
+    public static bool MeetSquarely(BlockSteamConduit a, BlockPos aAnchor, BlockSteamConduit b, BlockPos bAnchor, BlockFacing faceOfA)
+    {
+        if (!a.ConnectsOn(faceOfA) || !b.ConnectsOn(faceOfA.Opposite)) return false;
+
+        int[] aMin = { aAnchor.X, aAnchor.Y, aAnchor.Z }, aSize = { a.Size.X, a.Size.Y, a.Size.Z };
+        int[] bMin = { bAnchor.X, bAnchor.Y, bAnchor.Z }, bSize = { b.Size.X, b.Size.Y, b.Size.Z };
+        int d = (int)faceOfA.Axis;
+        bool positive = faceOfA.Normali.X + faceOfA.Normali.Y + faceOfA.Normali.Z > 0;
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (i == d)
+            {
+                if (positive ? aMin[i] + aSize[i] != bMin[i] : bMin[i] + bSize[i] != aMin[i]) return false;
+            }
+            else if (aMin[i] != bMin[i] || aSize[i] != bSize[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool Joined(BlockSteamConduit a, BlockPos aAnchor, BlockSteamConduit b, BlockPos bAnchor, BlockFacing faceOfA)
+    {
+        if (a.IsBig && b.IsBig) return MeetSquarely(a, aAnchor, b, bAnchor, faceOfA);
+        if (a.IsBig) return a.AcceptsTapOn(faceOfA) && b.ConnectsOn(faceOfA.Opposite);
+        if (b.IsBig) return a.ConnectsOn(faceOfA) && b.AcceptsTapOn(faceOfA.Opposite);
+        return a.ConnectsOn(faceOfA) && b.ConnectsOn(faceOfA.Opposite);
+    }
 
     public bool IsLive(BlockPos pos)
     {
+        if (!Resolve(world.BlockAccessor, pos, out var first, out var anchor)) return false;
+
         long now = world.ElapsedMilliseconds;
-        if (known.TryGetValue(pos, out var entry) && entry.Expires > now) return entry.Live;
-        return Trace(pos, now);
+        if (known.TryGetValue(anchor, out var entry) && entry.Expires > now) return entry.Live;
+        return Trace(first, anchor, now);
     }
 
-    private bool Trace(BlockPos start, long now)
+    private bool Trace(BlockSteamConduit first, BlockPos start, long now)
     {
         var ba = world.BlockAccessor;
-        if (ba.GetBlock(start) is not BlockSteamConduit first) return false;
-
         var run = new HashSet<BlockPos> { start.Copy() };
         var queue = new Queue<BlockPos>();
         queue.Enqueue(start.Copy());
@@ -47,22 +98,24 @@ public sealed class SteamNetwork
 
         while (queue.Count > 0)
         {
-            var pos = queue.Dequeue();
-            if (ba.GetBlock(pos) is not BlockSteamConduit conduit) continue;
+            var anchor = queue.Dequeue();
+            if (ba.GetBlock(anchor) is not BlockSteamConduit conduit) continue;
 
-            foreach (var face in BlockFacing.ALLFACES)
+            foreach (var cell in conduit.Cells(anchor))
             {
-                if (!conduit.ConnectsOn(face)) continue;
+                foreach (var face in BlockFacing.ALLFACES)
+                {
+                    var next = cell.AddCopy(face);
+                    if (ba.GetChunkAtBlockPos(next) == null) { incomplete = true; continue; }
+                    if (!Resolve(ba, next, out var neighbour, out var nextAnchor)) continue;
+                    if (nextAnchor.Equals(anchor) || run.Contains(nextAnchor)) continue;
+                    if (!Joined(conduit, anchor, neighbour, nextAnchor, face)) continue;
+                    if (run.Count >= MaxRun) { incomplete = true; continue; }
 
-                var next = pos.AddCopy(face);
-                if (run.Contains(next)) continue;
-                if (ba.GetChunkAtBlockPos(next) == null) { incomplete = true; continue; }
-                if (ba.GetBlock(next) is not BlockSteamConduit neighbour || !neighbour.ConnectsOn(face.Opposite)) continue;
-                if (run.Count >= MaxRun) { incomplete = true; continue; }
-
-                run.Add(next);
-                queue.Enqueue(next);
-                live |= neighbour.IsLiveSource;
+                    run.Add(nextAnchor);
+                    queue.Enqueue(nextAnchor);
+                    live |= neighbour.IsLiveSource;
+                }
             }
         }
 

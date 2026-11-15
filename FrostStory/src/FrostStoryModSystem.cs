@@ -33,6 +33,7 @@ public class FrostStoryModSystem : ModSystem
     {
         api.RegisterBlockClass("FrostStoryGeneratorConsole", typeof(BlockGeneratorConsole));
         api.RegisterBlockClass("FrostStorySteamConduit", typeof(BlockSteamConduit));
+        api.RegisterBlockClass("FrostStorySteamMainFill", typeof(BlockSteamMainFill));
         api.RegisterBlockEntityClass("FrostStoryGeneratorConsole", typeof(BlockEntityGeneratorConsole));
     }
 

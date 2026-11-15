@@ -1,0 +1,81 @@
+{
+	"code": "mainport",
+	"class": "FrostStorySteamConduit",
+	"variantgroups": [
+		{
+			"code": "side",
+			"states": [
+				"north",
+				"east",
+				"south",
+				"west"
+			]
+		},
+		{
+			"code": "state",
+			"states": [
+				"cold",
+				"live"
+			]
+		}
+	],
+	"attributes": {
+		"handbook": {
+			"exclude": true
+		}
+	},
+	"drawtype": "json",
+	"shapeByType": {
+		"*-east-*": {
+			"base": "block/generator/mainport-east"
+		},
+		"*-south-*": {
+			"base": "block/generator/mainport-south"
+		},
+		"*-west-*": {
+			"base": "block/generator/mainport-west"
+		},
+		"*-north-*": {
+			"base": "block/generator/mainport-north"
+		}
+	},
+	"textures": {
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"red": {
+			"base": "block/generator/paint-red"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"black": {
+			"base": "block/generator/segment/black"
+		}
+	},
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 60,
+	"requiredMiningTier": 5,
+	"drops": [],
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

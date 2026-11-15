@@ -111,6 +111,12 @@ public static class GeneratorBlueprint
         foreach (var (x, z, side) in SteamPorts())
             swaps.Add(new LitSwap(x, 1, z, Blocks.Port(side, false), Blocks.Port(side, true)));
 
+        foreach (var cell in MainPortCells())
+        {
+            if (cell.Code == Blocks.MainPort(cell.Side, false))
+                swaps.Add(new LitSwap(cell.X, cell.Y, cell.Z, cell.Code, Blocks.MainPort(cell.Side, true)));
+        }
+
         return swaps.ToArray();
     }
 
@@ -132,6 +138,45 @@ public static class GeneratorBlueprint
 
     /// <summary>Top of the exhaust stack, where steam leaves a running generator.</summary>
     public static (int X, int Y, int Z) StackTop => (0, Height, 0);
+
+    /// <summary>Height of the lower layer of the large steam ports: their bore is centred 3 m above the first gallery.</summary>
+    public const int MainPortY = 15;
+
+    /// <summary>
+    /// Four large steam ports, one to a side, each a 2 x 2 nozzle running from the hull out through the frame
+    /// to a mouth over the first gallery. The mouth is a port block in its minimum-corner cell plus three
+    /// fill cells; the nozzle behind it is plain collision. A steam main set against the mouth lines up with it.
+    /// </summary>
+    public static IEnumerable<(int X, int Y, int Z, string Code, string Side)> MainPortCells()
+    {
+        string[] sides = { "east", "south", "west", "north" };
+        for (int k = 0; k < 4; k++)
+        {
+            var mouth = new List<(int X, int Y, int Z)>();
+            for (int depth = 5; depth <= 7; depth++)
+            {
+                for (int across = 0; across <= 1; across++)
+                {
+                    for (int up = 0; up <= 1; up++)
+                    {
+                        var (x, z) = Rot(depth, across, k);
+                        if (depth == 7) mouth.Add((x, MainPortY + up, z));
+                        else yield return (x, MainPortY + up, z, Blocks.FillSolid, sides[k]);
+                    }
+                }
+            }
+
+            int minX = int.MaxValue, minZ = int.MaxValue;
+            foreach (var c in mouth) { minX = Math.Min(minX, c.X); minZ = Math.Min(minZ, c.Z); }
+
+            foreach (var c in mouth)
+            {
+                int dx = c.X - minX, dy = c.Y - MainPortY, dz = c.Z - minZ;
+                string code = dx + dy + dz == 0 ? Blocks.MainPort(sides[k], false) : Blocks.MainFill(dx, dy, dz);
+                yield return (c.X, c.Y, c.Z, code, sides[k]);
+            }
+        }
+    }
 
     // ---------------------------------------------------------------- geometry
 
@@ -435,6 +480,11 @@ public static class GeneratorBlueprint
                             if (InOuterGallery(x, z)) b.Set(x, y, z, Blocks.FillDeck);
                 }
 
+                if (y == MainPortY)
+                {
+                    foreach (var cell in MainPortCells()) b.Set(cell.X, cell.Y, cell.Z, cell.Code);
+                }
+
                 if (y <= OuterGalleries[^1]) b.Set(OuterLadderX, y, OuterLadderZ, Blocks.FillLadder);
                 if (y <= Gallery) b.Set(LadderX, y, LadderZ, Blocks.FillLadder);
                 if (y == Gallery)
@@ -522,6 +572,12 @@ public static class Blocks
 
     /// <summary>A steam port on the pad; side is the way its outlet faces.</summary>
     public static string Port(string side, bool live) => $"{D}steamport-{side}-{(live ? "live" : "cold")}";
+
+    /// <summary>The mouth of a large steam port; side is the way it faces.</summary>
+    public static string MainPort(string side, bool live) => $"{D}mainport-{side}-{(live ? "live" : "cold")}";
+
+    /// <summary>A fill cell of a two-block-wide conduit, offset from the cell its owner lives in.</summary>
+    public static string MainFill(int dx, int dy, int dz) => $"{D}mainfill-o{dx}{dy}{dz}";
 
     /// <summary>A modelled segment, turned by quarter turns about the generator's axis (east to south is one).</summary>
     public static string Segment(string part, int turn = 0) => $"{D}gensegment-{part}-r{turn & 3}";

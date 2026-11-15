@@ -59,9 +59,11 @@ def yaw(theta, x, z):
 
 
 class Model:
-    def __init__(self, name, anchor):
+    def __init__(self, name, anchor, turn=0):
+        """turn swings the whole model by quarter turns about the tower axis (east to south is one)."""
         self.name = name
         self.anchor = anchor
+        self.turn = turn
         self.elements = []
         self.used = set()
 
@@ -69,6 +71,11 @@ class Model:
 
     def box(self, center, size, tex, rot=(0, 0, 0), faces=ALL, glow=0, uvoff=(0, 0), facetex=None):
         """A box turned about its own centre by rot = (rx, ry, rz) degrees."""
+        if self.turn:
+            assert not rot[0], "a turned model cannot hold boxes rotated about X"
+            x, z = yaw(-90 * self.turn, center[0], center[2])
+            center = (x, center[1], z)
+            rot = (0, rot[1] - 90 * self.turn, rot[2])
         ax, ay, az = self.anchor
         cx = (center[0] - (ax - 0.5)) * 16
         cy = (center[1] - (ay - 1)) * 16
@@ -558,7 +565,12 @@ def frame(level, lapped=False):
         for sz in (1, -1):
             m.box((x, y, sz * (COLUMN_Z - 0.15)), (0.7, 0.9, 0.9), "band", rot=(45, 0, 0))   # gusset, set on the diagonal
         top = y + 4
-        if top <= 32:
+        if y == 12:
+            # this bay stays open for the large steam port; knee braces stiffen its corners instead
+            for sz in (1, -1):
+                for yy, dy in ((y + 0.2, 1.2), (top - 0.2, -1.2)):
+                    m.member((x, yy + dy, sz * (COLUMN_Z - 0.3)), (x, yy, sz * (COLUMN_Z - 1.5)), 0.2, 0.2, "girder")
+        elif top <= 32:
             m.member((x, y + 0.2, -COLUMN_Z + 0.3), (x, top - 0.2, COLUMN_Z - 0.3), 0.2, 0.2, "girder")
             m.member((x, y + 0.2, COLUMN_Z - 0.3), (x, top - 0.2, -COLUMN_Z + 0.3), 0.2, 0.2, "girder")
         y += 4
@@ -823,6 +835,70 @@ def steamport():
     return m
 
 
+# ----------------------------------------------------------------------------- steam mains
+
+MAIN_BORE = 0.82
+MAIN_FLANGE = 0.98
+MAIN_PORT_Y = 15.0      # centre line of the large ports, 3 m above the first gallery's deck
+
+
+def steammain(axis):
+    """One block of a 2 x 2 steam main. Its cell is the minimum corner of the four it fills."""
+    m = Model("steammain-" + axis, (0, 1, 0))
+    if axis == "ud":
+        m.vprism(0.5, 0.5, 0.0, 1.0, MAIN_BORE, "pipe")
+        for y0, y1 in ((0.0, 0.12), (0.88, 1.0)):
+            m.vprism(0.5, 0.5, y0, y1, MAIN_FLANGE, "band", caps=(True, True), captex="band")
+    else:
+        ends = ((-0.5, 1.0, 0.5), (0.5, 1.0, 0.5)) if axis == "we" else ((0.5, 1.0, -0.5), (0.5, 1.0, 0.5))
+        m.hprism(ends[0], ends[1], MAIN_BORE, "pipe")
+        for f0, f1 in ((0.0, 0.12), (0.88, 1.0)):
+            p0 = tuple(a + (b - a) * f0 for a, b in zip(*ends))
+            p1 = tuple(a + (b - a) * f1 for a, b in zip(*ends))
+            m.hprism(p0, p1, MAIN_FLANGE, "band", caps=(True, True), captex="band")
+    return m
+
+
+def mainjunction():
+    """A 2 x 2 x 2 fitting where steam mains meet from any side."""
+    m = Model("mainjunction", (0, 1, 0))
+    c = (0.5, 1.0, 0.5)
+    m.vprism(c[0], c[2], 0.0, 2.0, MAIN_BORE, "pipe")
+    m.hprism((-0.5, c[1], c[2]), (1.5, c[1], c[2]), MAIN_BORE, "pipe")
+    m.hprism((c[0], c[1], -0.5), (c[0], c[1], 1.5), MAIN_BORE, "pipe")
+    m.box(c, (1.5, 1.5, 1.5), "band")                                              # the body where the bores cross
+    for y0, y1 in ((0.0, 0.12), (1.88, 2.0)):
+        m.vprism(c[0], c[2], y0, y1, MAIN_FLANGE, "band", caps=(True, True), captex="band")
+    for a, b in ((-0.5, -0.38), (1.38, 1.5)):
+        m.hprism((a, c[1], c[2]), (b, c[1], c[2]), MAIN_FLANGE, "band", caps=(True, True), captex="band")
+        m.hprism((c[0], c[1], a), (c[0], c[1], b), MAIN_FLANGE, "band", caps=(True, True), captex="band")
+    return m
+
+
+MAIN_PORT_ANCHORS = {"east": (7, 15, 0), "south": (-1, 15, 7), "west": (-7, 15, -1), "north": (0, 15, -7)}
+
+
+def mainport(side):
+    """A large steam port: a 2 m nozzle from the hull, out through the frame bay over the first gallery,
+    with a gate valve and a flanged mouth for a steam main. Drawn for the east side and turned."""
+    turn = ("east", "south", "west", "north").index(side)
+    m = Model("mainport-" + side, MAIN_PORT_ANCHORS[side], turn=turn)
+    y, z = MAIN_PORT_Y, 0.5
+    m.east(0, (HULL + 0.07, y, z), (0.16, 2.4, 2.4), "band")                       # saddle plate on the hull
+    m.hprism((HULL, y, z), (7.5, y, z), MAIN_BORE - 0.02, "pipe")
+    m.hprism((HULL + 0.14, y, z), (HULL + 0.4, y, z), MAIN_FLANGE - 0.03, "band", caps=(True, True), captex="band")
+    m.hprism((7.3, y, z), (7.5, y, z), MAIN_FLANGE, "band", caps=(True, True), captex="band")     # the mouth
+    # gate valve
+    m.vprism(6.25, z, y - 0.95, y + 0.95, 0.62, "red", caps=(True, True), captex="band")
+    m.vprism(6.25, z, y + 0.95, y + 1.4, 0.32, "band", caps=(False, True), captex="band")
+    m.vprism(6.25, z, y + 1.4, y + 1.85, 0.07, "steel")
+    m.handwheel(6.25, y + 1.8, z, a=0.55)
+    # hangers down to the gallery
+    for dz in (-0.45, 1.45):
+        m.member((6.9, y - 0.75, dz), (6.55, 12.05, dz), 0.1, 0.1, "steel")
+    return m
+
+
 # =========================================================================== build
 
 def build_all():
@@ -885,7 +961,10 @@ def main():
         total += n
         print(f"  {m.name:16s} {n:4d} elements")
     write_blocktype(models)
-    steamport().save(os.path.join(SHAPE_DIR, ".."))
+    parts = [steamport(), mainjunction()] + [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
+    for part in parts:
+        part.save(os.path.join(SHAPE_DIR, ".."))
+    print(f"Wrote {len(parts)} steam fitting shapes")
     print(f"Wrote {len(models)} segment shapes ({total} elements) and gensegment.json")
 
 

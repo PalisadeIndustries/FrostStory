@@ -148,8 +148,8 @@ public static class GeneratorCommands
             ? given.AsBlockPos
             : args.Caller.Player?.CurrentBlockSelection?.Position;
 
-        if (pos == null || api.World.BlockAccessor.GetBlock(pos) is not FrostStory.Steam.BlockSteamConduit conduit)
-            return TextCommandResult.Error("Look at a steam pipe, fitting or port, or give its position.");
+        if (pos == null || !FrostStory.Steam.SteamNetwork.Resolve(api.World.BlockAccessor, pos, out var conduit, out _))
+            return TextCommandResult.Error("Look at a steam pipe, main, fitting or port, or give its position.");
 
         bool live = conduit.IsLiveSource || mod.SteamFor(api.World).IsLive(pos);
         return TextCommandResult.Success(live ? "Carrying steam." : "Cold: no live steam port on this run.");
