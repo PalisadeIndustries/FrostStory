@@ -18,18 +18,27 @@ One block is one metre.
 | Across the support frames | 11 m |
 | Foundation pad | 17 m across |
 
+The generator is not built out of one-metre blocks. It is assembled from large modelled segments, 25 kinds of them
+(hull lifts, the 45 degree shoulder, the stack, braced frame lifts, pump towers, core, shaft lifts),
+each a block shape several metres across, with octagonal walls, round pipes and true diagonals.
+Invisible filler cells behind the models give you something to stand on, climb and bump into. Only
+the foundation pad and the rock lining of the shaft are ordinary blocks.
+
 It goes up in seven stages, each started from the control console:
 
-1. **Foundation Shaft** – clears the site, lays the pad, sinks and lines the shaft, with a service
-   ladder and a grated platform every 16 m.
-2. **Regulator Valves** – the main riser and three valve stations with relief ports.
-3. **Injection Pumps** – four pump towers on the pad and their injection lines down the shaft.
+1. **Foundation Shaft** – clears the site, lays the pad, sinks and lines the shaft in 8 m lifts, with
+   a service ladder and a grated platform every 16 m.
+2. **Regulator Valves** – the main riser, its wellhead, and three valve stations with relief ports.
+3. **Injection Pumps** – four pump towers with flywheels on the pad, and their injection lines down
+   the shaft.
 4. **Steam Core** – the core vessel, standpipes, distribution header and exhaust line.
-5. **Support Frame (east-west)** – paired columns with stepped buttresses and head beams.
-6. **Support Frame (north-south)** – the second frame, set across the first.
-7. **Thermal Hull** – the shell, crown and stack, with a gallery inside.
+5. **Support Frame (east-west)** – paired columns with raking buttresses, cross-bracing and head beams.
+6. **Support Frame (north-south)** – the second frame, lapped across the first.
+7. **Thermal Hull** – the octagonal shell with doorways and louvres, the shoulder, crown and stack,
+   with a gallery inside.
 
-Then the console fires it: the core heart lights up, warms anyone near it and the stack steams.
+Then the console fires it: the core heart lights up and shows through the louvres, warms anyone near
+it, and the stack steams.
 
 ## Playing
 
@@ -43,7 +52,8 @@ Then the console fires it: the core heart lights up, warms anyone near it and th
 - When all seven stages are done, right-click to fire the generator (and again to bank it).
 
 Stage 1 removes whatever stands on the site, chests included. Breaking the console abandons the
-project; what is built stays.
+project; what is built stays. The generator itself cannot be selected or broken by hand: use
+`/frostgen demolish` to take one down.
 
 ### Admin commands (`controlserver` privilege)
 
@@ -51,6 +61,7 @@ project; what is built stays.
 |---|---|
 | `/frostgen place [pos] [stages] [lit]` | Builds a generator at once, centred on a position |
 | `/frostgen check [pos] [stages] [lit]` | Counts cells that differ from the blueprint |
+| `/frostgen demolish [pos]` | Removes a generator, leaving the open shaft |
 | `/frostgen console [pos] [side]` | Puts a console down |
 | `/frostgen start [pos]` | Waives materials and starts the console's current stage |
 | `/frostgen advance [pos]` | Finishes the console's current stage immediately |
@@ -85,19 +96,23 @@ That writes `dist/froststory/` and `dist/froststory.zip`; copy either into your 
 FrostStory/
   modinfo.json
   src/FrostStoryModSystem.cs            mod entry, config
-  src/Generator/Blueprint/              the generator's design, pure C# (no game references)
+  src/Generator/Blueprint/              where every segment and filler cell goes, pure C# (no game references)
   src/Generator/GeneratorBuilder.cs     writes blueprint cells into the world
   src/Generator/BlockEntityGeneratorConsole.cs   deliveries, timed construction, firing
   src/Generator/GeneratorCommands.cs    /frostgen
   assets/froststory/                    blocktypes, shapes, textures, lang, recipes, stage config
 tools/
-  gen_assets.py                         regenerates the placeholder textures and shapes
+  gen_segments.py                       the geometry of the modelled segments; writes their shapes
+  gen_assets.py                         regenerates the placeholder textures and small block shapes
   BlueprintExport/                      dumps the blueprint to JSON
   build_preview.py, preview/            builds a standalone 3D preview page
 ```
 
-The shape of the generator lives in `GeneratorBlueprint.cs`. Change it there and both the game
-and the preview follow.
+The look of the generator lives in `tools/gen_segments.py` (run it to rewrite the segment shapes);
+where the segments and their collision cells go lives in `GeneratorBlueprint.cs`. The two share
+dimensions, so change them together. The game and the preview both follow.
+
+A segment is drawn as the model of one anchor block, so it is lit by the light at that block.
 
 ### Preview without the game
 
@@ -115,11 +130,13 @@ textures, stage by stage, with a section view of the shaft. (`pip install pillow
 ## Status
 
 Working and checked on a 1.22.7 dedicated server: assets load without errors, all seven stages
-build through the console (including across a server restart), and the result matches the
-blueprint cell for cell.
+build through the console, firing and banking swap the lit models, and the result matches the
+blueprint cell for cell. Every shape file loads cleanly through the game's own shape class.
 
-Not yet checked in a game client: how the shapes and textures render in-engine, the footprint
-highlight, the console's hover text and the stack's steam particles.
+Not yet checked in a game client: how the large segment models render and light in-engine, walking
+and climbing on the invisible collision cells, the footprint highlight, the console's hover text
+and the stack's steam particles. The preview page mirrors the engine's rotation and texture
+mapping rules, but it is not the engine.
 
 Next up:
 

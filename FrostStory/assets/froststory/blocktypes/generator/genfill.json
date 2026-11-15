@@ -1,0 +1,26 @@
+{
+	"code": "genfill",
+	"variantgroups": [
+		{ "code": "type", "states": ["solid", "deck", "ladder"] }
+	],
+	"attributes": { "handbook": { "exclude": true } },
+	"drawtype": "json",
+	"shape": { "base": "game:block/basic/nothing" },
+	"blockmaterial": "Metal",
+	"collisionboxByType": {
+		"*-deck": { "x1": 0, "y1": 0.875, "z1": 0, "x2": 1, "y2": 1, "z2": 1 },
+		"*-ladder": { "x1": 0, "y1": 0, "z1": 0, "x2": 1, "y2": 1, "z2": 0.14 }
+	},
+	"selectionbox": null,
+	"climbableByType": {
+		"*-ladder": true
+	},
+	"sidesolid": { "all": false },
+	"sideopaque": { "all": false },
+	"emitSideAo": { "all": false },
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 60,
+	"requiredMiningTier": 5,
+	"drops": []
+}

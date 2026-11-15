@@ -47,20 +47,39 @@ def load(path):
 # --------------------------------------------------------------------------- texture atlas
 
 class Atlas:
-    COLS = 8
+    """Packs every generator texture into one sheet, each with a gutter of repeated edge pixels."""
+    WIDTH = 512
+    PAD = 2
 
     def __init__(self):
-        self.names = sorted(os.path.splitext(os.path.basename(p))[0]
-                            for p in glob.glob(os.path.join(ASSETS, "textures", "block", "generator", "*.png")))
-        self.rows = 4
-        assert len(self.names) <= self.COLS * self.rows
-        self.image = Image.new("RGBA", (self.COLS * 32, self.rows * 32))
-        for i, name in enumerate(self.names):
-            tile = Image.open(os.path.join(ASSETS, "textures", "block", "generator", name + ".png")).convert("RGBA")
-            self.image.paste(tile, ((i % self.COLS) * 32, (i // self.COLS) * 32))
+        base = os.path.join(ASSETS, "textures")
+        paths = sorted(glob.glob(os.path.join(base, "block", "generator", "**", "*.png"), recursive=True))
+        tiles = [(os.path.relpath(p, base)[:-4].replace(os.sep, "/"), Image.open(p).convert("RGBA")) for p in paths]
+        tiles.sort(key=lambda t: (-t[1].height, t[0]))
 
-    def index(self, texture_path):
-        return self.names.index(texture_path.rsplit("/", 1)[-1])
+        self.rects = {}
+        x = y = shelf = 0
+        for key, img in tiles:
+            w, h = img.width + 2 * self.PAD, img.height + 2 * self.PAD
+            if x + w > self.WIDTH:
+                x, y, shelf = 0, y + shelf, 0
+            self.rects[key] = (x + self.PAD, y + self.PAD, img.width, img.height)
+            x, shelf = x + w, max(shelf, h)
+        self.height = 1
+        while self.height < y + shelf:
+            self.height *= 2
+
+        self.image = Image.new("RGBA", (self.WIDTH, self.height))
+        for key, img in tiles:
+            rx, ry, w, h = self.rects[key]
+            grown = img.resize((w + 2 * self.PAD, h + 2 * self.PAD), Image.NEAREST)   # stand-in for edge repeat
+            self.image.paste(grown, (rx - self.PAD, ry - self.PAD))
+            self.image.paste(img, (rx, ry))
+
+    def uv(self, texture_path, u, v):
+        """Atlas coordinates (0..1, v down) of a point given as fractions of one texture."""
+        rx, ry, w, h = self.rects[texture_path.split(":")[-1]]
+        return (rx + u * w) / self.WIDTH, (ry + v * h) / self.height
 
     def data_uri(self):
         buf = io.BytesIO()
@@ -110,7 +129,7 @@ def rot(p, axis, deg, origin):
 
 
 def box_quads(frm, to):
-    """Corners of each face as top-left, top-right, bottom-right, bottom-left seen from outside."""
+    """Corners of each face in the order the engine's cube mesh maps (u1,v1), (u2,v1), (u2,v2), (u1,v2) to."""
     x0, y0, z0 = frm
     x1, y1, z1 = to
     return {
@@ -119,32 +138,33 @@ def box_quads(frm, to):
         "south": [(x0, y1, z1), (x1, y1, z1), (x1, y0, z1), (x0, y0, z1)],
         "west": [(x0, y1, z0), (x0, y1, z1), (x0, y0, z1), (x0, y0, z0)],
         "up": [(x0, y1, z0), (x1, y1, z0), (x1, y1, z1), (x0, y1, z1)],
-        "down": [(x0, y0, z1), (x1, y0, z1), (x1, y0, z0), (x0, y0, z0)],
+        "down": [(x1, y0, z0), (x0, y0, z0), (x0, y0, z1), (x1, y0, z1)],
     }
 
 
-def shade_of(corners):
+def shade_of(corners, flip):
     a, b, d = corners[0], corners[1], corners[3]
     u = [b[i] - a[i] for i in range(3)]
     v = [d[i] - a[i] for i in range(3)]
     n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]]
     length = math.sqrt(sum(c * c for c in n)) or 1
-    nx, ny, nz = (-c / length for c in n)   # outward
+    sign = 1 if flip else -1
+    nx, ny, nz = (sign * c / length for c in n)   # outward
     return max(0.35, min(1.0, 0.70 + 0.30 * ny + 0.09 * nx + 0.06 * nz))
 
 
-def quad(tile, corners, uvs, face_index):
-    flat = [tile, round(shade_of(corners), 3), face_index]
+def quad(corners, uvs, face_index, glow=0, flip=False):
+    flat = [round(shade_of(corners, flip), 3), face_index, 1 if glow else 0]
     for (x, y, z), (u, v) in zip(corners, uvs):
-        flat += [round(x / 16, 4), round(y / 16, 4), round(z / 16, 4), round(u / 16, 4), round(v / 16, 4)]
+        flat += [round(x / 16, 3), round(y / 16, 3), round(z / 16, 3), round(u, 5), round(v, 5)]
     return flat
 
 
 def resolve_block(bt, code, variant, atlas):
     textures = by_type(bt, "textures", code) or {}
 
-    def tile(key):
-        return atlas.index(fill(textures[key]["base"], variant))
+    def path(key):
+        return fill(textures[key]["base"], variant)
 
     if bt.get("drawtype") == "cube":
         quads = []
@@ -152,28 +172,38 @@ def resolve_block(bt, code, variant, atlas):
         for i, face in enumerate(FACES):
             key = face if face in textures else ("horizontals" if i < 4 else "verticals")
             key = key if key in textures else "all"
-            quads.append(quad(tile(key), full[face], [(0, 0), (16, 0), (16, 16), (0, 16)], i))
+            uvs = [atlas.uv(path(key), u, v) for u, v in ((0, 0), (1, 0), (1, 1), (0, 1))]
+            quads.append(quad(full[face], uvs, i, flip=face == "down"))
         return {"o": 1, "q": quads}
 
     ref = by_type(bt, "shape", code)
-    shape = load(os.path.join(ASSETS, "shapes", fill(ref["base"], variant) + ".json"))
+    base = fill(ref["base"], variant)
+    if base.startswith("game:"):
+        return {"o": 0, "q": []}          # invisible filler
+
+    shape = load(os.path.join(ASSETS, "shapes", base + ".json"))
+    sizes = shape.get("textureSizes", {})
+    default_size = (shape.get("textureWidth", 16), shape.get("textureHeight", 16))
     centre = (8, 8, 8)
     quads = []
     for el in shape["elements"]:
-        origin = el.get("rotationOrigin", centre)
+        origin = el.get("rotationOrigin", (0, 0, 0))
         for face, corners in box_quads(el["from"], el["to"]).items():
             spec = el["faces"].get(face)
             if not spec or spec.get("enabled") is False:
                 continue
             pts = []
             for p in corners:
-                for axis in "xyz":
+                for axis in "zyx":        # the engine composes Rx * Ry * Rz, so Z turns first
                     p = rot(p, axis, el.get("rotation" + axis.upper(), 0), origin)
                 for axis in "xyz":
                     p = rot(p, axis, ref.get("rotate" + axis.upper(), 0), centre)
                 pts.append(p)
+            tex = spec["texture"].lstrip("#")
+            tw, th = sizes.get(tex, default_size)
             u1, v1, u2, v2 = spec["uv"]
-            quads.append(quad(tile(spec["texture"].lstrip("#")), pts, [(u1, v1), (u2, v1), (u2, v2), (u1, v2)], -1))
+            uvs = [atlas.uv(path(tex), u / tw, v / th) for u, v in ((u1, v1), (u2, v1), (u2, v2), (u1, v2))]
+            quads.append(quad(pts, uvs, -1, spec.get("glow", 0), flip=face == "down"))
     return {"o": 0, "q": quads}
 
 
@@ -205,7 +235,7 @@ def main():
             "id": s["id"],
             "name": lang["stage-" + s["id"]],
             "desc": lang["stagedesc-" + s["id"]],
-            "blocks": sum(1 for i in range(3, len(cells), 4) if cells[i] >= 0),
+            "segments": sum(1 for i in range(3, len(cells), 4) if cells[i] >= 0 and "gensegment" in blueprint["codes"][cells[i]]),
             "needs": [[r["quantity"], REQUIREMENT_NAMES.get(r["code"], r["code"])] for r in config[s["id"]]["requirements"]],
             "cells": cells,
         })
@@ -214,11 +244,10 @@ def main():
         "depth": blueprint["depth"],
         "height": blueprint["height"],
         "consoleDistance": blueprint["consoleDistance"],
-        "heart": blueprint["heart"],
-        "litCode": blueprint["codes"].index("froststory:coreheart-lit"),
+        "swaps": blueprint["swaps"],
         "consoleCode": blueprint["codes"].index("froststory:generatorconsole-north"),
-        "figureTile": atlas.index("paint-red"),
-        "atlas": {"cols": Atlas.COLS, "rows": atlas.rows, "uri": atlas.data_uri()},
+        "figure": list(atlas.uv("block/generator/paint-red", 0.2, 0.2) + atlas.uv("block/generator/paint-red", 0.8, 0.8)),
+        "atlas": atlas.data_uri(),
         "defs": resolve_all(blueprint["codes"], atlas),
         "stages": stages,
     }

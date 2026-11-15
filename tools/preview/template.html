@@ -155,9 +155,9 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // ---------------------------------------------------------------- sequence panel
-  var STEPS = [{ name: "Site survey", desc: "Place the control console facing the spot where the generator should stand. The tower rises eight blocks behind it, and the console shows the footprint before any ground is broken.", needs: [], blocks: 1 }]
+  var STEPS = [{ name: "Site survey", desc: "Place the control console facing the spot where the generator should stand. The tower rises eight blocks behind it, and the console shows the footprint before any ground is broken.", needs: [], segments: 0 }]
     .concat(D.stages)
-    .concat([{ name: "Fired", desc: "The core heart is lit from the console. It gives off light and warmth, and steam leaves the stack.", needs: [], blocks: null }]);
+    .concat([{ name: "Fired", desc: "The core heart is lit from the console. It gives off light and warmth, and steam leaves the stack.", needs: [], segments: 0 }]);
   var current = STEPS.length - 1;
   var stepsEl = document.getElementById("steps");
 
@@ -169,7 +169,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
     b.id = "step-" + i;
     var n = document.createElement("span"); n.className = "n"; n.textContent = i === 0 ? "0" : i === STEPS.length - 1 ? "•" : String(i);
     var name = document.createElement("span"); name.className = "name"; name.textContent = step.name;
-    var count = document.createElement("span"); count.className = "count"; count.textContent = step.blocks ? step.blocks.toLocaleString("en") + (step.blocks === 1 ? " block" : " blocks") : "";
+    var count = document.createElement("span"); count.className = "count"; count.textContent = step.segments ? step.segments + (step.segments === 1 ? " segment" : " segments") : "";
     b.append(n, name, count);
     b.addEventListener("click", function () { setStep(i); });
     li.appendChild(b);
@@ -208,6 +208,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
     return;
   }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.localClippingEnabled = true;
 
   var SKY = 0x1A242E;
   var scene = new THREE.Scene();
@@ -215,10 +216,13 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
   scene.fog = new THREE.Fog(SKY, 260, 620);
   var camera = new THREE.PerspectiveCamera(32, 1, 1, 1200);
 
-  var atlas = new THREE.TextureLoader().load(D.atlas.uri, function () { dirty = true; });
+  var atlas = new THREE.TextureLoader().load(D.atlas, function () { dirty = true; });
   atlas.magFilter = THREE.NearestFilter;
   atlas.minFilter = THREE.LinearMipmapLinearFilter;
   var blockMat = new THREE.MeshBasicMaterial({ map: atlas, vertexColors: true, alphaTest: 0.5, side: THREE.DoubleSide });
+  // the section view slices everything on the vertical plane through the axis
+  var cutMat = blockMat.clone();
+  cutMat.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0, 0, -1), 0.5)];
   var flatMat = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
 
   var NB = [[0, 0, -1], [1, 0, 0], [0, 0, 1], [-1, 0, 0], [0, 1, 0], [0, -1, 0]];
@@ -238,7 +242,10 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
         if (c[i + 3] < 0) { map.delete(k); voids.add(k); } else { map.set(k, c[i + 3]); voids.delete(k); }
       }
     }
-    if (lit) for (var h = 0; h < D.heart.length; h += 3) map.set(key(D.heart[h], D.heart[h + 1], D.heart[h + 2]), D.litCode);
+    if (lit) for (var h = 0; h < D.swaps.length; h += 5) {
+      var hk = key(D.swaps[h], D.swaps[h + 1], D.swaps[h + 2]);
+      if (map.get(hk) === D.swaps[h + 3]) map.set(hk, D.swaps[h + 4]);
+    }
     map.set(key(0, 1, -D.consoleDistance), D.consoleCode);
     return { map: map, voids: voids };
   }
@@ -246,51 +253,54 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
   function buildGroup(stageCount, lit, cut) {
     var w = worldAt(stageCount, lit), map = w.map;
     var pos = [], uv = [], col = [], idx = [];
-    var cols = D.atlas.cols, rows = D.atlas.rows, eps = 0.02;
+    var cap = { pos: [], uv: [], col: [], idx: [] };
 
-    function pushQuad(q, x, y, z, light) {
-      var base = pos.length / 3, t = q[0], tc = t % cols, tr = Math.floor(t / cols), s = q[1] * light;
+    function pushQuad(out, q, x, y, z, light) {
+      var base = out.pos.length / 3, s = q[2] ? 1 : q[0] * light;
       for (var j = 0; j < 4; j++) {
         var o = 3 + j * 5;
-        pos.push(x + q[o], y + q[o + 1], z + q[o + 2]);
-        uv.push((tc + Math.min(1 - eps, Math.max(eps, q[o + 3]))) / cols, 1 - (tr + Math.min(1 - eps, Math.max(eps, q[o + 4]))) / rows);
-        col.push(s, s, s);
+        out.pos.push(x + q[o], y + q[o + 1], z + q[o + 2]);
+        out.uv.push(q[o + 3], 1 - q[o + 4]);
+        out.col.push(s, s, s);
       }
-      idx.push(base, base + 3, base + 2, base, base + 2, base + 1);
+      out.idx.push(base, base + 3, base + 2, base, base + 2, base + 1);
     }
-
-    function shown(x, y, z) { return cut ? z <= 0 : y >= 0; }
+    var main = { pos: pos, uv: uv, col: col, idx: idx };
 
     map.forEach(function (code, k) {
       var x = (k % 128) - 64, z = (Math.floor(k / 128) % 128) - 64, y = Math.floor(k / 16384) - 128;
-      if (!shown(x, y, z)) return;
-      var def = D.defs[code], light = code === D.litCode ? 1.5 : y < 0 ? 0.86 : 1;
+      if (!cut && y < -1) return;                      // below ground only shows in section
+      var def = D.defs[code], light = y < 0 ? 0.88 : 1;
       for (var i = 0; i < def.q.length; i++) {
-        var q = def.q[i], f = q[2];
+        var q = def.q[i], f = q[1];
         if (f >= 0) {
-          var nx = x + NB[f][0], ny = y + NB[f][1], nz = z + NB[f][2];
-          var n = map.get(key(nx, ny, nz));
-          if (n !== undefined && D.defs[n].o && shown(nx, ny, nz)) continue;
+          var n = map.get(key(x + NB[f][0], y + NB[f][1], z + NB[f][2]));
+          if (n !== undefined && D.defs[n].o) continue;
         }
-        pushQuad(q, x, y, z, light);
+        pushQuad(main, q, x, y, z, light);
+      }
+      // close off ordinary blocks where the section plane slices them
+      if (cut && z === 0 && def.o) {
+        var nq = def.q[0], c = [0.8, -1, 0];
+        [[1, 1], [0, 1], [0, 0], [1, 0]].forEach(function (p, j) { c.push(p[0], p[1], 0.5, nq[3 + j * 5 + 3], nq[3 + j * 5 + 4]); });
+        pushQuad(cap, c, x, y, z, light);
       }
     });
 
     // a figure for scale, beside the console
-    var fig = [D.figureTile, 1, -1], fx = 2.2, fz = -D.consoleDistance + 0.2;
-    [[0.6, 1.85, 0.35]].forEach(function (d) {
-      var x0 = fx, x1 = fx + d[0], y0 = 1, y1 = 1 + d[1], z0 = fz, z1 = fz + d[2];
-      [[x0, y1, z1, x1, y1, z1, x1, y0, z1, x0, y0, z1, 0.9], [x1, y1, z0, x0, y1, z0, x0, y0, z0, x1, y0, z0, 0.7],
-       [x1, y1, z1, x1, y1, z0, x1, y0, z0, x1, y0, z1, 0.8], [x0, y1, z0, x0, y1, z1, x0, y0, z1, x0, y0, z0, 0.6],
-       [x0, y1, z0, x1, y1, z0, x1, y1, z1, x0, y1, z1, 1]].forEach(function (f) {
-        var q = [fig[0], f[12], -1];
-        for (var j = 0; j < 4; j++) q.push(f[j * 3], f[j * 3 + 1], f[j * 3 + 2], j === 1 || j === 2 ? 0.9 : 0.1, j > 1 ? 0.9 : 0.1);
-        pushQuad(q, 0, 0, 0, 1);
-      });
+    var F = D.figure, fx = 2.2, fz = -D.consoleDistance + 0.2;
+    var x0 = fx, x1 = fx + 0.6, y0 = 1, y1 = 2.85, z0 = fz, z1 = fz + 0.35;
+    [[x0, y1, z1, x1, y1, z1, x1, y0, z1, x0, y0, z1, 0.9], [x1, y1, z0, x0, y1, z0, x0, y0, z0, x1, y0, z0, 0.7],
+     [x1, y1, z1, x1, y1, z0, x1, y0, z0, x1, y0, z1, 0.8], [x0, y1, z0, x0, y1, z1, x0, y0, z1, x0, y0, z0, 0.6],
+     [x0, y1, z0, x1, y1, z0, x1, y1, z1, x0, y1, z1, 1]].forEach(function (f) {
+      var q = [f[12], -1, 0];
+      for (var j = 0; j < 4; j++) q.push(f[j * 3], f[j * 3 + 1], f[j * 3 + 2], j === 1 || j === 2 ? F[2] : F[0], j > 1 ? F[3] : F[1]);
+      pushQuad(cap, q, 0, 0, 0, 1);
     });
 
     var g = new THREE.Group();
-    g.add(mesh(pos, uv, col, idx, blockMat));
+    g.add(mesh(pos, uv, col, idx, cut ? cutMat : blockMat));
+    g.add(mesh(cap.pos, cap.uv, cap.col, cap.idx, blockMat));
     g.add(ground(w, cut));
     return g;
   }
@@ -312,12 +322,18 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
       for (var j = 0; j < 4; j++) col.push(rgb[0], rgb[1], rgb[2]);
       idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
     }
-    var snow = [0.74, 0.80, 0.84];
-    var zFront = cut ? 1 : R;
-    quad([-R, top, -R], [R, top, -R], [R, top, zFront], [-R, top, zFront], snow);
+    function slab(xa, xb, za, zb, rgb) {
+      if (xb > xa && zb > za) quad([xa, top, za], [xb, top, za], [xb, top, zb], [xa, top, zb], rgb);
+    }
+    // snow all round, with the shaft mouth left open so the deck grating reads as a grating
+    var snow = [0.74, 0.80, 0.84], zFront = cut ? 0.5 : R, m0 = -3, m1 = 4;
+    slab(-R, m0, -R, m0, snow); slab(m0, m1, -R, m0, snow); slab(m1, R, -R, m0, snow);
+    slab(-R, m0, m0, Math.min(m1, zFront), snow);
+    slab(m1, R, m0, Math.min(m1, zFront), snow);
+    if (zFront > m1) { slab(-R, m0, m1, zFront, snow); slab(m0, m1, m1, zFront, snow); slab(m1, R, m1, zFront, snow); }
 
     if (cut) {
-      var bottom = -D.depth - 14, near = 12, zf = 1;
+      var bottom = -D.depth - 14, near = 12, zf = 0.5;
       function strata(y) {
         if (y >= -1) return [0.62, 0.68, 0.72];
         var h = Math.sin(y * 12.9898) * 43758.5453; h = h - Math.floor(h);

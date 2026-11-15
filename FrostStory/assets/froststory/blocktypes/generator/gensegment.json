@@ -1,0 +1,170 @@
+{
+	"code": "gensegment",
+	"variantgroups": [
+		{
+			"code": "part",
+			"states": [
+				"shaftplain",
+				"shaftplatform",
+				"collar",
+				"riser",
+				"riserbase",
+				"valvestation",
+				"injectors",
+				"pump",
+				"corelower",
+				"corelowerlit",
+				"coreupper",
+				"coreupperlit",
+				"manifold",
+				"exhaust",
+				"framebase",
+				"framemid",
+				"frametop",
+				"frametopb",
+				"hulla",
+				"hullalit",
+				"hullb",
+				"hullblit",
+				"hullc",
+				"shoulder",
+				"stack"
+			]
+		},
+		{
+			"code": "turn",
+			"states": [
+				"r0",
+				"r1",
+				"r2",
+				"r3"
+			]
+		}
+	],
+	"attributes": {
+		"handbook": {
+			"exclude": true
+		}
+	},
+	"drawtype": "json",
+	"shapeByType": {
+		"*-r0": {
+			"base": "block/generator/segment/{part}",
+			"rotateY": 0
+		},
+		"*-r1": {
+			"base": "block/generator/segment/{part}",
+			"rotateY": 270
+		},
+		"*-r2": {
+			"base": "block/generator/segment/{part}",
+			"rotateY": 180
+		},
+		"*-r3": {
+			"base": "block/generator/segment/{part}",
+			"rotateY": 90
+		}
+	},
+	"textures": {
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"black": {
+			"base": "block/generator/segment/black"
+		},
+		"brass": {
+			"base": "block/generator/segment/brass"
+		},
+		"checker": {
+			"base": "block/generator/segment/checker"
+		},
+		"coil": {
+			"base": "block/generator/segment/coil-cold"
+		},
+		"coillit": {
+			"base": "block/generator/segment/coil-lit"
+		},
+		"darkplate": {
+			"base": "block/generator/segment/darkplate"
+		},
+		"girder": {
+			"base": "block/generator/segment/girder"
+		},
+		"grating": {
+			"base": "block/generator/segment/grating"
+		},
+		"green": {
+			"base": "block/generator/segment/green"
+		},
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		},
+		"plating": {
+			"base": "block/generator/segment/plating"
+		},
+		"red": {
+			"base": "block/generator/paint-red"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"tubbing": {
+			"base": "block/generator/segment/tubbing"
+		}
+	},
+	"blockmaterial": "Metal",
+	"collisionbox": null,
+	"selectionbox": null,
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"renderPass": "OpaqueNoCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 60,
+	"requiredMiningTier": 5,
+	"drops": [],
+	"lightHsvByType": {
+		"*-corelowerlit-*": [
+			5,
+			6,
+			26
+		],
+		"*-coreupperlit-*": [
+			5,
+			6,
+			26
+		]
+	},
+	"behaviorsByType": {
+		"*-corelowerlit-*": [
+			{
+				"name": "HeatSource",
+				"properties": {
+					"heatStrength": 14
+				}
+			}
+		],
+		"*-coreupperlit-*": [
+			{
+				"name": "HeatSource",
+				"properties": {
+					"heatStrength": 14
+				}
+			}
+		]
+	},
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

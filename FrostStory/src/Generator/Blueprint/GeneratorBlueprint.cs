@@ -23,15 +23,22 @@ public sealed class StageBlueprint
     }
 }
 
+/// <summary>A cell whose block changes when the generator is fired or banked.</summary>
+public readonly record struct LitSwap(int X, int Y, int Z, string Cold, string Lit);
+
 /// <summary>
-/// The procedural design of the generator. This file has no game dependencies on purpose,
-/// so the same code drives the mod and the offline preview exporter in tools/.
+/// The design of the generator. This file has no game dependencies on purpose, so the same code drives
+/// the mod and the offline preview exporter in tools/.
 ///
-/// Layout, looking down (north is -Z):
-///   - hull and shaft lining: an octagon 9 blocks across (HullRadius 4)
-///   - support frames: paired columns 11 blocks apart, on the four axes
-///   - injection pumps: 3x3 towers on the four diagonals
-///   - foundation pad: 17 blocks across (PadRadius 8)
+/// What you see is a set of large modelled segments (shapes made by tools/gen_segments.py), each anchored
+/// to one cell. What you bump into is a matching set of invisible filler cells. The foundation pad and
+/// the rock lining of the shaft are ordinary blocks. Dimensions here and in gen_segments.py go together.
+///
+/// Looking down (north is -Z):
+///   - hull: an octagon 9 blocks across the flats, shaft liner 7 across
+///   - support frames: paired columns just outside the hull, on the four axes
+///   - injection pumps: towers on the four diagonals
+///   - foundation pad: 17 blocks across
 /// </summary>
 public static class GeneratorBlueprint
 {
@@ -39,27 +46,31 @@ public static class GeneratorBlueprint
     public const int MaxDepth = 80;
     public const int MinDepth = 24;
 
+    /// <summary>The shaft is built in lifts of this height; its depth is always a whole number of them.</summary>
+    public const int ShaftModule = 8;
+
     public const int HullRadius = 4;
-    public const int FrameRadius = 5;
     public const int PadRadius = 8;
     public const int ClearRadiusUpper = 6;
 
     /// <summary>Where the control console stands relative to the centre, before rotation: on the pad rim.</summary>
     public const int ConsoleDistance = 8;
 
-    public const int CoreBottom = 3;
-    public const int CoreTop = 14;
-
     public static readonly string[] StageIds =
     {
         "shaft", "valves", "pumps", "core", "frame-a", "frame-b", "hull"
     };
 
-    // Service ladder runs down the north side of the shaft, one cell in from the lining.
+    // Service ladder runs up the north side, one cell in from the wall.
     private const int LadderX = 1;
     private const int LadderZ = -3;
+    private const int Gallery = 21;
 
-    public static int ClampDepth(int depth) => Math.Clamp(depth, MinDepth, MaxDepth);
+    public static int ClampDepth(int depth)
+    {
+        depth = Math.Clamp(depth, MinDepth, MaxDepth);
+        return depth - depth % ShaftModule;
+    }
 
     public static IReadOnlyList<StageBlueprint> Build(int depth)
     {
@@ -76,11 +87,14 @@ public static class GeneratorBlueprint
         };
     }
 
-    /// <summary>Offsets of the core heart column, which swaps from cold to lit when the generator is fired.</summary>
-    public static IEnumerable<(int X, int Y, int Z)> CoreHeartCells()
+    /// <summary>The segments that have a lit model: the core itself and the two hull lifts around it.</summary>
+    public static IReadOnlyList<LitSwap> LitSwaps { get; } = new[]
     {
-        for (int y = CoreBottom; y <= CoreTop; y++) yield return (0, y, 0);
-    }
+        new LitSwap(0, 2, 0, Blocks.Segment("corelower"), Blocks.Segment("corelowerlit")),
+        new LitSwap(0, 10, 0, Blocks.Segment("coreupper"), Blocks.Segment("coreupperlit")),
+        new LitSwap(1, 2, 0, Blocks.Segment("hulla"), Blocks.Segment("hullalit")),
+        new LitSwap(1, 12, 0, Blocks.Segment("hullb"), Blocks.Segment("hullblit"))
+    };
 
     /// <summary>Top of the exhaust stack, where steam leaves a running generator.</summary>
     public static (int X, int Y, int Z) StackTop => (0, Height, 0);
@@ -102,15 +116,27 @@ public static class GeneratorBlueprint
 
     public static bool InInterior(int x, int z, int r) => InDisc(x, z, r) && !InShell(x, z, r);
 
-    /// <summary>Walkway cells of a shaft platform: everything inside the lining except the 3x3 well around the riser.</summary>
-    private static bool IsWalkway(int x, int z)
+    /// <summary>Shaft cells that lie behind the diagonal faces of the modelled liner.</summary>
+    private static bool BehindLiner(int x, int z) => InInterior(x, z, HullRadius) && Math.Abs(x) + Math.Abs(z) >= 5;
+
+    /// <summary>Walkway cells of a platform: everything inside the wall except the 3x3 well and the ladder way.</summary>
+    private static bool IsWalkway(int x, int z, bool inShaft)
     {
-        return InInterior(x, z, HullRadius) && Math.Max(Math.Abs(x), Math.Abs(z)) >= 2 && !(x == LadderX && z == LadderZ);
+        return InInterior(x, z, HullRadius)
+            && !(inShaft && BehindLiner(x, z))
+            && Math.Max(Math.Abs(x), Math.Abs(z)) >= 2
+            && !(x == LadderX && z == LadderZ);
     }
 
+    private static int Modules(int depth) => depth / ShaftModule;
+
+    /// <summary>Cell an 8 m shaft lift is anchored at; the three families of lift use three columns.</summary>
+    private static int ModuleAnchorY(int module) => -ShaftModule * module - 4;
+
+    /// <summary>Platforms cap every other lift.</summary>
     public static IEnumerable<int> PlatformLevels(int depth)
     {
-        for (int y = -8; y >= -depth + 6; y -= 16) yield return y;
+        for (int m = 1; m < Modules(depth); m += 2) yield return -ShaftModule * m;
     }
 
     /// <summary>Valve stations hang three blocks above every other platform, clear of a walker's head.</summary>
@@ -129,20 +155,12 @@ public static class GeneratorBlueprint
         return (x, z);
     }
 
-    /// <summary>Rotates the axis suffix of an oriented block code (…-we / …-ns) with the layout.</summary>
-    private static string? RotCode(string? code, int quarterTurns)
-    {
-        if (code == null || (quarterTurns & 1) == 0) return code;
-        if (code.EndsWith("-we", StringComparison.Ordinal)) return code[..^3] + "-ns";
-        if (code.EndsWith("-ns", StringComparison.Ordinal)) return code[..^3] + "-we";
-        return code;
-    }
-
     // ---------------------------------------------------------------- stage 1
 
     private static StageBlueprint BuildShaft(int depth)
     {
         var b = new StageBuilder("shaft");
+        var platforms = new HashSet<int>(PlatformLevels(depth));
 
         // Clear the site from the top down so nothing is left hanging over the works.
         for (int y = Height; y >= 1; y--)
@@ -156,28 +174,33 @@ public static class GeneratorBlueprint
         // Shaft, top down. Within a layer the lining goes in before the rock comes out.
         for (int y = 0; y > -depth; y--)
         {
-            bool collar = y >= -3;
-            bool platform = false;
-            foreach (int p in PlatformLevels(depth)) platform |= p == y;
-
-            if (collar)
+            if (y >= -3)
             {
                 for (int x = -PadRadius; x <= PadRadius; x++)
                     for (int z = -PadRadius; z <= PadRadius; z++)
                         if (InDisc(x, z, PadRadius) && !InDisc(x, z, HullRadius)) b.Set(x, y, z, Blocks.Foundation);
             }
 
-            string lining = y == 0 || y % 8 == 0 ? Blocks.LiningRibbed : Blocks.LiningPlain;
-            ForDisc(HullRadius, (x, z) => { if (InShell(x, z, HullRadius)) b.Set(x, y, z, lining); });
+            // the top course is part of the pad; below it the rock is lined
+            string ring = y == 0 ? Blocks.Foundation : Blocks.Lining;
+            ForDisc(HullRadius, (x, z) => { if (InShell(x, z, HullRadius)) b.Set(x, y, z, ring); });
 
             ForDisc(HullRadius, (x, z) =>
             {
                 if (!InInterior(x, z, HullRadius)) return;
-                if (x == LadderX && z == LadderZ) b.Set(x, y, z, Blocks.Ladder);
-                else if (y == 0) b.Set(x, y, z, Blocks.Grating);
-                else if (platform && IsWalkway(x, z)) b.Set(x, y, z, Blocks.Grating);
+                if (x == LadderX && z == LadderZ) b.Set(x, y, z, Blocks.FillLadder);
+                else if (BehindLiner(x, z)) b.Set(x, y, z, Blocks.FillSolid);
+                else if (y == 0) b.Set(x, y, z, Blocks.FillDeck);
+                else if (platforms.Contains(y) && IsWalkway(x, z, true)) b.Set(x, y, z, Blocks.FillDeck);
                 else b.Set(x, y, z, null);
             });
+
+            // The modelled liner follows the dig down, one lift at a time.
+            if (y == -1) b.Set(-1, y, 0, Blocks.Segment("collar"));
+            for (int m = 0; m < Modules(depth); m++)
+            {
+                if (y == ModuleAnchorY(m)) b.Set(-1, y, 0, Blocks.Segment(m % 2 == 1 ? "shaftplatform" : "shaftplain"));
+            }
         }
 
         // Floor plug.
@@ -192,31 +215,28 @@ public static class GeneratorBlueprint
     {
         var b = new StageBuilder("valves");
         var stations = new HashSet<int>(ValveLevels(depth));
+        int modules = Modules(depth);
 
-        // Wellhead and main riser, bottom up.
-        b.Set(0, -depth + 1, 0, Blocks.ValveBody);
-        for (int y = -depth + 2; y <= 0; y++)
+        // Main riser, bottom up, with a valve station wherever one is due.
+        for (int y = -depth + 1; y <= -1; y++)
         {
-            if (!stations.Contains(y))
+            b.Set(0, y, 0, Blocks.FillSolid);
+
+            for (int m = 0; m < modules; m++)
             {
-                b.Set(0, y, 0, y == 0 ? Blocks.Junction : Blocks.PipeUD);
-                continue;
+                if (y == ModuleAnchorY(m)) b.Set(0, y, 0, Blocks.Segment(m == modules - 1 ? "riserbase" : "riser"));
             }
 
-            b.Set(0, y, 0, Blocks.Junction);
+            if (!stations.Contains(y)) continue;
+
+            b.Set(0, y, 0, Blocks.Segment("valvestation"));
             for (int k = 0; k < 4; k++)
             {
-                void Arm(int dist, int dy, string code)
+                for (int dist = 1; dist <= 3; dist++)
                 {
                     var (x, z) = Rot(dist, 0, k);
-                    b.Set(x, y + dy, z, RotCode(code, k));
+                    b.Set(x, y, z, Blocks.FillSolid);
                 }
-
-                Arm(1, 0, Blocks.PipeWE);
-                Arm(2, 0, Blocks.ValveBody);
-                Arm(3, 0, Blocks.PipeWE);
-                Arm(4, 0, Blocks.HullVent);   // relief port set into the lining
-                Arm(2, 1, Blocks.ValveWheel);
             }
         }
 
@@ -229,24 +249,24 @@ public static class GeneratorBlueprint
     {
         var b = new StageBuilder("pumps");
 
-        for (int k = 0; k < 4; k++)
+        // Injection lines down the shaft wall, one lift at a time from the bottom.
+        for (int y = -depth + 1; y <= -1; y++)
         {
-            void Put(int x, int y, int z, string code)
+            for (int k = 0; k < 4; k++)
             {
-                var (rx, rz) = Rot(x, z, k);
-                b.Set(rx, y, rz, RotCode(code, k));
+                var (x, z) = Rot(3, -1, k);
+                b.Set(x, y, z, Blocks.FillSolid);
             }
 
-            // Injection line: down through the pad, in through the lining, then down the shaft wall.
-            Put(2, -depth + 1, 3, Blocks.Junction);
-            for (int y = -depth + 2; y <= -2; y++) Put(2, y, 3, Blocks.PipeUD);
-            Put(2, -1, 3, Blocks.Junction);
-            Put(2, -1, 4, Blocks.Junction);
-            Put(3, -1, 4, Blocks.PipeWE);
-            Put(4, -1, 4, Blocks.Junction);
-            Put(4, 0, 4, Blocks.PipeUD);
+            for (int m = 0; m < Modules(depth); m++)
+            {
+                if (y == ModuleAnchorY(m)) b.Set(1, y, 0, Blocks.Segment("injectors"));
+            }
+        }
 
-            // Pump tower, 3x3 centred on the diagonal.
+        // Pump towers on the diagonals.
+        for (int k = 0; k < 4; k++)
+        {
             const int c = 5;
             for (int y = 1; y <= 10; y++)
             {
@@ -254,15 +274,15 @@ public static class GeneratorBlueprint
                 {
                     for (int dz = -1; dz <= 1; dz++)
                     {
-                        bool centre = dx == 0 && dz == 0;
-                        bool corner = dx != 0 && dz != 0;
-                        if (y <= 2 || y == 8) Put(c + dx, y, c + dz, Blocks.PumpCasing);
-                        else if (y <= 7 && centre) Put(c + dx, y, c + dz, Blocks.PumpCylinder);
-                        else if (y <= 7 && corner) Put(c + dx, y, c + dz, Blocks.GirderUD);
-                        else if (y >= 9 && centre) Put(c + dx, y, c + dz, Blocks.PipeUD);
+                        if (y > 8 && (dx != 0 || dz != 0)) continue;
+                        var (x, z) = Rot(c + dx, c + dz, k);
+                        b.Set(x, y, z, Blocks.FillSolid);
                     }
                 }
             }
+
+            var (ax, az) = Rot(c, c, k);
+            b.Set(ax, 1, az, Blocks.Segment("pump", k));
         }
 
         return b.Build();
@@ -273,62 +293,20 @@ public static class GeneratorBlueprint
     private static StageBlueprint BuildCore()
     {
         var b = new StageBuilder("core");
-        const int vesselR = 2;
-        const int capTop = CoreTop + 2;
-        const int header = capTop + 3;
 
-        for (int y = 1; y <= capTop; y++)
+        for (int y = 1; y <= 34; y++)
         {
-            bool solid = y < CoreBottom || y > CoreTop;
-            ForDisc(vesselR, (x, z) =>
-            {
-                if (solid) { b.Set(x, y, z, Blocks.CoreCasing); return; }
-                if (x == 0 && z == 0) { b.Set(x, y, z, Blocks.CoreHeartCold); return; }
-                if (!InShell(x, z, vesselR)) return;
+            if (y <= 16) ForDisc(2, (x, z) => b.Set(x, y, z, Blocks.FillSolid));
+            else b.Set(0, y, 0, Blocks.FillSolid);
 
-                bool onAxis = x == 0 || z == 0;
-                bool window = onAxis && y > CoreBottom && y < CoreTop;
-                b.Set(x, y, z, window ? Blocks.CoreGrille : Blocks.CoreCasing);
-            });
-
-            // Standpipes sit in the four notches of the vessel.
-            for (int k = 0; k < 4; k++)
+            switch (y)
             {
-                var (x, z) = Rot(2, 2, k);
-                b.Set(x, y, z, Blocks.PipeUD);
+                case 2: b.Set(0, y, 0, Blocks.Segment("corelower")); break;
+                case 10: b.Set(0, y, 0, Blocks.Segment("coreupper")); break;
+                case 18: b.Set(0, y, 0, Blocks.Segment("manifold")); break;
+                case 24: b.Set(0, y, 0, Blocks.Segment("exhaust")); break;
             }
         }
-
-        // Exhaust and standpipes up to the distribution header.
-        for (int y = capTop + 1; y < header; y++)
-        {
-            b.Set(0, y, 0, Blocks.PipeUD);
-            for (int k = 0; k < 4; k++)
-            {
-                var (x, z) = Rot(2, 2, k);
-                b.Set(x, y, z, Blocks.PipeUD);
-            }
-        }
-
-        // Distribution header: a square ring over the vessel with four spokes to the exhaust.
-        b.Set(0, header, 0, Blocks.Junction);
-        for (int k = 0; k < 4; k++)
-        {
-            void Put(int x, int z, string code)
-            {
-                var (rx, rz) = Rot(x, z, k);
-                b.Set(rx, header, rz, RotCode(code, k));
-            }
-
-            Put(1, 0, Blocks.PipeWE);
-            Put(2, 0, Blocks.Junction);
-            Put(2, 1, Blocks.PipeNS);
-            Put(2, 2, Blocks.Junction);
-            Put(1, 2, Blocks.PipeWE);
-        }
-
-        // Exhaust line up to where the stack will start.
-        for (int y = header + 1; y <= 34; y++) b.Set(0, y, 0, Blocks.PipeUD);
 
         return b.Build();
     }
@@ -339,37 +317,45 @@ public static class GeneratorBlueprint
     {
         var b = new StageBuilder(id);
         const int top = 36;
-
-        void Put(int x, int y, int z, string code)
-        {
-            var (rx, rz) = Rot(x, z, quarterTurn);
-            b.Set(rx, y, rz, RotCode(code, quarterTurn));
-        }
+        bool lapped = quarterTurn % 2 == 1;   // the second frame's head beams sit on the first's
 
         for (int y = 1; y <= top; y++)
         {
-            foreach (int sx in new[] { 1, -1 })
+            foreach (int half in new[] { 0, 2 })
             {
-                foreach (int sz in new[] { 1, -1 })
-                {
-                    int x = sx * FrameRadius, z = sz * 2;
+                int turn = quarterTurn + half;
 
-                    // Main column, with a stepped buttress outboard of it.
-                    Put(x, y, z, y == top ? Blocks.GirderNode : Blocks.GirderUD);
-                    if (y <= 10) Put(x + sx, y, z, y == 10 ? Blocks.GirderNode : Blocks.GirderUD);
-                    if (y <= 5) Put(x + 2 * sx, y, z, y == 5 ? Blocks.GirderNode : Blocks.GirderUD);
+                void Fill(int x, int z)
+                {
+                    var (rx, rz) = Rot(x, z, turn);
+                    b.Set(rx, y, rz, Blocks.FillSolid);
                 }
 
-                // Cross ties between the paired columns.
-                if (y % 4 == 0 && y < top)
-                    for (int z = -1; z <= 1; z++) Put(sx * FrameRadius, y, z, Blocks.GirderNS);
+                foreach (int sz in new[] { 2, -2 })
+                {
+                    Fill(5, sz);                                   // column
+                    if (y <= 2) Fill(8, sz);                       // raking buttress, stepping in as it rises
+                    if (y >= 3 && y <= 7) Fill(7, sz);
+                    if (y >= 7 && y <= 11) Fill(6, sz);
+                    if (y == top) for (int x = 0; x <= 4; x++) Fill(x, sz);   // head beam
+                }
+
+                if (y % 4 == 0 && y <= 32) for (int z = -1; z <= 1; z++) Fill(5, z);   // tie between the columns
+
+                string? part = y switch
+                {
+                    2 => "framebase",
+                    14 => "framemid",
+                    26 => lapped ? "frametopb" : "frametop",
+                    _ => null
+                };
+                if (part != null)
+                {
+                    var (ax, az) = Rot(5, 0, turn);
+                    b.Set(ax, y, az, Blocks.Segment(part, turn));
+                }
             }
         }
-
-        // Head beams spanning the tower.
-        foreach (int sz in new[] { 1, -1 })
-            for (int x = -FrameRadius + 1; x <= FrameRadius - 1; x++)
-                Put(x, top, sz * 2, Math.Abs(x) == 2 ? Blocks.GirderNode : Blocks.GirderWE);
 
         return b.Build();
     }
@@ -379,52 +365,49 @@ public static class GeneratorBlueprint
     private static StageBlueprint BuildHull()
     {
         var b = new StageBuilder("hull");
-        const int drumTop = 28;
-        const int shoulder = 29;
-        const int crownTop = 33;
-        const int roof = 34;
-        const int gallery = 21;
 
         for (int y = 1; y <= Height; y++)
         {
-            if (y <= drumTop)
+            if (y <= 29)
             {
-                bool band = y <= 2 || y % 8 == 0 || y == drumTop;
                 ForDisc(HullRadius, (x, z) =>
                 {
                     if (!InShell(x, z, HullRadius)) return;
-                    bool onAxis = x == 0 || z == 0;
-                    if (onAxis && y <= 2) return;                       // doorway between the frame columns
-                    if (onAxis && !band && y >= 5) b.Set(x, y, z, Blocks.HullGrille);
-                    else b.Set(x, y, z, band ? Blocks.HullRiveted : Blocks.HullPlain);
+                    if ((x == 0 || z == 0) && y <= 2) return;     // doorway
+                    b.Set(x, y, z, Blocks.FillSolid);
                 });
 
-                if (y <= gallery) b.Set(LadderX, y, LadderZ, Blocks.Ladder);
-                if (y == gallery)
-                    ForDisc(HullRadius, (x, z) => { if (IsWalkway(x, z)) b.Set(x, y, z, Blocks.Grating); });
+                if (y <= Gallery) b.Set(LadderX, y, LadderZ, Blocks.FillLadder);
+                if (y == Gallery)
+                    ForDisc(HullRadius, (x, z) => { if (IsWalkway(x, z, false)) b.Set(x, y, z, Blocks.FillDeck); });
             }
-            else if (y == shoulder)
+            else if (y == 30)
             {
-                ForDisc(HullRadius, (x, z) => { if (!InInterior(x, z, 3)) b.Set(x, y, z, Blocks.HullRiveted); });
+                ForDisc(HullRadius, (x, z) => { if (!InDisc(x, z, 1)) b.Set(x, y, z, Blocks.FillSolid); });   // shoulder
             }
-            else if (y <= crownTop)
+            else if (y <= 33)
             {
-                ForDisc(3, (x, z) =>
-                {
-                    if (InShell(x, z, 3)) b.Set(x, y, z, y == crownTop ? Blocks.HullRiveted : Blocks.HullPlain);
-                });
+                ForDisc(2, (x, z) => { if (InShell(x, z, 2)) b.Set(x, y, z, Blocks.FillSolid); });            // crown
             }
-            else if (y == roof)
+            else if (y == 34)
             {
-                ForDisc(3, (x, z) => { if (x != 0 || z != 0) b.Set(x, y, z, Blocks.HullRiveted); });
+                ForDisc(2, (x, z) => { if (x != 0 || z != 0) b.Set(x, y, z, Blocks.FillSolid); });
             }
             else
             {
-                ForDisc(1, (x, z) =>
-                {
-                    if (x != 0 || z != 0) b.Set(x, y, z, y == Height ? Blocks.HullRiveted : Blocks.HullPlain);
-                });
+                ForDisc(1, (x, z) => { if (x != 0 || z != 0) b.Set(x, y, z, Blocks.FillSolid); });            // stack
             }
+
+            string? part = y switch
+            {
+                2 => "hulla",
+                12 => "hullb",
+                22 => "hullc",
+                30 => "shoulder",
+                36 => "stack",
+                _ => null
+            };
+            if (part != null) b.Set(1, y, 0, Blocks.Segment(part));
         }
 
         return b.Build();
@@ -469,35 +452,15 @@ public static class Blocks
     private const string D = "froststory:";
 
     public const string Foundation = D + "foundation";
-    public const string LiningPlain = D + "shaftlining-plain";
-    public const string LiningRibbed = D + "shaftlining-ribbed";
-    public const string Grating = D + "grating";
-    public const string Ladder = D + "serviceladder-north";
+    public const string Lining = D + "shaftlining-plain";
 
-    public const string PipeUD = D + "steampipe-ud";
-    public const string PipeNS = D + "steampipe-ns";
-    public const string PipeWE = D + "steampipe-we";
-    public const string Junction = D + "pipejunction";
-    public const string ValveBody = D + "valvebody";
-    public const string ValveWheel = D + "valvewheel";
-
-    public const string PumpCasing = D + "pumpcasing";
-    public const string PumpCylinder = D + "pumpcylinder";
-
-    public const string CoreCasing = D + "corecasing";
-    public const string CoreGrille = D + "coregrille";
-    public const string CoreHeartCold = D + "coreheart-cold";
-    public const string CoreHeartLit = D + "coreheart-lit";
-
-    public const string GirderUD = D + "girder-ud";
-    public const string GirderNS = D + "girder-ns";
-    public const string GirderWE = D + "girder-we";
-    public const string GirderNode = D + "girdernode";
-
-    public const string HullPlain = D + "hullplate-plain";
-    public const string HullRiveted = D + "hullplate-riveted";
-    public const string HullVent = D + "hullplate-vent";
-    public const string HullGrille = D + "hullgrille";
+    /// <summary>Invisible cells that give the modelled segments something to stand on and bump into.</summary>
+    public const string FillSolid = D + "genfill-solid";
+    public const string FillDeck = D + "genfill-deck";
+    public const string FillLadder = D + "genfill-ladder";
 
     public const string Console = D + "generatorconsole";
+
+    /// <summary>A modelled segment, turned by quarter turns about the generator's axis (east to south is one).</summary>
+    public static string Segment(string part, int turn = 0) => $"{D}gensegment-{part}-r{turn & 3}";
 }

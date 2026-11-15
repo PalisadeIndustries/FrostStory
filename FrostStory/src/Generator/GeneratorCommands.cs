@@ -29,6 +29,12 @@ public static class GeneratorCommands
                 .HandleWith(args => Check(api, args))
             .EndSubCommand()
 
+            .BeginSubCommand("demolish")
+                .WithDescription("Remove a generator centred on a position, leaving the open shaft. Its blocks cannot be broken by hand.")
+                .WithArgs(parsers.OptionalWorldPosition("centre"))
+                .HandleWith(args => Demolish(api, args))
+            .EndSubCommand()
+
             .BeginSubCommand("console")
                 .WithDescription("Put a control console at a position. Side is the way its front faces; the generator rises behind it.")
                 .WithArgs(parsers.OptionalWorldPosition("position"), parsers.OptionalWordRange("side", "north", "east", "south", "west"))
@@ -104,6 +110,17 @@ public static class GeneratorCommands
         return complete
             ? TextCommandResult.Success($"Built {count} stage(s) at {where}, shaft depth {DepthAt(centre)}.")
             : TextCommandResult.Error($"Built what was loaded at {where}, but part of the site is in unloaded chunks. Stand closer and run it again.");
+    }
+
+    private static TextCommandResult Demolish(ICoreServerAPI api, TextCommandCallingArgs args)
+    {
+        var centre = CentreFrom(api, args);
+        var stages = GeneratorBlueprint.Build(DepthAt(centre));
+        bool complete = new GeneratorBuilder(api.World).Demolish(centre, stages);
+
+        return complete
+            ? TextCommandResult.Success($"Generator at {centre.X} {centre.Y} {centre.Z} removed.")
+            : TextCommandResult.Error("Removed what was loaded, but part of the site is in unloaded chunks. Stand closer and run it again.");
     }
 
     private static TextCommandResult Check(ICoreServerAPI api, TextCommandCallingArgs args)

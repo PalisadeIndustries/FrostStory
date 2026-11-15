@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Generates FrostStory's placeholder textures and block shapes.
+"""Generates FrostStory's placeholder textures and the shapes of its small building blocks.
+
+The generator's large modelled segments are made by tools/gen_segments.py, from the textures made here.
 
 Everything here is procedural so the look can be tuned in one place and regenerated:
 
@@ -24,38 +26,40 @@ S = 32
 # --------------------------------------------------------------------------- texture toolkit
 
 class Tex:
-    def __init__(self, name, color, grain=7, blotch=10, alpha=255):
+    def __init__(self, name, color, grain=7, blotch=10, alpha=255, size=(S, S)):
         self.name = name
+        self.w, self.h = size
         self.rng = random.Random(name)
-        self.px = [[(0, 0, 0, alpha)] * S for _ in range(S)]
+        self.px = [[(0, 0, 0, alpha)] * self.w for _ in range(self.h)]
         field = self._field(4)
-        for y in range(S):
-            for x in range(S):
+        for y in range(self.h):
+            for x in range(self.w):
                 d = (field[y][x] - 0.5) * 2 * blotch + self.rng.uniform(-grain, grain)
                 self.px[y][x] = tuple(clamp(c + d) for c in color) + (alpha,)
 
-    def _field(self, cells):
+    def _field(self, per32):
         """Tileable low-frequency noise, 0..1."""
-        g = [[self.rng.random() for _ in range(cells)] for _ in range(cells)]
-        out = [[0.0] * S for _ in range(S)]
-        for y in range(S):
-            for x in range(S):
-                fx, fy = x * cells / S, y * cells / S
+        cx, cy = max(2, per32 * self.w // S), max(2, per32 * self.h // S)
+        g = [[self.rng.random() for _ in range(cx)] for _ in range(cy)]
+        out = [[0.0] * self.w for _ in range(self.h)]
+        for y in range(self.h):
+            for x in range(self.w):
+                fx, fy = x * cx / self.w, y * cy / self.h
                 x0, y0 = int(fx), int(fy)
                 tx, ty = smooth(fx - x0), smooth(fy - y0)
-                x1, y1 = (x0 + 1) % cells, (y0 + 1) % cells
+                x1, y1 = (x0 + 1) % cx, (y0 + 1) % cy
                 top = g[y0][x0] * (1 - tx) + g[y0][x1] * tx
                 bot = g[y1][x0] * (1 - tx) + g[y1][x1] * tx
                 out[y][x] = top * (1 - ty) + bot * ty
         return out
 
     def shade(self, x, y, d):
-        if 0 <= x < S and 0 <= y < S:
+        if 0 <= x < self.w and 0 <= y < self.h:
             r, g, b, a = self.px[y][x]
             self.px[y][x] = (clamp(r + d), clamp(g + d), clamp(b + d), a)
 
     def tint(self, x, y, color, amount):
-        if 0 <= x < S and 0 <= y < S:
+        if 0 <= x < self.w and 0 <= y < self.h:
             r, g, b, a = self.px[y][x]
             self.px[y][x] = tuple(clamp(o * (1 - amount) + c * amount) for o, c in zip((r, g, b), color)) + (a,)
 
@@ -72,7 +76,7 @@ class Tex:
     def clear(self, x0, y0, x1, y1):
         for y in range(y0, y1):
             for x in range(x0, x1):
-                if 0 <= x < S and 0 <= y < S:
+                if 0 <= x < self.w and 0 <= y < self.h:
                     self.px[y][x] = (0, 0, 0, 0)
 
     def panel(self, x0, y0, x1, y1, light=16, dark=-22):
@@ -94,49 +98,49 @@ class Tex:
         self.shade(x + 1, y + 1, -34)
 
     def rivet_row(self, y, step=6, offset=2):
-        for x in range(offset, S, step):
+        for x in range(offset, self.w, step):
             self.rivet(x, y)
 
     def rivet_col(self, x, step=6, offset=2):
-        for y in range(offset, S, step):
+        for y in range(offset, self.h, step):
             self.rivet(x, y)
 
     def round_shade(self, strength=38, axis="x"):
         """Cylinder shading across one axis: dark edges, highlight off-centre."""
-        for y in range(S):
-            for x in range(S):
-                t = ((x if axis == "x" else y) + 0.5) / S
+        for y in range(self.h):
+            for x in range(self.w):
+                t = ((x + 0.5) / self.w) if axis == "x" else ((y + 0.5) / self.h)
                 d = math.cos((t - 0.38) * math.pi * 1.25) * strength - strength * 0.55
                 self.shade(x, y, int(d))
 
     def streaks(self, amount=6, vertical=True):
-        for i in range(S):
+        for i in range(self.w if vertical else self.h):
             d = self.rng.uniform(-amount, amount)
-            for j in range(S):
+            for j in range(self.h if vertical else self.w):
                 self.shade(i if vertical else j, j if vertical else i, int(d))
 
     def rust(self, count=10, color=(120, 66, 40)):
         for _ in range(count):
-            x, y = self.rng.randrange(S), self.rng.randrange(S)
+            x, y = self.rng.randrange(self.w), self.rng.randrange(self.h)
             for _ in range(self.rng.randrange(2, 6)):
                 self.tint(x, y, color, self.rng.uniform(0.15, 0.4))
                 x, y = x + self.rng.choice((-1, 0, 1)), y + self.rng.choice((0, 1))
 
     def disc(self, cx, cy, r, color, amount=1.0):
-        for y in range(S):
-            for x in range(S):
+        for y in range(self.h):
+            for x in range(self.w):
                 if (x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2 <= r * r:
                     self.tint(x, y, color, amount)
 
     def ring(self, cx, cy, r0, r1, d):
-        for y in range(S):
-            for x in range(S):
+        for y in range(self.h):
+            for x in range(self.w):
                 dist = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
                 if r0 <= dist <= r1:
                     self.shade(x, y, d)
 
     def save(self):
-        img = Image.new("RGBA", (S, S))
+        img = Image.new("RGBA", (self.w, self.h))
         img.putdata([p for row in self.px for p in row])
         img.save(os.path.join(TEX_DIR, self.name + ".png"))
 
@@ -261,17 +265,6 @@ def tex_junction():
     return t
 
 
-def tex_valve_body():
-    t = Tex("valvebody", PAINT_RED, grain=6, blotch=10)
-    t.panel(0, 0, S, S, 16, -26)
-    t.fill(0, 0, S, 4, DARK_STEEL, 0.9)
-    t.fill(0, 28, S, S, DARK_STEEL, 0.9)
-    t.rivet_row(1, 6, 2)
-    t.rivet_row(29, 6, 2)
-    t.ring(16, 16, 6, 8, 20)
-    t.ring(16, 16, 0, 6, -14)
-    t.rust(8, (60, 30, 24))
-    return t
 
 
 def tex_paint_red():
@@ -280,55 +273,12 @@ def tex_paint_red():
     return t
 
 
-def tex_pump_casing():
-    t = Tex("pumpcasing", PAINT_GREEN, grain=6, blotch=9)
-    t.panel(0, 0, S, S, 14, -24)
-    t.panel(6, 6, 26, 26, -18, 14)
-    t.panel(7, 7, 25, 25, 12, -16)
-    for x, y in ((2, 2), (28, 2), (2, 28), (28, 28), (15, 2), (15, 28), (2, 15), (28, 15)):
-        t.rivet(x, y)
-    t.rust(7)
-    return t
 
 
-def tex_pump_cylinder():
-    t = Tex("pumpcylinder", BRASS, grain=5, blotch=8)
-    t.round_shade(42)
-    for y in (4, 15, 26):
-        t.rect_shade(0, y, S, y + 1, 26)
-        t.rect_shade(0, y + 1, S, y + 2, -30)
-    return t
 
 
-def tex_core_casing():
-    t = Tex("corecasing", CORE, grain=5, blotch=9)
-    t.panel(0, 0, 16, S)
-    t.panel(16, 0, S, S)
-    t.rivet_col(2, 6, 2)
-    t.rivet_col(13, 6, 2)
-    t.rivet_col(18, 6, 2)
-    t.rivet_col(29, 6, 2)
-    # heat bluing towards the seams
-    for y in range(S):
-        for x in (15, 16):
-            t.tint(x, y, (96, 60, 110), 0.35)
-    return t
 
 
-def tex_core_heart(name, lit):
-    base = (255, 150, 48) if lit else (62, 48, 42)
-    t = Tex(name, base, grain=10 if lit else 5, blotch=26 if lit else 8)
-    for y in range(1, S, 4):
-        if lit:
-            t.fill(0, y, S, y + 1, (255, 244, 190), 0.85)
-            t.fill(0, y + 1, S, y + 2, (255, 208, 96), 0.6)
-            t.fill(0, y + 3, S, y + 4, (214, 84, 22), 0.5)
-        else:
-            t.rect_shade(0, y, S, y + 1, 22)
-            t.rect_shade(0, y + 2, S, y + 3, -18)
-    if not lit:
-        t.round_shade(26)
-    return t
 
 
 def tex_grating():
@@ -411,11 +361,188 @@ def tex_console_top():
     return t
 
 
+# --------------------------------------------------------------------------- segment textures
+# Larger sheets for the modelled generator segments, 32 px per block.
+
+def tex_seg_plating():
+    """Hull plating, 4 x 5 blocks: lapped courses with staggered butt joints and riveted seams."""
+    t = Tex("segment/plating", (86, 94, 104), grain=6, blotch=12, size=(128, 160))
+    t.streaks(5)
+    for course, y0 in enumerate(range(0, 160, 40)):
+        t.rect_shade(0, y0, 128, y0 + 1, 22)
+        t.rect_shade(0, y0 + 1, 128, y0 + 3, -26)
+        t.rivet_row(y0 + 5, 8, 3)
+        t.rivet_row(y0 + 35, 8, 3)
+        joint = (30, 94, 62, 14)[course % 4]
+        t.rect_shade(joint, y0 + 3, joint + 1, y0 + 40, -30)
+        t.rect_shade(joint + 1, y0 + 3, joint + 2, y0 + 40, 16)
+        for y in range(y0 + 10, y0 + 34, 8):
+            t.rivet(joint - 4, y)
+            t.rivet(joint + 5, y)
+    # weathering: streaks running down from the seams
+    for _ in range(26):
+        x, y = t.rng.randrange(128), t.rng.choice((3, 43, 83, 123)) + t.rng.randrange(4)
+        for i in range(t.rng.randrange(6, 26)):
+            t.tint(x, y + i, (58, 50, 46), 0.28 * (1 - i / 26))
+    t.rust(30)
+    return t
+
+
+def tex_seg_darkplate():
+    """Core vessel plating, 2 x 2 blocks: heat-blued steel."""
+    t = Tex("segment/darkplate", (52, 51, 60), grain=5, blotch=10, size=(64, 64))
+    for x0 in (0, 32):
+        t.panel(x0, 0, x0 + 32, 64, 12, -20)
+        t.rivet_col(x0 + 3, 8, 4)
+        t.rivet_col(x0 + 27, 8, 4)
+    for y in range(64):
+        for x in (31, 32):
+            t.tint(x, y, (104, 64, 120), 0.4)
+        t.tint(30, y, (104, 64, 120), 0.15)
+        t.tint(33, y, (104, 64, 120), 0.15)
+    return t
+
+
+def tex_seg_band():
+    """Flange band, 4 x 1 blocks: a heavy riveted ring."""
+    t = Tex("segment/band", (62, 66, 74), grain=5, blotch=8, size=(128, 32))
+    t.panel(0, 0, 128, 32, 20, -30)
+    t.rect_shade(0, 14, 128, 15, -22)
+    t.rect_shade(0, 15, 128, 16, 14)
+    t.rivet_row(6, 8, 3)
+    t.rivet_row(23, 8, 7)
+    t.rust(14)
+    return t
+
+
+def tex_seg_girder():
+    """Structural member, 1 x 4 blocks, long axis vertical: flange edges with rivet lines."""
+    t = Tex("segment/girder", (70, 69, 74), grain=6, blotch=9, size=(32, 128))
+    t.streaks(4)
+    t.rect_shade(0, 0, 3, 128, 14)
+    t.rect_shade(29, 0, 32, 128, -20)
+    t.rect_shade(9, 0, 23, 128, -8)
+    t.rivet_col(5, 8, 3)
+    t.rivet_col(25, 8, 3)
+    for y in (0, 64):
+        t.rect_shade(0, y, 32, y + 1, -26)
+        t.rect_shade(0, y + 1, 32, y + 2, 12)
+    t.rust(20)
+    return t
+
+
+def tex_seg_pipe():
+    """Pipe wall, 1 x 4 blocks, long axis vertical."""
+    t = Tex("segment/pipe", (84, 78, 74), grain=5, blotch=7, size=(32, 128))
+    t.streaks(4)
+    for y in (0, 64):
+        t.rect_shade(0, y, 32, y + 2, -22)
+        t.rect_shade(0, y + 2, 32, y + 3, 12)
+    t.rust(22)
+    return t
+
+
+def tex_seg_brass():
+    t = Tex("segment/brass", BRASS, grain=5, blotch=9, size=(32, 128))
+    t.streaks(6)
+    for y in range(6, 128, 20):
+        t.rect_shade(0, y, 32, y + 1, 26)
+        t.rect_shade(0, y + 1, 32, y + 2, -28)
+    return t
+
+
+def tex_seg_tubbing():
+    """Shaft liner, 3 x 2 blocks: cast tubbing segments bolted flange to flange."""
+    t = Tex("segment/tubbing", (78, 76, 74), grain=6, blotch=10, size=(96, 64))
+    for y0 in (0, 32):
+        for x0 in (0, 48):
+            ox = x0 + (24 if y0 else 0)
+            for dx in range(48):
+                x = (ox + dx) % 96
+                edge = dx < 3 or dx >= 45
+                for dy in range(32):
+                    rim = edge or dy < 3 or dy >= 29
+                    t.shade(x, y0 + dy, 12 if rim else -10)
+                t.shade(x, y0, 14)
+                t.shade(x, y0 + 31, -30)
+            t.shade(ox % 96, y0 + 16, -30)
+            for dy in (8, 22):
+                t.rivet((ox + 1) % 96, y0 + dy)
+                t.rivet((ox + 44) % 96, y0 + dy)
+            for dx in (10, 23, 36):
+                t.rivet((ox + dx) % 96, y0 + 1)
+    t.rust(40, (96, 60, 40))
+    return t
+
+
+def tex_seg_grating():
+    t = Tex("segment/grating", DARK_STEEL, size=(64, 64))
+    for y in range(64):
+        for x in range(64):
+            if x % 8 in (2, 3, 4, 5, 6) and y % 8 in (2, 3, 4, 5, 6):
+                t.px[y][x] = (0, 0, 0, 0)
+            elif x % 8 == 1 or y % 8 == 1:
+                t.shade(x, y, 18)
+            elif x % 8 == 7 or y % 8 == 7:
+                t.shade(x, y, -18)
+    return t
+
+
+def tex_seg_checker():
+    t = Tex("segment/checker", (64, 67, 72), grain=5, blotch=8)
+    for y in range(2, 32, 6):
+        for x in range(2, 32, 6):
+            flip = ((x + y) // 6) % 2
+            for i in range(3):
+                t.shade(x + i, y + (i if flip else 2 - i), 26)
+    t.panel(0, 0, 32, 32, 8, -14)
+    return t
+
+
+def tex_seg_coil(name, lit):
+    base = (255, 146, 44) if lit else (60, 47, 42)
+    t = Tex("segment/" + name, base, grain=10 if lit else 5, blotch=24 if lit else 8, size=(32, 64))
+    for y in range(1, 64, 4):
+        if lit:
+            t.fill(0, y, 32, y + 1, (255, 246, 196), 0.85)
+            t.fill(0, y + 1, 32, y + 2, (255, 208, 96), 0.6)
+            t.fill(0, y + 3, 32, y + 4, (206, 78, 20), 0.5)
+        else:
+            t.rect_shade(0, y, 32, y + 1, 22)
+            t.rect_shade(0, y + 2, 32, y + 3, -18)
+    return t
+
+
+def tex_seg_green():
+    """Pump casing, 2 x 2 blocks."""
+    t = Tex("segment/green", PAINT_GREEN, grain=6, blotch=10, size=(64, 64))
+    t.panel(0, 0, 64, 64, 14, -24)
+    t.panel(10, 10, 54, 54, -18, 14)
+    t.panel(11, 11, 53, 53, 12, -16)
+    for i in range(3, 64, 10):
+        t.rivet(i, 3)
+        t.rivet(i, 59)
+        t.rivet(3, i)
+        t.rivet(59, i)
+    t.rust(18)
+    return t
+
+
+def tex_seg_black():
+    return Tex("segment/black", (16, 17, 20), grain=2, blotch=3)
+
+
+SEGMENT_TEXTURES = [
+    tex_seg_plating, tex_seg_darkplate, tex_seg_band, tex_seg_girder, tex_seg_pipe, tex_seg_brass, tex_seg_tubbing,
+    tex_seg_grating, tex_seg_checker, lambda: tex_seg_coil("coil-cold", False), lambda: tex_seg_coil("coil-lit", True),
+    tex_seg_green, tex_seg_black,
+]
+
+
 TEXTURES = [
     tex_steel, tex_hull_plain, tex_hull_riveted, tex_hull_vent, tex_foundation,
     lambda: tex_lining("shaftlining-plain", False), lambda: tex_lining("shaftlining-ribbed", True), tex_lining_top,
-    tex_pipe, tex_pipe_end, tex_junction, tex_valve_body, tex_paint_red, tex_pump_casing, tex_pump_cylinder,
-    tex_core_casing, lambda: tex_core_heart("coreheart-cold", False), lambda: tex_core_heart("coreheart-lit", True),
+    tex_pipe, tex_pipe_end, tex_junction, tex_paint_red,
     tex_grating, tex_girder, tex_girder_node, tex_console_front, tex_console_side, tex_console_top,
 ]
 
@@ -492,17 +619,6 @@ def shape_girder():
     shape("girder", {"girder": "girder"}, els)
 
 
-def shape_valvewheel():
-    shape("valvewheel", {"steel": "steel", "paint": "paint-red"}, [
-        box("Stem", (7, 0, 7), (9, 9.5, 9), "steel"),
-        box("Hub", (6, 9, 6), (10, 11.5, 10), "paint"),
-        box("RimN", (1, 9.5, 1), (15, 11, 2.5), "paint"),
-        box("RimS", (1, 9.5, 13.5), (15, 11, 15), "paint"),
-        box("RimW", (1, 9.5, 2.5), (2.5, 11, 13.5), "paint"),
-        box("RimE", (13.5, 9.5, 2.5), (15, 11, 13.5), "paint"),
-        box("SpokeX", (2.5, 9.75, 7.25), (13.5, 10.75, 8.75), "paint"),
-        box("SpokeZ", (7.25, 9.75, 2.5), (8.75, 10.75, 13.5), "paint"),
-    ])
 
 
 def shape_grating():
@@ -511,21 +627,6 @@ def shape_grating():
     ])
 
 
-def shape_grille():
-    els = [
-        box("SillLow", (0, 0, 0), (16, 2, 16), "steel"),
-        box("SillHigh", (0, 14, 0), (16, 16, 16), "steel"),
-    ]
-    for i, (x, z) in enumerate(((0, 0), (14, 0), (0, 14), (14, 14))):
-        els.append(box(f"Post{i}", (x, 2, z), (x + 2, 14, z + 2), "steel"))
-    for i, a in enumerate((3.75, 7.25, 10.75)):
-        els += [
-            box(f"BarN{i}", (a, 2, 0.25), (a + 1.5, 14, 1.75), "steel"),
-            box(f"BarS{i}", (a, 2, 14.25), (a + 1.5, 14, 15.75), "steel"),
-            box(f"BarW{i}", (0.25, 2, a), (1.75, 14, a + 1.5), "steel"),
-            box(f"BarE{i}", (14.25, 2, a), (15.75, 14, a + 1.5), "steel"),
-        ]
-    shape("grille", {"steel": "steel"}, els)
 
 
 def shape_ladder():
@@ -549,17 +650,17 @@ def shape_console():
     ])
 
 
-SHAPES = [shape_pipe, shape_girder, shape_valvewheel, shape_grating, shape_grille, shape_ladder, shape_console]
+SHAPES = [shape_pipe, shape_girder, shape_grating, shape_ladder, shape_console]
 
 
 def main():
-    os.makedirs(TEX_DIR, exist_ok=True)
+    os.makedirs(os.path.join(TEX_DIR, "segment"), exist_ok=True)
     os.makedirs(SHAPE_DIR, exist_ok=True)
-    for make in TEXTURES:
+    for make in TEXTURES + SEGMENT_TEXTURES:
         make().save()
     for make in SHAPES:
         make()
-    print(f"Wrote {len(TEXTURES)} textures and {len(SHAPES)} shapes.")
+    print(f"Wrote {len(TEXTURES) + len(SEGMENT_TEXTURES)} textures and {len(SHAPES)} shapes.")
 
 
 if __name__ == "__main__":

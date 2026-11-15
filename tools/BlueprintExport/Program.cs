@@ -32,7 +32,7 @@ var stages = GeneratorBlueprint.Build(depth)
     })
     .ToArray();
 
-IndexOf(Blocks.CoreHeartLit);
+var swaps = GeneratorBlueprint.LitSwaps.SelectMany(s => new[] { s.X, s.Y, s.Z, IndexOf(s.Cold), IndexOf(s.Lit) }).ToArray();
 IndexOf(Blocks.Console + "-north");
 
 var doc = new
@@ -40,7 +40,7 @@ var doc = new
     depth = GeneratorBlueprint.ClampDepth(depth),
     height = GeneratorBlueprint.Height,
     consoleDistance = GeneratorBlueprint.ConsoleDistance,
-    heart = GeneratorBlueprint.CoreHeartCells().SelectMany(c => new[] { c.X, c.Y, c.Z }).ToArray(),
+    swaps,
     codes,
     stages
 };

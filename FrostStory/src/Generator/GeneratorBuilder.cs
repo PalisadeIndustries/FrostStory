@@ -76,15 +76,39 @@ public sealed class GeneratorBuilder
         return complete;
     }
 
-    /// <summary>Swaps the core heart between its cold and lit blocks.</summary>
+    /// <summary>Swaps the segments that have one between their cold and lit models.</summary>
     public void SetCoreLit(BlockPos center, bool lit)
     {
         var scratch = center.Copy();
-        string code = lit ? Blocks.CoreHeartLit : Blocks.CoreHeartCold;
-        foreach (var (x, y, z) in GeneratorBlueprint.CoreHeartCells())
+        foreach (var swap in GeneratorBlueprint.LitSwaps)
         {
-            Place(center, new Placement(x, y, z, code), null, scratch);
+            // only where the segment has actually been built
+            scratch.Set(center.X + swap.X, center.Y + swap.Y, center.Z + swap.Z);
+            int found = world.BlockAccessor.GetBlock(scratch, BlockLayersAccess.Solid).Id;
+            if (found != IdOf(swap.Cold) && found != IdOf(swap.Lit)) continue;
+
+            Place(center, new Placement(swap.X, swap.Y, swap.Z, lit ? swap.Lit : swap.Cold), null, scratch);
         }
+    }
+
+    /// <summary>
+    /// Removes everything the given stages built, leaving the open shaft. The generator's own blocks cannot
+    /// be broken by hand, so this is the way to take one down.
+    /// </summary>
+    public bool Demolish(BlockPos center, IReadOnlyList<StageBlueprint> stages, BlockPos? keep = null)
+    {
+        var scratch = center.Copy();
+        bool complete = true;
+        foreach (var stage in stages)
+        {
+            foreach (var p in stage.Placements)
+            {
+                if (p.Code == null) continue;
+                if (Place(center, p with { Code = null }, keep, scratch) == PlaceResult.NotLoaded) complete = false;
+            }
+        }
+
+        return complete;
     }
 
     /// <summary>
@@ -100,7 +124,12 @@ public sealed class GeneratorBuilder
 
         if (lit && stageCount > 3)
         {
-            foreach (var cell in GeneratorBlueprint.CoreHeartCells()) expected[cell] = Blocks.CoreHeartLit;
+            foreach (var swap in GeneratorBlueprint.LitSwaps)
+            {
+                // a later stage may have put its own segment in this cell
+                if (expected.TryGetValue((swap.X, swap.Y, swap.Z), out var code) && code == swap.Cold)
+                    expected[(swap.X, swap.Y, swap.Z)] = swap.Lit;
+            }
         }
 
         var ba = world.BlockAccessor;
