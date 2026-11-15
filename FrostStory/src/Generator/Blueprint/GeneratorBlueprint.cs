@@ -92,14 +92,43 @@ public static class GeneratorBlueprint
         };
     }
 
-    /// <summary>The segments that have a lit model: the core itself and the two hull lifts around it.</summary>
-    public static IReadOnlyList<LitSwap> LitSwaps { get; } = new[]
+    /// <summary>
+    /// What changes when the generator is fired: the core and the two hull lifts around it take their lit
+    /// models, and the steam ports go live.
+    /// </summary>
+    public static IReadOnlyList<LitSwap> LitSwaps { get; } = BuildLitSwaps();
+
+    private static LitSwap[] BuildLitSwaps()
     {
-        new LitSwap(0, 2, 0, Blocks.Segment("corelower"), Blocks.Segment("corelowerlit")),
-        new LitSwap(0, 10, 0, Blocks.Segment("coreupper"), Blocks.Segment("coreupperlit")),
-        new LitSwap(1, 2, 0, Blocks.Segment("hulla"), Blocks.Segment("hullalit")),
-        new LitSwap(1, 12, 0, Blocks.Segment("hullb"), Blocks.Segment("hullblit"))
-    };
+        var swaps = new List<LitSwap>
+        {
+            new(0, 2, 0, Blocks.Segment("corelower"), Blocks.Segment("corelowerlit")),
+            new(0, 10, 0, Blocks.Segment("coreupper"), Blocks.Segment("coreupperlit")),
+            new(1, 2, 0, Blocks.Segment("hulla"), Blocks.Segment("hullalit")),
+            new(1, 12, 0, Blocks.Segment("hullb"), Blocks.Segment("hullblit"))
+        };
+
+        foreach (var (x, z, side) in SteamPorts())
+            swaps.Add(new LitSwap(x, 1, z, Blocks.Port(side, false), Blocks.Port(side, true)));
+
+        return swaps.ToArray();
+    }
+
+    /// <summary>
+    /// Eight steam ports stand on the pad rim, two to a side, each facing outward. Run steam pipes from them.
+    /// </summary>
+    public static IEnumerable<(int X, int Z, string Side)> SteamPorts()
+    {
+        string[] sides = { "east", "south", "west", "north" };
+        for (int k = 0; k < 4; k++)
+        {
+            foreach (int offset in new[] { 3, -3 })
+            {
+                var (x, z) = Rot(7, offset, k);
+                yield return (x, z, sides[k]);
+            }
+        }
+    }
 
     /// <summary>Top of the exhaust stack, where steam leaves a running generator.</summary>
     public static (int X, int Y, int Z) StackTop => (0, Height, 0);
@@ -322,6 +351,12 @@ public static class GeneratorBlueprint
                 case 18: b.Set(0, y, 0, Blocks.Segment("manifold")); break;
                 case 24: b.Set(0, y, 0, Blocks.Segment("exhaust")); break;
             }
+
+            // The working lines come up through the pad as soon as the core has a foot.
+            if (y == 2)
+            {
+                foreach (var (x, z, side) in SteamPorts()) b.Set(x, 1, z, Blocks.Port(side, false));
+            }
         }
 
         return b.Build();
@@ -484,6 +519,9 @@ public static class Blocks
     public const string FillLadder = D + "genfill-ladder";
 
     public const string Console = D + "generatorconsole";
+
+    /// <summary>A steam port on the pad; side is the way its outlet faces.</summary>
+    public static string Port(string side, bool live) => $"{D}steamport-{side}-{(live ? "live" : "cold")}";
 
     /// <summary>A modelled segment, turned by quarter turns about the generator's axis (east to south is one).</summary>
     public static string Segment(string part, int turn = 0) => $"{D}gensegment-{part}-r{turn & 3}";

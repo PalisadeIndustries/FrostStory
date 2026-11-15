@@ -74,6 +74,12 @@ public static class GeneratorCommands
                 }))
             .EndSubCommand()
 
+            .BeginSubCommand("steam")
+                .WithDescription("Say whether the pipe, fitting or port at a position (or the one you look at) is carrying steam.")
+                .WithArgs(parsers.OptionalWorldPosition("position"))
+                .HandleWith(args => Steam(api, mod, args))
+            .EndSubCommand()
+
             .BeginSubCommand("status")
                 .WithDescription("Report the state of a console (looked at, or at a position).")
                 .WithArgs(parsers.OptionalWorldPosition("console"))
@@ -134,6 +140,19 @@ public static class GeneratorCommands
         int mismatches = builder.CountMismatches(centre, stages, count, lit, null, out int cells);
 
         return TextCommandResult.Success($"Checked {cells} cells against {count} stage(s) at {centre.X} {centre.Y} {centre.Z}: {mismatches} differ.");
+    }
+
+    private static TextCommandResult Steam(ICoreServerAPI api, FrostStoryModSystem mod, TextCommandCallingArgs args)
+    {
+        BlockPos? pos = !args.Parsers[0].IsMissing && args[0] is Vec3d given
+            ? given.AsBlockPos
+            : args.Caller.Player?.CurrentBlockSelection?.Position;
+
+        if (pos == null || api.World.BlockAccessor.GetBlock(pos) is not FrostStory.Steam.BlockSteamConduit conduit)
+            return TextCommandResult.Error("Look at a steam pipe, fitting or port, or give its position.");
+
+        bool live = conduit.IsLiveSource || mod.SteamFor(api.World).IsLive(pos);
+        return TextCommandResult.Success(live ? "Carrying steam." : "Cold: no live steam port on this run.");
     }
 
     private static TextCommandResult PlaceConsole(ICoreServerAPI api, TextCommandCallingArgs args)

@@ -1,0 +1,20 @@
+[
+	{
+		"ingredientPattern": "P,P",
+		"ingredients": {
+			"P": { "type": "item", "code": "game:metalplate-iron" }
+		},
+		"width": 1,
+		"height": 2,
+		"output": { "type": "block", "code": "froststory:steampipe-ud", "quantity": 4 }
+	},
+	{
+		"ingredientPattern": "PP,PP",
+		"ingredients": {
+			"P": { "type": "item", "code": "game:metalplate-iron" }
+		},
+		"width": 2,
+		"height": 2,
+		"output": { "type": "block", "code": "froststory:pipejunction", "quantity": 4 }
+	}
+]

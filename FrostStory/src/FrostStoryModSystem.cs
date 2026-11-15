@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FrostStory.Generator;
+using FrostStory.Steam;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
@@ -17,10 +18,21 @@ public class FrostStoryModSystem : ModSystem
     public GeneratorStagesConfig Stages { get; private set; } = new();
 
     private readonly Dictionary<string, ItemStack[]> stackCache = new();
+    private SteamNetwork? serverSteam;
+    private SteamNetwork? clientSteam;
+
+    /// <summary>The steam network on the side this world belongs to.</summary>
+    public SteamNetwork SteamFor(IWorldAccessor world)
+    {
+        return world.Side == EnumAppSide.Server
+            ? serverSteam ??= new SteamNetwork(world)
+            : clientSteam ??= new SteamNetwork(world);
+    }
 
     public override void Start(ICoreAPI api)
     {
         api.RegisterBlockClass("FrostStoryGeneratorConsole", typeof(BlockGeneratorConsole));
+        api.RegisterBlockClass("FrostStorySteamConduit", typeof(BlockSteamConduit));
         api.RegisterBlockEntityClass("FrostStoryGeneratorConsole", typeof(BlockEntityGeneratorConsole));
     }
 
@@ -113,4 +125,7 @@ public class FrostStoryConfig
 
     /// <summary>Scales construction speed; 2 builds twice as fast.</summary>
     public float BuildSpeedMultiplier = 1f;
+
+    /// <summary>Warmth given off by each pipe, fitting or port carrying steam. A firepit is 10.</summary>
+    public float PipeHeatStrength = 2f;
 }

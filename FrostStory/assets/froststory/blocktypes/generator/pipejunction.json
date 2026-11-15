@@ -1,5 +1,6 @@
 {
 	"code": "pipejunction",
+	"class": "FrostStorySteamConduit",
 	"drawtype": "cube",
 	"blockmaterial": "Metal",
 	"creativeinventory": {

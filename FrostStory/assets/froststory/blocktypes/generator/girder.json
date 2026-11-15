@@ -1,5 +1,13 @@
 {
 	"code": "girder",
+	"behaviors": [
+		{
+			"name": "Pillar",
+			"properties": {
+				"rotationVariantCode": "axis"
+			}
+		}
+	],
 	"variantgroups": [
 		{
 			"code": "axis",

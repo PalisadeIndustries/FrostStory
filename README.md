@@ -57,6 +57,24 @@ Stage 1 removes whatever stands on the site, chests included. Breaking the conso
 project; what is built stays. The generator itself cannot be selected or broken by hand: use
 `/frostgen demolish` to take one down.
 
+### Steam pipes
+
+Eight steam ports stand on the rim of the foundation pad, two to a side, each facing outward. They
+arrive with the Steam Core stage and go live when the generator is fired.
+
+- Run **steam pipes** from a port. A pipe lies along the face you place it against and joins end to
+  end with the next one.
+- Use a **pipe fitting** for corners, tees and crossings: it joins on all six sides.
+- Any pipe, fitting or port that is joined to a live port warms players near it (within about three
+  blocks outdoors, or anywhere in the same room). Each one counts for a fifth of a firepit by default,
+  and they add up, so a run of pipe along a wall heats a room.
+- Look at a pipe to see whether it is carrying steam.
+
+Recipes: two iron plates make four pipes; four iron plates make four fittings.
+
+A pipe is traced back to its port on demand, so the route has to be in loaded chunks. A run that
+leaves the loaded world keeps the state it last had until the server restarts.
+
 ### Admin commands (`controlserver` privilege)
 
 | Command | Does |
@@ -69,12 +87,14 @@ project; what is built stays. The generator itself cannot be selected or broken 
 | `/frostgen advance [pos]` | Finishes the console's current stage immediately |
 | `/frostgen fire [pos] [on]` | Fires or banks a finished generator |
 | `/frostgen status [pos]` | Reports a console's state |
+| `/frostgen steam [pos]` | Says whether a pipe, fitting or port is carrying steam |
 
 Console commands take the console's position, or the one you are looking at.
 
 ### Configuration
 
-- `ModConfig/froststory.json` (server): `RequireMaterials`, `CostMultiplier`, `BuildSpeedMultiplier`.
+- `ModConfig/froststory.json` (server): `RequireMaterials`, `CostMultiplier`, `BuildSpeedMultiplier`,
+  `PipeHeatStrength`.
 - `assets/froststory/config/generatorstages.json`: materials and build time per stage. It is a
   normal asset, so other mods can patch it.
 
@@ -102,6 +122,7 @@ FrostStory/
   src/Generator/GeneratorBuilder.cs     writes blueprint cells into the world
   src/Generator/BlockEntityGeneratorConsole.cs   deliveries, timed construction, firing
   src/Generator/GeneratorCommands.cs    /frostgen
+  src/Steam/                            steam pipes, fittings and ports; tracing a pipe back to a live port
   assets/froststory/                    blocktypes, shapes, textures, lang, recipes, stage config
 tools/
   gen_segments.py                       the geometry of the modelled segments; writes their shapes
@@ -132,17 +153,19 @@ textures, stage by stage, with a section view of the shaft. (`pip install pillow
 ## Status
 
 Working and checked on a 1.22.7 dedicated server: assets load without errors, all seven stages
-build through the console, firing and banking swap the lit models, and the result matches the
-blueprint cell for cell. Every shape file loads cleanly through the game's own shape class.
+build through the console, firing and banking swap the lit models and the steam ports, and the
+result matches the blueprint cell for cell. Pipes laid from a port report steam when the generator
+is fired, and go cold downstream of a cut. Every shape file loads cleanly through the game's own
+shape class.
 
 Not yet checked in a game client: how the large segment models render and light in-engine, walking
-and climbing on the invisible collision cells, the footprint highlight, the console's hover text
-and the stack's steam particles. The preview page mirrors the engine's rotation and texture
+and climbing on the invisible collision cells, placing pipes by hand, how much a pipe run actually
+warms a player, the footprint highlight, the console's hover text and the stack's steam particles. The preview page mirrors the engine's rotation and texture
 mapping rules, but it is not the engine.
 
 Next up:
 
-- heat that reaches beyond the core (a warm zone around a running generator)
+- radiators and other things for the steam pipes to feed
 - fuel or upkeep for a running generator, and output levels
 - proper intermediate parts instead of raw vanilla materials
 - hand-painted textures to replace the procedural ones

@@ -291,7 +291,7 @@ class Model:
 
     # ------------------------------------------------------------------ output
 
-    def save(self):
+    def save(self, folder=None):
         data = {
             "editor": {"allAngles": True},
             "textureWidth": 16,
@@ -300,7 +300,7 @@ class Model:
             "textureSizes": {code: [TEXTURES[code][1], TEXTURES[code][2]] for code in sorted(self.used)},
             "elements": self.elements,
         }
-        with open(os.path.join(SHAPE_DIR, self.name + ".json"), "w") as f:
+        with open(os.path.join(folder or SHAPE_DIR, self.name + ".json"), "w") as f:
             json.dump(data, f, separators=(",", ":"))
             f.write("\n")
         return len(self.elements)
@@ -807,6 +807,22 @@ def ringmain():
     return m
 
 
+# ----------------------------------------------------------------------------- steam port
+
+def steamport():
+    """A steam offtake standing on the pad: a riser out of the foundation, a stop valve, and a flanged
+    outlet on its east side that a steam pipe butts up against. A one-block model, turned to face out."""
+    m = Model("steamport", (0, 1, 0))
+    m.vprism(0, 0, 0.0, 0.12, 0.46, "band", caps=(False, True), captex="band")
+    m.vprism(0, 0, 0.12, 0.5, 0.3, "pipe")
+    m.vprism(0, 0, 0.16, 0.84, 0.36, "red", caps=(True, True), captex="band")      # valve body
+    m.hprism((0.3, 0.5, 0), (0.44, 0.5, 0), 0.3, "pipe")
+    m.box((0.44, 0.5, 0), (0.12, 0.86, 0.86), "band")                              # outlet flange
+    m.vprism(0, 0, 0.84, 0.96, 0.05, "steel")
+    m.handwheel(0, 0.95, 0, a=0.3)
+    return m
+
+
 # =========================================================================== build
 
 def build_all():
@@ -869,6 +885,7 @@ def main():
         total += n
         print(f"  {m.name:16s} {n:4d} elements")
     write_blocktype(models)
+    steamport().save(os.path.join(SHAPE_DIR, ".."))
     print(f"Wrote {len(models)} segment shapes ({total} elements) and gensegment.json")
 
 
