@@ -48,6 +48,8 @@ TEXTURES = {
     "shiphull": ("block/generator/shiphull", 16, 16),
     "shipdeck": ("block/generator/shipdeck", 16, 16),
     "crate": ("block/generator/crate", 16, 16),
+    "shippanel": ("block/generator/shippanel", 16, 16),
+    "shipwhite": ("block/generator/shipwhite", 16, 16),
 }
 
 ALL = ("north", "east", "south", "west", "up", "down")
@@ -1589,6 +1591,76 @@ def bucketconveyor():
     return m
 
 
+PANEL_TYPES = ("wallplate", "wallwood", "window", "door", "floorplank", "floorplate", "ceiling")
+
+
+def panel(kind, open_door=False):
+    """A building panel. Walls are drawn against the north side of their cell, a quarter of a block
+    thick: an iron frame with the panel set in it. 'wallplate' is riveted plate, 'wallwood' painted
+    boarding, 'window' has a brass-framed light in it, 'door' a boarded door in its frame (swung in
+    when open). Floors lie along the bottom of the cell and the ceiling along the top."""
+    m = Model("panel-" + kind + ("-open" if open_door else ""), (0, 1, 0))
+    if kind.startswith("floor"):
+        m.box((0, 0.0625, 0), (1.0, 0.125, 1.0), "shipdeck" if kind == "floorplank" else "checker")
+        for z in (-0.44, 0.44):
+            m.box((0, 0.03, z), (1.0, 0.06, 0.1), "girder")
+        return m
+    if kind == "ceiling":
+        m.box((0, 0.9375, 0), (1.0, 0.125, 1.0), "shippanel")
+        for x in (-0.44, 0.44):
+            m.box((x, 0.9, 0), (0.1, 0.12, 1.0), "girder")
+        return m
+
+    zc = -0.375                                              # the middle of the wall's thickness
+    def frame(y0=0.0, y1=1.0):
+        for x in (-0.46, 0.46):
+            m.box((x, (y0 + y1) / 2, zc), (0.08, y1 - y0, 0.25), "band")
+        for y in (0.04, 0.96):
+            m.box((0, y, zc), (1.0, 0.08, 0.25), "band")
+
+    if kind == "wallplate":
+        frame()
+        m.box((0, 0.5, zc), (0.86, 0.86, 0.18), "darkplate")
+        m.box((0, 0.5, zc), (0.9, 0.08, 0.22), "band")       # a stiffener across the middle
+    elif kind == "wallwood":
+        frame()
+        m.box((0, 0.5, zc), (0.86, 0.86, 0.18), "shippanel")
+    elif kind == "window":
+        frame()
+        m.box((0, 0.17, zc), (0.86, 0.26, 0.18), "darkplate")
+        m.box((0, 0.86, zc), (0.86, 0.12, 0.18), "darkplate")
+        for x in (-0.36, 0.36):
+            m.box((x, 0.55, zc), (0.14, 0.5, 0.18), "darkplate")
+        for y in (0.32, 0.78):
+            m.box((0, y, zc), (0.62, 0.05, 0.2), "brass")
+        for x in (-0.28, 0.0, 0.28):
+            m.box((x, 0.55, zc), (0.05, 0.46, 0.2 if x else 0.08), "brass")
+    elif kind == "door":
+        frame()
+        m.box((0, 0.94, zc), (0.84, 0.05, 0.2), "band")
+        if open_door:
+            m.box((-0.38, 0.47, -0.02), (0.08, 0.86, 0.78), "pole")      # swung in on its hinges, flat to the jamb
+            m.box((-0.33, 0.47, 0.3), (0.05, 0.06, 0.06), "brass")
+        else:
+            m.box((0, 0.47, zc), (0.84, 0.86, 0.1), "pole")
+            for y in (0.2, 0.74):
+                m.box((0, y, zc), (0.84, 0.06, 0.14), "band")           # strap hinges
+            m.box((0.32, 0.47, zc), (0.06, 0.06, 0.2), "brass")
+    return m
+
+
+def roofslope():
+    """One block of pitched roof at forty-five degrees, low along the north edge: riveted sheet on two
+    rafters, with a rolled seam down the middle."""
+    m = Model("roofslope", (0, 1, 0))
+    length = math.sqrt(2)
+    m.box((0, 0.5, 0), (1.0, 0.1, length), "darkplate", (-45, 0, 0))
+    for x in (-0.4, 0.4):
+        m.box((x, 0.42, 0), (0.1, 0.14, length - 0.1), "girder", (-45, 0, 0))
+    m.box((0, 0.56, 0), (0.08, 0.06, length), "band", (-45, 0, 0))
+    return m
+
+
 def shipcrate():
     """A packing case from the freighter's hold."""
     m = Model("shipcrate", (0, 1, 0))
@@ -1731,6 +1803,7 @@ def main():
     parts += [radiator(b) for b in RADIATOR_SIDES]
     parts += [steamhub(), hubframe("leg"), hubframe("head"), floorgrate(), tentstove("cold"), tentstove("lit"), stoveflue(), stoveflue("cap"), stoveflue("elbow"), stoveflue("upturn"), pipe()]
     parts += [shipcrate(), boilersection()]
+    parts += [panel(k) for k in PANEL_TYPES] + [panel("door", True), roofslope()]
     parts += [crossover("run"), crossover("stair"), borer(), bucketconveyor()] + [coalheap(n) for n in range(1, 9)]
     parts += [steamvalve(), valvepointer(), steamgauge()] + [gaugepart(k) for k in ("needle", "plain", "green", "red")]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]

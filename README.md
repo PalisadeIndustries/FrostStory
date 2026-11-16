@@ -235,6 +235,26 @@ pipes) or a drop distributor (main over two rows of two pipes).
 A pipe is traced back to its port on demand, so the route has to be in loaded chunks. A run that
 leaves the loaded world keeps the state it last had until the server restarts.
 
+### Building panels
+
+A kit for putting up your own buildings in the same riveted style, with walls thin enough that a
+room is as big inside as its footprint.
+
+- A **wall panel** stands a quarter of a block thick on one edge of a cell. Aim at the floor near
+  the edge you want and it goes on that edge of the cell above; aim at the top or the end of a
+  panel already standing and the next one carries on in line. Plate, boarded, window and door.
+- A **floor panel** lies along the bottom of a cell and a **ceiling panel** along the top. Plank
+  and plate floors.
+- One cell can hold a panel on each of its six sides: a corner cell has two walls and a floor,
+  and nothing special is needed for corners. Aim at the inside of a standing panel near its end
+  to add the wall that turns the corner.
+- The **door** opens and shuts with a click. Open, you walk through it.
+- Breaking a panel takes back just the one you aimed at.
+- A side with a panel on it counts as a wall for the game's rooms, so a closed panel house
+  holds warmth; an open door lets it out.
+- **Pitched roof** is an ordinary block at forty-five degrees; its low edge faces you.
+- Iron plates or planks with iron nails and strips make the panels.
+
 ### The wreck
 
 A tramp steamer lies frozen in, 110 blocks long and 15 in the beam, bow to the east: the early
@@ -327,6 +347,7 @@ pipes reach it.
 | `/frostgen steam [pos]` | Says whether a pipe, fitting or port is carrying steam |
 | `/frostgen valve <pos> <0-8>` | Sets a stop valve |
 | `/frostgen ship [pos] [ice]` | Sets the wrecked freighter down frozen in, bow east; the position is on the ice amidships |
+| `/frostgen panel <pos> <side> <type>` | Puts a building panel on one side of a cell; `none` removes it, `toggle` works a door |
 | `/frostgen coal <pos> [add] [hours]` | Reports on a console, coal heap or borer; adds coal and lets hours pass for it |
 | `/frostgen stove <pos> [seconds]` | Reports on a tent stove; with a number, adds that much fuel and lights it |
 | `/frostgen stand [pos] [hub]` | Raises a steam main stand with its post starting there; `true` raises a steam hub tower |

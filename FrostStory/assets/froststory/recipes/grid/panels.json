@@ -1,0 +1,166 @@
+[
+	{
+		"ingredientPattern": "NPN",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"N": {
+				"type": "item",
+				"code": "game:metalnailsandstrips-iron"
+			}
+		},
+		"width": 3,
+		"height": 1,
+		"output": {
+			"type": "block",
+			"code": "froststory:panel-wallplate",
+			"quantity": 4
+		}
+	},
+	{
+		"ingredientPattern": "NWN",
+		"ingredients": {
+			"W": {
+				"type": "item",
+				"code": "game:plank-*",
+				"name": "wood"
+			},
+			"N": {
+				"type": "item",
+				"code": "game:metalnailsandstrips-iron"
+			}
+		},
+		"width": 3,
+		"height": 1,
+		"output": {
+			"type": "block",
+			"code": "froststory:panel-wallwood",
+			"quantity": 4
+		}
+	},
+	{
+		"ingredientPattern": "N_N,_P_",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"N": {
+				"type": "item",
+				"code": "game:metalnailsandstrips-iron"
+			}
+		},
+		"width": 3,
+		"height": 2,
+		"output": {
+			"type": "block",
+			"code": "froststory:panel-window",
+			"quantity": 2
+		}
+	},
+	{
+		"ingredientPattern": "NW,_W",
+		"ingredients": {
+			"W": {
+				"type": "item",
+				"code": "game:plank-*",
+				"name": "wood"
+			},
+			"N": {
+				"type": "item",
+				"code": "game:metalnailsandstrips-iron"
+			}
+		},
+		"width": 2,
+		"height": 2,
+		"output": {
+			"type": "block",
+			"code": "froststory:panel-door",
+			"quantity": 1
+		}
+	},
+	{
+		"ingredientPattern": "WW,_N",
+		"ingredients": {
+			"W": {
+				"type": "item",
+				"code": "game:plank-*",
+				"name": "wood"
+			},
+			"N": {
+				"type": "item",
+				"code": "game:metalnailsandstrips-iron"
+			}
+		},
+		"width": 2,
+		"height": 2,
+		"output": {
+			"type": "block",
+			"code": "froststory:panel-floorplank",
+			"quantity": 4
+		}
+	},
+	{
+		"ingredientPattern": "PP,_N",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"N": {
+				"type": "item",
+				"code": "game:metalnailsandstrips-iron"
+			}
+		},
+		"width": 2,
+		"height": 2,
+		"output": {
+			"type": "block",
+			"code": "froststory:panel-floorplate",
+			"quantity": 4
+		}
+	},
+	{
+		"ingredientPattern": "N_,WW",
+		"ingredients": {
+			"W": {
+				"type": "item",
+				"code": "game:plank-*",
+				"name": "wood"
+			},
+			"N": {
+				"type": "item",
+				"code": "game:metalnailsandstrips-iron"
+			}
+		},
+		"width": 2,
+		"height": 2,
+		"output": {
+			"type": "block",
+			"code": "froststory:panel-ceiling",
+			"quantity": 4
+		}
+	},
+	{
+		"ingredientPattern": "P_,NP",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"N": {
+				"type": "item",
+				"code": "game:metalnailsandstrips-iron"
+			}
+		},
+		"width": 2,
+		"height": 2,
+		"output": {
+			"type": "block",
+			"code": "froststory:roofslope-north",
+			"quantity": 4
+		}
+	}
+]

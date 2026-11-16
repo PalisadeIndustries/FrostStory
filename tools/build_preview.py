@@ -388,6 +388,53 @@ def ship_example(codes, atlas):
     return {"at": [0, 0, 0], "port": None, "cells": cells, "quads": quads}
 
 
+def panel_house(atlas, at):
+    """A little house of building panels, as BlockEntityPanels draws them: wall panels are modelled
+    against the north side of their cell and turned to their own."""
+    textures = {k: {"base": "block/generator/" + v} for k, v in {
+        "band": "segment/band", "darkplate": "segment/darkplate", "girder": "segment/girder", "brass": "segment/brass",
+        "checker": "segment/checker", "shipdeck": "shipdeck", "shippanel": "shippanel", "pole": "pole"}.items()}
+    shapes = {}
+
+    def piece(name):
+        if name not in shapes:
+            shapes[name] = resolve_block({"drawtype": "json", "shape": {"base": "block/generator/" + name}, "textures": textures}, name, {}, atlas)["q"]
+        return shapes[name]
+
+    quads = []
+
+    def put(cell, side, kind):
+        a = math.radians({"north": 0, "west": 90, "south": 180, "east": 270}.get(side, 0))
+        ca, sa = math.cos(a), math.sin(a)
+        for q in piece("panel-" + kind):
+            corners, uvs = [], []
+            for j in range(4):
+                o = 3 + j * 5
+                x, y, z = q[o] - 0.5, q[o + 1], q[o + 2] - 0.5
+                x, z = x * ca + z * sa, -x * sa + z * ca
+                corners.append(((x + 0.5 + cell[0]) * 16, (y + cell[1]) * 16, (z + 0.5 + cell[2]) * 16))
+                uvs.append((q[o + 3], q[o + 4]))
+            quads.append(quad(corners, uvs, -1))
+
+    ox, oy, oz = at
+    nx, nz, high = 5, 4, 3
+    for x in range(nx):
+        for z in range(nz):
+            put((ox + x, oy, oz + z), "down", "floorplank")
+            put((ox + x, oy + high - 1, oz + z), "up", "ceiling")
+            for y in range(high):
+                cell = (ox + x, oy + y, oz + z)
+                if z == 0:
+                    put(cell, "north", "window" if y == 1 and x in (1, 3) else "wallplate")
+                if z == nz - 1:
+                    put(cell, "south", ("door-open" if y < 2 else "wallplate") if x == 2 else "window" if y == 1 and x == 0 else "wallwood" if y < 2 else "wallplate")
+                if x == 0:
+                    put(cell, "west", "wallplate")
+                if x == nx - 1:
+                    put(cell, "east", "window" if y == 1 and z == 1 else "wallplate")
+    return quads
+
+
 def pipework_example(codes, atlas):
     """A sample of what a player can build off the generator, so every steam part can be seen in place.
 
@@ -480,6 +527,12 @@ def pipework_example(codes, atlas):
     rods = rods + [(20, 1, 14, "borer")] + coal_pile((22, 1, 14), 5000, taken) + [(*c, "bucketconveyor-we") for c in belt] + [(28, y, 14, "bucketconveyor-ud") for y in (1, 2, 3)]
     # a crossover over the heating pipes: steps up, a metre of catwalk above the pipe, steps down
     rods = rods + [(11, 1, 8, "catwalkstair-west"), (12, 2, 8, "catwalk-we"), (13, 1, 8, "catwalkstair-east")]
+    # a house of building panels with a pitched roof, beyond the borer
+    house = (24, 1, 20)
+    small_runs += panel_house(atlas, house)
+    rods = rods + [(house[0] + x, house[1] + 3, house[2] + z, "roofslope-north" if z == 0 else "roofslope-south")
+                   for x in range(5) for z in (0, 3)] + [(house[0] + x, house[1] + 4, house[2] + z, "roofslope-north" if z == 1 else "roofslope-south")
+                                                         for x in range(5) for z in (1, 2)]
     small_cells = cells((*e, "pipejunction"), (*f, "pipejunction"), *[(x, 1, z, heat_code(x, z)) for x, z in heat], *rods)
 
     canvas = [atlas.uv("block/generator/canvas", u, v) for u, v in ((0, 0), (1, 0), (1, 1), (0, 1))]

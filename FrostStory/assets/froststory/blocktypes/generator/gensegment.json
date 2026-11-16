@@ -130,6 +130,12 @@
 		"shiphull": {
 			"base": "block/generator/shiphull"
 		},
+		"shippanel": {
+			"base": "block/generator/shippanel"
+		},
+		"shipwhite": {
+			"base": "block/generator/shipwhite"
+		},
 		"steel": {
 			"base": "block/generator/steel"
 		},

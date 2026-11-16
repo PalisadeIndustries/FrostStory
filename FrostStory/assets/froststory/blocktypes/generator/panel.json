@@ -1,0 +1,77 @@
+{
+	"code": "panel",
+	"class": "FrostStoryPanel",
+	"variantgroups": [
+		{
+			"code": "type",
+			"states": [
+				"wallplate",
+				"wallwood",
+				"window",
+				"door",
+				"floorplank",
+				"floorplate",
+				"ceiling"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*"
+		],
+		"froststory": [
+			"*"
+		]
+	},
+	"drawtype": "json",
+	"shape": {
+		"base": "block/generator/panel-{type}"
+	},
+	"textures": {
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"darkplate": {
+			"base": "block/generator/segment/darkplate"
+		},
+		"girder": {
+			"base": "block/generator/segment/girder"
+		},
+		"brass": {
+			"base": "block/generator/segment/brass"
+		},
+		"checker": {
+			"base": "block/generator/segment/checker"
+		},
+		"shipdeck": {
+			"base": "block/generator/shipdeck"
+		},
+		"shippanel": {
+			"base": "block/generator/shippanel"
+		},
+		"pole": {
+			"base": "block/generator/pole"
+		}
+	},
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 2,
+	"maxStackSize": 32,
+	"sounds": {
+		"place": "game:block/planks",
+		"break": "game:block/planks",
+		"hit": "game:block/planks",
+		"walk": "game:walk/wood"
+	}
+}

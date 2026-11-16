@@ -143,6 +143,33 @@ public static class GeneratorCommands
                 })
             .EndSubCommand()
 
+            .BeginSubCommand("panel")
+                .WithDescription("Put a building panel on one side of a cell (north, east, south, west, up, down), or 'none' to take it off; 'door' toggles a door there.")
+                .WithArgs(parsers.WorldPosition("position"), parsers.WordRange("side", "north", "east", "south", "west", "up", "down"), parsers.Word("type"))
+                .HandleWith(args =>
+                {
+                    var pos = ((Vec3d)args[0]).AsBlockPos;
+                    var side = BlockFacing.FromCode((string)args[1]);
+                    string type = (string)args[2];
+                    var ba = api.World.BlockAccessor;
+                    if (ba.GetBlockEntity(pos) is not FrostStory.Panels.BlockEntityPanels panels)
+                    {
+                        var cell = api.World.GetBlock(new AssetLocation("froststory", "panelcell"));
+                        if (cell == null || type == "none" || type == "toggle") return TextCommandResult.Error("There are no panels there.");
+                        ba.SetBlock(cell.Id, pos);
+                        panels = (FrostStory.Panels.BlockEntityPanels)ba.GetBlockEntity(pos);
+                    }
+
+                    if (type == "toggle") panels.ToggleDoor(side);
+                    else if (type != "none" && api.World.GetBlock(new AssetLocation("froststory", "panel-" + type)) == null) return TextCommandResult.Error("There is no panel of that type.");
+                    else panels.Set(side, type == "none" ? null : type);
+
+                    if (panels.IsEmpty) ba.SetBlock(0, pos);
+                    var block = ba.GetBlock(pos);
+                    return TextCommandResult.Success($"Solid boxes: {block.GetCollisionBoxes(ba, pos)?.Length ?? 0}; boxes to aim at: {block.GetSelectionBoxes(ba, pos)?.Length ?? 0}; keeps warmth in on that side: {block.GetRetention(pos, side, EnumRetentionType.Heat)}.");
+                })
+            .EndSubCommand()
+
             .BeginSubCommand("coal")
                 .WithDescription("Report on a generator console, coal heap or steam borer at a position. Optionally add coal to it and let that many hours pass for it.")
                 .WithArgs(parsers.WorldPosition("position"), parsers.OptionalInt("add"), parsers.OptionalFloat("hours"))

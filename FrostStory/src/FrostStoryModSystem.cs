@@ -54,6 +54,9 @@ public class FrostStoryModSystem : ModSystem
         api.RegisterBlockEntityClass("FrostStorySteamValve", typeof(BlockEntitySteamValve));
         api.RegisterBlockEntityClass("FrostStorySteamGauge", typeof(BlockEntitySteamGauge));
         api.RegisterBlockClass("FrostStoryShipCell", typeof(FrostStory.Ship.BlockShipCell));
+        api.RegisterBlockClass("FrostStoryPanel", typeof(FrostStory.Panels.BlockPanel));
+        api.RegisterBlockClass("FrostStoryPanelCell", typeof(FrostStory.Panels.BlockPanelCell));
+        api.RegisterBlockEntityClass("FrostStoryPanels", typeof(FrostStory.Panels.BlockEntityPanels));
         api.RegisterBlockClass("FrostStoryCoalHeap", typeof(BlockCoalHeap));
         api.RegisterBlockEntityClass("FrostStoryCoalHeap", typeof(BlockEntityCoalHeap));
         api.RegisterBlockEntityClass("FrostStoryBorer", typeof(BlockEntityBorer));

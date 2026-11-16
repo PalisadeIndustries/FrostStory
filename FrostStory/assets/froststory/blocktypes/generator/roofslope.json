@@ -1,0 +1,169 @@
+{
+	"code": "roofslope",
+	"behaviors": [
+		{
+			"name": "HorizontalOrientable",
+			"properties": {
+				"dropBlockFace": "north"
+			}
+		}
+	],
+	"variantgroups": [
+		{
+			"code": "side",
+			"states": [
+				"north",
+				"east",
+				"south",
+				"west"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-north"
+		],
+		"froststory": [
+			"*-north"
+		]
+	},
+	"drawtype": "json",
+	"shapeByType": {
+		"*-north": {
+			"base": "block/generator/roofslope",
+			"rotateY": 0
+		},
+		"*-west": {
+			"base": "block/generator/roofslope",
+			"rotateY": 90
+		},
+		"*-south": {
+			"base": "block/generator/roofslope",
+			"rotateY": 180
+		},
+		"*-east": {
+			"base": "block/generator/roofslope",
+			"rotateY": 270
+		}
+	},
+	"textures": {
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"darkplate": {
+			"base": "block/generator/segment/darkplate"
+		},
+		"girder": {
+			"base": "block/generator/segment/girder"
+		},
+		"brass": {
+			"base": "block/generator/segment/brass"
+		},
+		"checker": {
+			"base": "block/generator/segment/checker"
+		},
+		"shipdeck": {
+			"base": "block/generator/shipdeck"
+		},
+		"shippanel": {
+			"base": "block/generator/shippanel"
+		},
+		"pole": {
+			"base": "block/generator/pole"
+		}
+	},
+	"collisionSelectionBoxesByType": {
+		"*-north": [
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0,
+				"x2": 1,
+				"y2": 0.5,
+				"z2": 0.5
+			},
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0.5,
+				"x2": 1,
+				"y2": 1,
+				"z2": 1
+			}
+		],
+		"*-south": [
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0.5,
+				"x2": 1,
+				"y2": 0.5,
+				"z2": 1
+			},
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0,
+				"x2": 1,
+				"y2": 1,
+				"z2": 0.5
+			}
+		],
+		"*-west": [
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0,
+				"x2": 0.5,
+				"y2": 0.5,
+				"z2": 1
+			},
+			{
+				"x1": 0.5,
+				"y1": 0,
+				"z1": 0,
+				"x2": 1,
+				"y2": 1,
+				"z2": 1
+			}
+		],
+		"*-east": [
+			{
+				"x1": 0.5,
+				"y1": 0,
+				"z1": 0,
+				"x2": 1,
+				"y2": 0.5,
+				"z2": 1
+			},
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0,
+				"x2": 0.5,
+				"y2": 1,
+				"z2": 1
+			}
+		]
+	},
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 1,
+	"replaceable": 90,
+	"resistance": 3,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}
