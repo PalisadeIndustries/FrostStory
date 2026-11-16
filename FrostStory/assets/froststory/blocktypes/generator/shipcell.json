@@ -1,0 +1,55 @@
+{
+	"code": "shipcell",
+	"class": "FrostStoryShipCell",
+	"variantgroups": [
+		{
+			"code": "type",
+			"states": [
+				"solid",
+				"deck"
+			]
+		}
+	],
+	"attributes": {
+		"handbook": {
+			"exclude": true
+		}
+	},
+	"drawtype": "json",
+	"shape": {
+		"base": "game:block/basic/nothing"
+	},
+	"blockmaterialByType": {
+		"*-deck": "Wood",
+		"*": "Metal"
+	},
+	"sidesolid": {
+		"all": true
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 30,
+	"requiredMiningTier": 2,
+	"drops": [],
+	"soundsByType": {
+		"*-deck": {
+			"place": "game:block/planks",
+			"break": "game:block/planks",
+			"hit": "game:block/planks",
+			"walk": "game:walk/wood"
+		},
+		"*": {
+			"place": "game:block/chute",
+			"break": "game:block/chute",
+			"hit": "game:block/chute",
+			"walk": "game:walk/stone"
+		}
+	}
+}

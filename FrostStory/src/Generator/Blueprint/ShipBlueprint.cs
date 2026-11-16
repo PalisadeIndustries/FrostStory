@@ -20,8 +20,31 @@ public static class ShipBlueprint
     public const int Waterline = 3;       // the ice comes up to here
 
     private const string D = "froststory:";
-    public const string Plate = D + "shipplate";
-    public const string Planks = D + "shipdeck";
+    // The hull is drawn by one model to a section; these unseen cells are what you stand on and cut into.
+    public const string Plate = D + "shipcell-solid";
+    public const string Planks = D + "shipcell-deck";
+    public static string Section(int index) => D + "shiphull-" + index;
+
+    /// <summary>The hull's sections from the stern: each is one model, and is broken up whole.</summary>
+    public static readonly (int From, int To)[] Sections = { (-26, -19), (-18, -11), (-10, -3), (-2, 5), (6, 13), (14, 20), (21, 26) };
+
+    public static int SectionOf(int x)
+    {
+        for (int i = 0; i < Sections.Length; i++)
+        {
+            if (x >= Sections[i].From && x <= Sections[i].To) return i;
+        }
+
+        return -1;
+    }
+
+    /// <summary>The cell a section's model hangs from: on the port rail at its after end, out in the light.</summary>
+    public static (int X, int Y, int Z) AnchorOf(int index)
+    {
+        int x = Sections[index].From, top = TopAt(x), z = 0;
+        while (InHull(x, top, z - 1)) z--;
+        return (x, top + 1, z);
+    }
     public const string Crate = D + "shipcrate";
     public const string Ladder = D + "serviceladder-north";
     public static string Part(string type) => D + "shippart-" + type;
@@ -166,11 +189,19 @@ public static class ShipBlueprint
             }
         }
 
-        House(-1, 6, 3, Deck + 1, Deck + 3, Deck + 2, (-1, 0));
-        House(3, 6, 2, Deck + 5, Deck + 7, Deck + 6, (3, 0));
+        House(-2, 5, 3, Deck + 1, Deck + 3, Deck + 2, (-2, 0));
+        House(2, 5, 2, Deck + 5, Deck + 7, Deck + 6, (2, 0));
 
-        // ---- funnel and masts
-        Set(-3, Deck + 1, -1, Part("funnel"));
+        // ---- each section's model
+        for (int i = 0; i < Sections.Length; i++)
+        {
+            var (ax, ay, az) = AnchorOf(i);
+            Set(ax, ay, az, Section(i));
+        }
+
+        // ---- twin funnels abreast, and the masts
+        Set(-5, Deck + 1, -3, Part("funnel"));
+        Set(-5, Deck + 1, 1, Part("funnel"));
         Set(14, Deck + 1, 0, Part("mast"));
         Set(-13, Deck + 1, 0, Part("mast"));
 

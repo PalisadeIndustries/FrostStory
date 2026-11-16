@@ -27,6 +27,9 @@ public class FrostStoryModSystem : ModSystem
     /// <summary>Server side: which steam hub each cell of warm air round one belongs to, and how much of its warmth it gets.</summary>
     public readonly Dictionary<Vintagestory.API.MathTools.BlockPos, (Vintagestory.API.MathTools.BlockPos Hub, float Share)> HubWarmth = new();
 
+    /// <summary>Server side: the middle of the keel of every wreck set down in this world. Kept with the save.</summary>
+    public readonly List<Vintagestory.API.MathTools.BlockPos> Wrecks = new();
+
     private SteamNetwork? serverSteam;
     private SteamNetwork? clientSteam;
 
@@ -50,6 +53,7 @@ public class FrostStoryModSystem : ModSystem
         api.RegisterBlockClass("FrostStoryTentFill", typeof(BlockTentFill));
         api.RegisterBlockEntityClass("FrostStorySteamValve", typeof(BlockEntitySteamValve));
         api.RegisterBlockEntityClass("FrostStorySteamGauge", typeof(BlockEntitySteamGauge));
+        api.RegisterBlockClass("FrostStoryShipCell", typeof(FrostStory.Ship.BlockShipCell));
         api.RegisterBlockClass("FrostStoryCoalHeap", typeof(BlockCoalHeap));
         api.RegisterBlockEntityClass("FrostStoryCoalHeap", typeof(BlockEntityCoalHeap));
         api.RegisterBlockEntityClass("FrostStoryBorer", typeof(BlockEntityBorer));
@@ -92,6 +96,17 @@ public class FrostStoryModSystem : ModSystem
         }
 
         api.StoreModConfig(Config, ConfigFile);
+
+        api.Event.SaveGameLoaded += () =>
+        {
+            Wrecks.Clear();
+            var saved = api.WorldManager.SaveGame.GetData<int[]>("froststory:wrecks") ?? Array.Empty<int>();
+            for (int i = 0; i + 2 < saved.Length; i += 3) Wrecks.Add(new Vintagestory.API.MathTools.BlockPos(saved[i], saved[i + 1], saved[i + 2], 0));
+        };
+        api.Event.GameWorldSave += () =>
+        {
+            api.WorldManager.SaveGame.StoreData("froststory:wrecks", Wrecks.SelectMany(k => new[] { k.X, k.Y, k.Z }).ToArray());
+        };
         GeneratorCommands.Register(api, this);
     }
 

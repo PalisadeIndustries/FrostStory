@@ -240,8 +240,12 @@ leaves the loaded world keeps the state it last had until the server restarts.
 A steam freighter lies frozen in, 53 blocks long and 11 in the beam, bow to the east: the
 early game's iron. `/frostgen ship [pos]` sets it down (it is not yet placed by world generation).
 
-- The **hull** is real riveted plate. Every block broken out gives about four iron bits (twenty bits smelt to an ingot), so the whole hull is about 200 ingots for the
-  patient. It takes a copper-tier pickaxe or better.
+- The **hull** is seven modelled sections: curved riveted plating with frames standing proud,
+  a brass rubbing strake, portholes, deck pipework and ventilators, a deckhouse with a brass-domed
+  pilothouse and bridge wings amidships, a pressure sphere on the foredeck. Cut through any part
+  of a section (slow work, with a copper-tier pickaxe or better) and the whole section comes
+  away: about 11 iron plates and 50 iron bits, and planks from its deck. Anything still standing
+  in that section is left where it was, so clear it first.
 - The ways in: a hole stove in the port side at the level of the ice, and a hatch with a ladder
   over each hold.
 - **Packing cases** in the fore and aft holds break open for iron ingots, nails, rope, coal and
@@ -250,7 +254,7 @@ early game's iron. `/frostgen ship [pos]` sets it down (it is not yet placed by 
   ordinary coal pile. A boiler breaks down into four **boiler sections**: heavy, one to an
   inventory slot, meant to be hauled home. A section on its own in the grid cuts up into three
   iron plates.
-- The **engine**, the **funnel** and the two **masts** break down whole for plates, ingots,
+- The **engine**, the two **funnels** and the two **masts** break down whole for plates, ingots,
   nails, planks and rope. The deck is planking.
 - Ice is packed round the hull up to the waterline. The ship always lies east to west.
 

@@ -1589,6 +1589,206 @@ def bucketconveyor():
     return m
 
 
+# ---------------------------------------------------------------------------------- the wrecked freighter
+# The hull's lines, as in ShipBlueprint (keep the two in step): cells from the middle of the keel, bow to +X.
+SHIP_HALF_LENGTH, SHIP_HALF_BEAM, SHIP_DECK = 26, 5, 7
+SHIP_SECTIONS = ((-26, -19), (-18, -11), (-10, -3), (-2, 5), (6, 13), (14, 20), (21, 26))
+SHIP_BULKHEADS = (-14, -4, 6, 16)
+SHIP_HATCHES = ((9, 12), (-19, -17))
+SHIP_HOLE = {(8, 4), (9, 4), (10, 4), (11, 4), (9, 5), (10, 5), (11, 5), (10, 3), (9, 3), (10, 6)}     # stove in, port side
+
+
+def ship_half_width(x):
+    if x > 10:
+        return SHIP_HALF_BEAM * (1 - ((x - 10) / 16.2) ** 1.7)
+    if x < -18:
+        return SHIP_HALF_BEAM * math.sqrt(max(0, 1 - ((-18 - x) / 8.6) ** 2))
+    return SHIP_HALF_BEAM
+
+
+def ship_top(x):
+    return SHIP_DECK + 1 if x >= 17 or x <= -21 else SHIP_DECK
+
+
+def ship_half(x, y):
+    """Half the hull's breadth at a station and a height, to the middle of its outermost cell; below zero is outside."""
+    x = max(-SHIP_HALF_LENGTH - 0.5, min(SHIP_HALF_LENGTH + 0.5, x))
+    half = ship_half_width(x) - (2.6 if y == 0 else 1.0 if y == 1 else 0)
+    if x > 10 and y < 3:
+        half -= (3 - y) * (x - 10) / 9.0
+    return half
+
+
+def ship_in_hull(x, y, z):
+    if abs(x) > SHIP_HALF_LENGTH or y < 0 or y > ship_top(x):
+        return False
+    half = ship_half(x, y)
+    return half >= -0.2 and abs(z) <= round(half)
+
+
+def ship_anchor(index):
+    x = SHIP_SECTIONS[index][0]
+    top, z = ship_top(x), 0
+    while ship_in_hull(x, top, z - 1):
+        z -= 1
+    return (x, top + 1, z)
+
+
+def shiphull(index):
+    """One section of the freighter's hull, as a single model.
+
+    The shell is run in strakes of riveted plate that follow the hull's lines, with a red boot-topping
+    at the ice, frames standing proud on the outside, a brass rubbing strake at the rail and brass-rimmed
+    portholes. Inside: the tank top, the bulkheads and the deck over them, with coamings round the
+    hatches. Steam pipes run down both sides of the deck, with ventilator cowls beside the hatches.
+    The midship section carries the deckhouse, the bridge and a brass-domed pilothouse; the foredeck a
+    pressure sphere; the bow a searchlight; the stern the steering wheel."""
+    x0, x1 = SHIP_SECTIONS[index]
+    ax, ay, az = ship_anchor(index)
+    m = Model(f"shiphull-{index}", (ax, ay + 1, az))
+    D = SHIP_DECK
+
+    def edge(x, y):                      # the outside of the plating
+        return max(0.0, ship_half(x, min(y, ship_top(round(x)))) + 0.5)
+
+    for x in range(x0, x1 + 1):
+        top = ship_top(x)
+        xa, xb = x - 0.5, x + 0.5
+        for sign in (-1, 1):
+            # strakes: runs of cells one above another that share a line and a colour
+            runs, y = [], 0
+            while y <= top + 1:
+                if ship_half(x, min(y, top)) < -0.2 or (sign < 0 and (x, y) in SHIP_HOLE):
+                    y += 1
+                    continue
+                key = (round(edge(xa, y), 3), round(edge(xb, y), 3), "red" if y == 4 else "shiphull")
+                y1 = y
+                while (y1 + 1 <= top + 1 and not (sign < 0 and (x, y1 + 1) in SHIP_HOLE)
+                       and (round(edge(xa, y1 + 1), 3), round(edge(xb, y1 + 1), 3), "red" if y1 + 1 == 4 else "shiphull") == key):
+                    y1 += 1
+                runs.append((y, y1, key))
+                y = y1 + 1
+            for ya, yb, (ea, eb, tex) in runs:
+                m.member((xa, (ya + yb + 1) / 2, sign * ea), (xb, (ya + yb + 1) / 2, sign * eb), yb - ya + 1, 0.14, tex, chunk=2.0)
+
+            e = edge(x, top)
+            if x % 2 == 0 and e > 0.8:                                                    # a frame, standing proud
+                m.box((x, (2 + top + 2) / 2, sign * (e + 0.1)), (0.16, top, 0.14), "band")
+            m.member((xa, top + 2.04, sign * edge(xa, top)), (xb, top + 2.04, sign * edge(xb, top)), 0.1, 0.26, "brass", chunk=2.0)   # rubbing strake
+            if x % 3 == 0 and abs(x) <= 19 and e > 4 and not (sign < 0 and 7 <= x <= 12):  # porthole
+                z0, z1 = sorted((sign * (e + 0.02), sign * (e + 0.12)))
+                m.hprism((x, 5.5, z0), (x, 5.5, z1), 0.2, "brass", caps=(True, True), captex="black")
+            if e > 3.6 and -19 <= x <= 16:                                                # steam pipe along the deck
+                z = sign * (e - 1.0)
+                m.hprism((xa, top + 1.2, z), (xb, top + 1.2, z), 0.11, "pipe")
+                if x % 4 == 0:
+                    m.hprism((x - 0.05, top + 1.2, z), (x + 0.05, top + 1.2, z), 0.17, "band", caps=(True, True), captex="band")
+                    m.box((x, top + 1.05, z), (0.12, 0.1, 0.3), "band")
+
+        # the deck, open at the hatches, and the tank top under it
+        width = 2 * edge(x, top) - 0.2
+        if width > 0.3:
+            hatch = any(a <= x <= b for a, b in SHIP_HATCHES)
+            if hatch:
+                side_w = (width - 3.0) / 2
+                for sign in (-1, 1):
+                    m.box((x, top + 0.92, sign * (1.5 + side_w / 2)), (1.0, 0.16, side_w), "shipdeck")
+                    m.box((x, top + 1.2, sign * 1.56), (1.0, 0.4, 0.12), "band")           # coaming
+            else:
+                m.box((x, top + 0.92, 0), (1.0, 0.16, width), "shipdeck")
+        floor = 2 * (ship_half(x, 2) + 0.4)
+        if floor > 1.0:
+            m.box((x, 1.95, 0), (1.0, 0.1, floor), "darkplate")
+
+        if x in SHIP_BULKHEADS:                                                           # bulkhead, with its doorway
+            half = edge(x, 3) - 0.1
+            for sign in (-1, 1):
+                m.box((x, (2 + D + 1) / 2, sign * (0.5 + (half - 0.5) / 2)), (0.14, D - 1, half - 0.5), "shiphull")
+            m.box((x, (4 + D + 1) / 2, 0), (0.14, D - 3, 1.0), "shiphull")
+            m.box((x, 4.05, 0), (0.2, 0.1, 1.2), "brass")
+        if x in (17, -21):                                                                # the break of the forecastle and the poop
+            half = edge(x, D)
+            back = x - 0.45 if x == 17 else x + 0.45
+            for sign in (-1, 1):
+                m.box((back, D + 1.5, sign * (0.5 + (half - 0.5) / 2)), (0.12, 1.0, half - 0.5), "shiphull")
+
+    for a, b in SHIP_HATCHES:                                                             # coamings across the hatch ends
+        for x, off in ((a, -0.5), (b, 0.5)):
+            if x0 <= x <= x1:
+                m.box((x + off, SHIP_DECK + 1.2, 0), (0.12, 0.4, 3.2), "band")
+
+    def cowl(x, z, base, facing=1):
+        """A ventilator: a pipe up out of the deck, turned over into a brass mouth."""
+        m.vprism(x, z, base, base + 1.3, 0.2, "pipe")
+        m.vprism(x, z, base, base + 0.1, 0.3, "band", caps=(False, True), captex="band")
+        m.box((x, base + 1.45, z), (0.5, 0.45, 0.5), "brass")
+        a, b = sorted((x, x + facing * 0.45))
+        m.hprism((a, base + 1.5, z), (b, base + 1.5, z), 0.34, "brass", caps=(True, True), captex="black")
+
+    for x, z in ((7, 3.4), (7, -3.4), (13, 3.2), (13, -3.2), (-7, 3.5), (-7, -3.5), (-12, 3.5), (-12, -3.5), (-16, 3.5), (-16, -3.5)):
+        if x0 <= x <= x1:
+            cowl(x, z, ship_top(x) + 1, 1 if x > 0 else -1)
+
+    if index == 3:
+        # deckhouse: green-painted plate between a sill and a head, brass-framed windows, a planked top
+        def house(xa, xb, half_z, y0, y1, window, door, tex):
+            for x in range(xa, xb + 1):
+                for z in range(-half_z, half_z + 1):
+                    wall = x in (xa, xb) or abs(z) == half_z
+                    if not wall:
+                        continue
+                    corner = x in (xa, xb) and abs(z) == half_z
+                    for y in range(y0, y1 + 1):
+                        glass = y == window and (x + z) % 2 == 0 and not corner
+                        if (x, z) == door and y <= y0 + 1:
+                            continue
+                        if glass:
+                            thin = (0.16, 0.12, 1.0) if x in (xa, xb) else (1.0, 0.12, 0.16)
+                            for dy in (0.06, 0.94):
+                                m.box((x, y + dy, z), thin, "brass")
+                        else:
+                            size = (0.2, 1.0, 1.0) if x in (xa, xb) and not corner else (1.0, 1.0, 0.2) if not corner else (0.3, 1.0, 0.3)
+                            m.box((x, y + 0.5, z), size, "band" if corner else tex)
+            m.box(((xa + xb) / 2, y1 + 1.08, 0), (xb - xa + 1.5, 0.16, 2 * half_z + 1.5), "shipdeck")
+            m.box(((xa + xb) / 2, y1 + 1.0, 0), (xb - xa + 1.7, 0.08, 2 * half_z + 1.7), "brass")
+
+        house(-2, 5, 3, D + 1, D + 3, D + 2, (-2, 0), "green")
+        house(2, 5, 2, D + 5, D + 7, D + 6, (2, 0), "green")
+        for y, a in ((D + 8.2, 2.3), (D + 8.6, 1.9), (D + 9.0, 1.3), (D + 9.3, 0.6)):       # the pilothouse dome
+            m.vprism(3.5, 0, y, y + 0.45, a, "brass", caps=(False, True), captex="brass")
+        m.vprism(3.5, 0, D + 9.7, D + 10.4, 0.07, "steel")
+        for sign in (-1, 1):                                                              # bridge wings, out over the side
+            m.box((3.5, D + 4.96, sign * 4.2), (1.6, 0.08, 3.0), "grating")
+            m.box((3.5, D + 5.95, sign * 5.65), (1.6, 0.06, 0.06), "brass")
+            for x in (2.75, 4.25):
+                m.box((x, D + 5.45, sign * 5.65), (0.05, 1.0, 0.05), "steel")
+                m.box((x, D + 5.95, sign * 4.2), (0.06, 0.06, 3.0), "brass")
+            m.vprism(3.5, sign * 5.3, D + 5.0, D + 5.9, 0.16, "brass", caps=(False, True), captex="brass")   # engine telegraph
+    if index == 5:                                                                        # the pressure sphere on the forecastle
+        cx, cy = 18.6, D + 2 + 1.5
+        for dy, a in ((-1.25, 0.75), (-0.85, 1.2), (-0.4, 1.42), (0.05, 1.42), (0.5, 1.2), (0.95, 0.75)):
+            m.vprism(cx, 0, cy + dy, cy + dy + 0.42, a, "brass", caps=(True, True), captex="brass")
+        m.vprism(cx, 0, cy - 0.06, cy + 0.06, 1.52, "band", caps=(True, True), captex="band")
+        for sx, sz in ((1, 1), (-1, 1), (-1, -1), (1, -1)):
+            m.member((cx + sx * 1.2, D + 2, sz * 1.2), (cx + sx * 0.8, cy - 0.6, sz * 0.8), 0.12, 0.12, "girder", chunk=3.0)
+        m.vprism(cx, 0, cy + 1.4, cy + 1.9, 0.1, "pipe")
+        m.handwheel(cx, cy + 1.95, 0, a=0.26)
+    if index == 6:                                                                        # stem, searchlight, anchors
+        m.box((26.45, (ship_top(26) + 2) / 2 + 1, 0), (0.2, ship_top(26), 0.5), "band")
+        m.vprism(24.6, 0, D + 2, D + 3.2, 0.1, "steel")
+        m.hprism((24.3, D + 3.4, 0), (25.1, D + 3.4, 0), 0.34, "brass", caps=(True, True), captex="canvas")
+        for sign in (-1, 1):
+            e = edge(23, D) + 0.14
+            m.box((23, D - 0.2, sign * e), (0.2, 1.3, 0.16), "band")
+            m.box((23, D - 0.9, sign * e), (0.9, 0.2, 0.16), "band")
+    if index == 0:                                                                        # transom, and the wheel on the poop
+        half = edge(-26.5, D)
+        m.box((-26.5, (1 + ship_top(-26) + 2) / 2, 0), (0.14, ship_top(-26) + 1, 2 * half + 0.2), "shiphull")
+        m.box((-23.5, D + 2.5, 0), (0.3, 1.0, 0.3), "band")
+        m.wheel((-23.2, D + 3.0, 0), 0.6, 0.08, 0.08, "pole", axis="x")
+    return m
+
+
 def shippart(kind):
     """The big fittings of the wrecked freighter, each one model broken down whole. Its cell is the
     minimum corner of what it fills; the ship's bow is to the east (+X).
@@ -1626,14 +1826,18 @@ def shippart(kind):
         return m
     if kind == "funnel":
         c = 0.5
-        m.vprism(c, c, 0.0, 0.3, 0.95, "band", caps=(False, True), captex="band")         # casing at the deck
-        for i in range(7):                                                                # the stack, raked aft a little
-            m.vprism(c - i * 0.045, c, 0.3 + i * 0.9, 1.25 + i * 0.9, 0.72, "shiphull", chunk=1.0)
-        top = c - 6 * 0.045
-        m.vprism(top, c, 4.6, 5.3, 0.74, "red")                                           # the company's band
-        m.vprism(top, c, 6.5, 6.7, 0.8, "band", caps=(True, True), captex="black")        # cowl
-        for dz in (-0.9, 0.9):
-            m.member((c, 0.1, c + dz * 1.4), (top, 5.0, c + dz * 0.72), 0.04, 0.04, "steel", chunk=6.0)   # stays
+        m.vprism(c, c, 0.0, 0.4, 0.9, "band", caps=(False, True), captex="band")          # casing at the deck
+        for i in range(9):                                                                # a tall slim stack, raked aft a little
+            m.vprism(c - i * 0.05, c, 0.4 + i * 0.9, 1.35 + i * 0.9, 0.55, "shiphull", chunk=1.0)
+        top = c - 8 * 0.05
+        for y in (2.2, 5.2, 7.4):
+            m.vprism(c - (y - 0.4) / 0.9 * 0.05, c, y, y + 0.22, 0.6, "brass")            # brass bands
+        m.vprism(top, c, 8.5, 8.75, 0.68, "brass", caps=(True, True), captex="black")     # flared top
+        m.vprism(c + 0.75, c, 0.4, 6.2, 0.09, "pipe")                                     # the waste steam pipe up its side
+        m.vprism(c + 0.75, c, 6.2, 6.6, 0.14, "brass", caps=(False, True), captex="black")
+        m.box((c + 0.4, 3.0, c), (0.6, 0.06, 0.1), "band")
+        for dz in (-1, 1):
+            m.member((c, 0.2, c + dz * 1.5), (top, 6.4, c + dz * 0.55), 0.04, 0.04, "steel", chunk=8.0)   # stays
         return m
     m.vprism(0, 0, 0.0, 13.0, 0.16, "pole", chunk=1.0)                                    # mast
     m.vprism(0, 0, 0.0, 0.5, 0.26, "band", caps=(False, True), captex="band")
@@ -1789,6 +1993,7 @@ def main():
     parts += [radiator(b) for b in RADIATOR_SIDES]
     parts += [steamhub(), hubframe("leg"), hubframe("head"), floorgrate(), tentstove("cold"), tentstove("lit"), stoveflue(), stoveflue("cap"), stoveflue("elbow"), stoveflue("upturn"), pipe()]
     parts += [shippart(k) for k in ("boiler", "engine", "funnel", "mast")] + [shipcrate(), boilersection()]
+    parts += [shiphull(i) for i in range(len(SHIP_SECTIONS))]
     parts += [crossover("run"), crossover("stair"), borer(), bucketconveyor()] + [coalheap(n) for n in range(1, 9)]
     parts += [steamvalve(), valvepointer(), steamgauge()] + [gaugepart(k) for k in ("needle", "plain", "green", "red")]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]

@@ -39,6 +39,9 @@ public static class ShipBuilder
             }
         }
 
+        var mod = world.Api.ModLoader.GetModSystem<FrostStoryModSystem>();
+        if (!mod.Wrecks.Exists(k => k.Equals(keel))) mod.Wrecks.Add(keel.Copy());
+
         int placed = 0;
         foreach (var p in plan)
         {
