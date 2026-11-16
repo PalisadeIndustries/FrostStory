@@ -28,7 +28,10 @@ public class BlockSteamMainStand : Block
     public const int HubHead = 4;
 
     /// <summary>The hub hangs with its underside this far above the ground, where the tower is tall enough.</summary>
-    public const int HubClearance = 6;
+    public const int HubClearance = 3;
+
+    /// <summary>Shortest hub tower: room for the hub, its clearance and one block of main above it.</summary>
+    public const int HubMinRise = 10;
 
     public override bool TryPlaceBlock(IWorldAccessor world, IPlayer byPlayer, ItemStack itemstack, BlockSelection blockSel, ref string failureCode)
     {
@@ -40,8 +43,7 @@ public class BlockSteamMainStand : Block
     /// <summary>
     /// Raises a steam hub on its tower: a frame on four legs, four blocks square, that goes straight up
     /// and then tapers in over its last four blocks to carry a main fitting. The hub hangs inside the
-    /// frame on a main dropped from the fitting, its underside six blocks above the ground (or right
-    /// under the fitting on a short tower). <paramref name="ground"/> is one of the cells under the fitting.
+    /// frame on a main dropped from the fitting, its underside three blocks above the ground. <paramref name="ground"/> is one of the cells under the fitting.
     /// </summary>
     public static bool RaiseHub(IWorldAccessor world, BlockPos ground, IPlayer? byPlayer, out string failureCode, out BlockPos fittingPos)
     {
@@ -61,7 +63,7 @@ public class BlockSteamMainStand : Block
         }
 
         int rise = fittingPos.Y - ground.Y;
-        if (rise < HubHead || rise > MaxRise || !ba.IsValidPos(fittingPos.UpCopy(hub.Size.Y)))
+        if (rise < HubMinRise || rise > MaxRise || !ba.IsValidPos(fittingPos.UpCopy(hub.Size.Y)))
         {
             failureCode = "froststory-stand-height";
             return false;

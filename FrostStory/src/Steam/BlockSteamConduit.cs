@@ -148,7 +148,7 @@ public class BlockSteamConduit : Block, IHeatSource
 
             case "steamhub":
                 IsBig = managesFill = IsHub = true;
-                Size = new Vec3i(2, 2, 2);
+                Size = new Vec3i(2, 6, 2);
                 connects[BlockFacing.UP.Index] = true;
                 break;
 

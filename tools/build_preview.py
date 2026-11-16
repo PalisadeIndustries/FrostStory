@@ -348,11 +348,11 @@ def pipework_example(codes, atlas):
         large_runs += quads
 
     # A steam hub out in the open on its tower: legs four blocks square, tapering in under a fitting, with
-    # the hub hanging inside on a dropped main, six blocks off the ground. Fed from the lower stand.
+    # the hub hanging inside on a dropped main, three blocks off the ground. Fed from the lower stand.
     hub = (b[0] + 2, b[1], b[2] - 12)
     large_cells += cells(*[(hub[0] - 1, y, hub[2] - 1, "hubframe-leg") for y in range(1, hub[1] - 4)],
                          (hub[0] - 1, hub[1] - 4, hub[2] - 1, "hubframe-head"), (*hub, "mainjunction"),
-                         (hub[0], 7, hub[2], "steamhub"), *[(hub[0], y, hub[2], "steammain-ud") for y in range(9, hub[1])])
+                         (hub[0], 4, hub[2], "steamhub"), *[(hub[0], y, hub[2], "steammain-ud") for y in range(10, hub[1])])
     large_runs += run(b, FITTING, "north", hub, FITTING, "south", True)
 
     base, e, f = (7, 1, 3), (12, 1, 6), (9, 4, 9)

@@ -1321,24 +1321,27 @@ def stoveflue():
 
 
 def steamhub():
-    """A steam hub: a heater two blocks square and two high that hangs from a steam main coming down
-    onto it. A flanged collar on top takes the main; under it a finned column throws the heat down and
-    out, ending in a stepped cap and a drain finial. Its cell is its minimum corner."""
+    """A steam hub: a heater two blocks square and six high that hangs from a steam main coming down
+    onto it. A flanged collar on top takes the main; under it a long finned drum throws the heat out,
+    banded at each third, ending in a stepped cap and a drain finial. Its cell is its minimum corner."""
     m = Model("steamhub", (0, 1, 0))
     c = 0.5
-    m.vprism(c, c, 1.88, 2.0, MAIN_FLANGE, "band", caps=(True, True), captex="band")      # flange for the main
-    m.vprism(c, c, 1.7, 1.88, MAIN_BORE, "pipe")
-    m.vprism(c, c, 1.58, 1.7, 0.95, "band", caps=(True, True), captex="band")             # hanger collar
-    m.vprism(c, c, 0.4, 1.58, 0.45, "pipe")                                               # heater column
-    for i in range(6):
-        y = 1.44 - i * 0.19
-        m.vprism(c, c, y - 0.07, y, 0.86, "band", caps=(True, True), captex="band")       # fins
-    for sx, sz in ((1, 0), (-1, 0), (0, 1), (0, -1)):                                     # tie rods through the fins
-        m.box((c + sx * 0.7, 1.0, c + sz * 0.7), (0.06, 1.2, 0.06), "brass")
-    m.vprism(c, c, 0.3, 0.4, 0.9, "band", caps=(True, True), captex="band")               # cap, stepping in
-    m.vprism(c, c, 0.18, 0.3, 0.62, "darkplate", caps=(True, False), captex="darkplate")
-    m.vprism(c, c, 0.08, 0.18, 0.34, "darkplate", caps=(True, False), captex="darkplate")
-    m.vprism(c, c, 0.0, 0.08, 0.12, "brass", caps=(True, False), captex="black")          # drain finial
+    m.vprism(c, c, 5.88, 6.0, MAIN_FLANGE, "band", caps=(True, True), captex="band")      # flange for the main
+    m.vprism(c, c, 5.66, 5.88, MAIN_BORE, "pipe")
+    m.vprism(c, c, 5.5, 5.66, 0.97, "band", caps=(True, True), captex="band")             # hanger collar
+    m.vprism(c, c, 0.5, 5.5, 0.6, "pipe", chunk=1.0)                                      # the drum
+    y = 5.32
+    while y > 0.7:
+        m.vprism(c, c, y - 0.07, y, 0.9, "band", caps=(True, True), captex="band")        # fins
+        y -= 0.22
+    for y in (3.86, 2.1):                                                                 # bands at the thirds
+        m.vprism(c, c, y - 0.09, y + 0.09, 0.96, "darkplate", caps=(True, True), captex="darkplate")
+    for sx, sz in ((1, 1), (-1, 1), (-1, -1), (1, -1)):                                   # tie rods through the fins
+        m.box((c + sx * 0.52, 3.0, c + sz * 0.52), (0.07, 4.9, 0.07), "brass")
+    m.vprism(c, c, 0.4, 0.52, 0.95, "band", caps=(True, True), captex="band")             # cap, stepping in
+    m.vprism(c, c, 0.26, 0.4, 0.68, "darkplate", caps=(True, False), captex="darkplate")
+    m.vprism(c, c, 0.12, 0.26, 0.38, "darkplate", caps=(True, False), captex="darkplate")
+    m.vprism(c, c, 0.0, 0.12, 0.13, "brass", caps=(True, False), captex="black")          # drain finial
     return m
 
 
