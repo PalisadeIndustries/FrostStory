@@ -1526,14 +1526,14 @@ def crossover(kind):
     return m
 
 
-def coalheap():
-    """A heap of coal, as it is with a few dozen lumps on it: a low mound stepping in to a peak, with
-    loose lumps round the foot. The game draws it bigger as it fills."""
-    m = Model("coalheap", (0, 1, 0))
-    for y0, y1, a in ((0.0, 0.16, 0.5), (0.16, 0.3, 0.4), (0.3, 0.42, 0.28), (0.42, 0.52, 0.15)):
-        m.vprism(0, 0, y0, y1, a, "coal", caps=(False, True), captex="coal")
-    for x, z, s in ((0.4, 0.34, 0.14), (-0.38, 0.4, 0.12), (-0.42, -0.3, 0.15), (0.36, -0.4, 0.11), (0.05, 0.47, 0.1)):
-        m.box((x, s / 2, z), (s, s, s), "coal", (0, 30, 0))
+def coalheap(layers):
+    """One block of a coal pile, `layers` eighths full: a bed of coal that deep, with loose lumps on top."""
+    m = Model(f"coalheap-{layers}", (0, 1, 0))
+    h = layers / 8
+    m.box((0, h / 2, 0), (1.0, h, 1.0), "coal")
+    if layers < 8:
+        for x, z, s_ in ((0.28, 0.22, 0.16), (-0.26, 0.3, 0.13), (-0.3, -0.24, 0.17), (0.22, -0.3, 0.12), (0.0, 0.02, 0.14)):
+            m.box((x, h + s_ / 2 - 0.05, z), (s_, s_, s_), "coal", (0, 30, 0))
     return m
 
 
@@ -1704,7 +1704,7 @@ def main():
     parts += [wallpass(a) for a in ("ud", "ns", "we")]
     parts += [radiator(b) for b in RADIATOR_SIDES]
     parts += [steamhub(), hubframe("leg"), hubframe("head"), floorgrate(), tentstove("cold"), tentstove("lit"), stoveflue(), stoveflue("cap"), stoveflue("elbow"), stoveflue("upturn"), pipe()]
-    parts += [crossover("run"), crossover("stair"), coalheap(), borer(), bucketconveyor()]
+    parts += [crossover("run"), crossover("stair"), borer(), bucketconveyor()] + [coalheap(n) for n in range(1, 9)]
     parts += [steamvalve(), valvepointer(), steamgauge()] + [gaugepart(k) for k in ("needle", "plain", "green", "red")]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:

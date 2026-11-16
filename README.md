@@ -145,12 +145,16 @@ empty bunker the fire goes out and the ports go cold until it is coaled and fire
   within 12 blocks around it and 32 below, up to 300 blocks (90 an hour at best). The rock is
   looked at once, when the borer is set down, and the count is kept: mine the seam afterwards
   and nothing changes, and it never runs out. Starved of steam it raises proportionally less.
-- The coal goes onto a **coal heap** beside the borer, east of it if there is room. A heap is
-  one block that holds any amount and is drawn bigger as it fills. Take coal from it with an
-  empty hand, a stack at a time; add to it with coal in hand.
+- The coal goes onto a **coal pile** beside the borer, east of it if there is room. A pile is
+  made of real blocks: each holds 512 coal in eight layers and is as tall as it is full, so you
+  walk up it. Coal tipped on rolls downhill until the slope is gentle, so a pile grows into a
+  cone over the ground it stands on, as big as you let it get: 10,000 coal is a heap about 5
+  blocks across and a block and a half high, and it goes on growing. Take a stack off the top with an empty hand, add coal with coal in
+  hand, or dig the blocks out. There is no pile item; put coal on the ground beside a conveyor
+  by adding it to an existing pile.
 - **Bucket conveyors** carry coal from heaps to the bunker. Lay a line of them from beside a
-  heap to beside the console; any conveyors that touch are one line, up, down or along, and a
-  line draws from every heap it touches, up to 400 an hour.
+  pile to beside the console; any conveyors that touch are one line, up, down or along, and a
+  line draws from the top of every pile it touches, up to 400 an hour.
 - `RequireCoal`, `IdleCoalPerHour`, `CoalPerSteamHour`, `BunkerCapacity`, `ConveyorCoalPerHour`,
   `BorerCoalPerHour`, `BorerCoalPerOre` and `BorerOreCap` in the config change all of this.
 
@@ -369,7 +373,7 @@ higher and lower ground. Both distributors carry steam from a main to a pipe on 
 outlets and to four pipe runs (a fifth is refused), and stay shut to pipes and mains on every other side. A wall passthrough carries steam between its two mounts by pipe or by run,
 stays shut on its other four sides, and counts as a solid, heat-keeping block. A radiator takes steam at the two hookups on its back and from
 underneath, by pipe or by run, passes it on, and stays shut on its front, ends and top. A tent stove lights with fuel and a flue to open sky (straight up with a cap, round an elbow and out sideways, or on round an upturn to a cap outside), refuses without a flue or with the flue top under
-cover, burns its fuel down and goes out, and goes out when its flue is removed. The generator burns coal in step with the steam it sends out and goes out when the bunker is empty; a borer counts the coal round it once and raises coal onto a heap at the rate that gives, less when starved; a conveyor line carries it from the heap to the bunker. A stop valve shuts a line, and part open passes only its share so that what is beyond is fed in proportion; a gauge reads the supply reaching it and the draw beyond it, and both follow a valve being turned and things being added. An overloaded port starves its whole line. A hub tower comes up with its legs, tapered head, fitting, drop main and hub in place, the hub three blocks off the ground and live. A steam hub takes a main on top, refuses pipes, lays warm air over uneven ground out to its radius that is warm
+cover, burns its fuel down and goes out, and goes out when its flue is removed. The generator burns coal in step with the steam it sends out and goes out when the bunker is empty; a borer counts the coal round it once and raises coal onto a pile at the rate that gives, less when starved; the pile spreads into a cone of solid blocks as it grows; a conveyor line carries coal off the top of the pile to the bunker. A stop valve shuts a line, and part open passes only its share so that what is beyond is fed in proportion; a gauge reads the supply reaching it and the draw beyond it, and both follow a valve being turned and things being added. An overloaded port starves its whole line. A hub tower comes up with its legs, tapered head, fitting, drop main and hub in place, the hub three blocks off the ground and live. A steam hub takes a main on top, refuses pipes, lays warm air over uneven ground out to its radius that is warm
 only while the hub has steam and weaker further out, and takes it up again when broken. Underfloor grates take steam from underneath or the side, pass it
 along a row, take one run underneath, and stay shut on top. Every shape file loads cleanly through the game's own
 shape class.

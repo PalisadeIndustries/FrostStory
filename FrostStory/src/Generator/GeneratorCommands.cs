@@ -143,8 +143,8 @@ public static class GeneratorCommands
                             console.AdvanceFuel(hours);
                             return TextCommandResult.Success($"Bunker {console.Coal:0.#}. {(console.IsLit ? $"Running: sending {console.SteamOut():0.#} steam, burning {console.BurnPerHour:0.#} an hour." : "Not lit.")}");
                         case FrostStory.Coal.BlockEntityCoalHeap heap:
-                            heap.Add(add);
-                            return TextCommandResult.Success($"Heap holds {heap.Count}.");
+                            int left = FrostStory.Coal.CoalPile.Add(api.World, heap.Pos, add);
+                            return TextCommandResult.Success($"Pile holds {FrostStory.Coal.CoalPile.Total(api.World, heap.Pos)}; this block {heap.Count}." + (left > 0 ? $" {left} would not go on." : ""));
                         case FrostStory.Coal.BlockEntityBorer borer:
                             if (borer.OreCount < 0) borer.Survey();
                             borer.Advance(hours);

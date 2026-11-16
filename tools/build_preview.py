@@ -328,6 +328,35 @@ def gauge_quads(parts, cell, side, available, demand, ratio):
     return quads
 
 
+def coal_pile(at, amount, blocked=()):
+    """A coal pile as CoalPile.Add would leave it on flat ground: 64 at a time, rolling to whichever
+    neighbour stands furthest below the slope it will hold."""
+    layers = {}
+    def height(c):
+        return layers.get(c, 0)
+    for _ in range(amount // 64):
+        cell = (at[0], at[2])
+        for _ in range(96):
+            lower, drop = None, 0
+            for dx in (-1, 0, 1):
+                for dz in (-1, 0, 1):
+                    beside = (cell[0] + dx, cell[1] + dz)
+                    if (dx, dz) == (0, 0) or beside in blocked:
+                        continue
+                    fall = height(cell) - height(beside) - (7 if dx and dz else 5)
+                    if fall > drop:
+                        drop, lower = fall, beside
+            if lower is None:
+                break
+            cell = lower
+        layers[cell] = height(cell) + 1
+    cells = []
+    for (x, z), n in layers.items():
+        for y in range((n + 7) // 8):
+            cells.append((x, at[1] + y, z, f"coalheap-{min(8, n - y * 8)}"))
+    return cells
+
+
 def pipework_example(codes, atlas):
     """A sample of what a player can build off the generator, so every steam part can be seen in place.
 
@@ -415,7 +444,9 @@ def pipework_example(codes, atlas):
     stove = (15, 1, 12)
     rods = rods + [(*stove, "tentstove-lit-west")] + [(stove[0], y, stove[2], "stoveflue-ud") for y in range(2, 5)] + [(stove[0], 5, stove[2], "stoveflue-cap")]
     # a steam borer with its heap, and a bucket conveyor leading off from it
-    rods = rods + [(20, 1, 14, "borer"), (22, 1, 14, "coalheap")] + [(x, 1, 14, "bucketconveyor-we") for x in (23, 24, 25)] + [(26, y, 14, "bucketconveyor-ud") for y in (1, 2, 3)]
+    belt = [(x, 1, 14) for x in (25, 26, 27)]
+    taken = {(20, 14), (21, 14), (20, 15), (21, 15)} | {(x, z) for x, _, z in belt}
+    rods = rods + [(20, 1, 14, "borer")] + coal_pile((22, 1, 14), 5000, taken) + [(*c, "bucketconveyor-we") for c in belt] + [(28, y, 14, "bucketconveyor-ud") for y in (1, 2, 3)]
     # a crossover over the heating pipes: steps up, a metre of catwalk above the pipe, steps down
     rods = rods + [(11, 1, 8, "catwalkstair-west"), (12, 2, 8, "catwalk-we"), (13, 1, 8, "catwalkstair-east")]
     small_cells = cells((*e, "pipejunction"), (*f, "pipejunction"), *[(x, 1, z, heat_code(x, z)) for x, z in heat], *rods)

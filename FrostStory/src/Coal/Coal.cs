@@ -30,40 +30,50 @@ public static class CoalItems
 }
 
 /// <summary>
-/// A heap of coal. One block holds any amount; the heap is drawn bigger as it fills. Take coal out
-/// with an empty hand, put it in with coal in hand. Bucket conveyors draw from it.
+/// One block of a coal pile. It holds up to 512 lumps in eight layers and is as tall as it is full.
+/// Take coal out with an empty hand, put it on with coal in hand; coal put on a pile rolls down to
+/// where the pile is lowest, so piles grow into heaps of any size. Bucket conveyors draw from them.
 /// </summary>
 public class BlockCoalHeap : Block
 {
     public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
     {
-        if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is not BlockEntityCoalHeap heap) return false;
+        if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is not BlockEntityCoalHeap) return false;
         if (world.Side != EnumAppSide.Server) return true;
 
         var slot = byPlayer.InventoryManager.ActiveHotbarSlot;
         if (slot?.Itemstack != null && CoalItems.IsCoal(slot.Itemstack.Collectible))
         {
-            heap.Add(slot.StackSize);
-            if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative) { slot.TakeOutWhole(); slot.MarkDirty(); }
+            int left = CoalPile.Add(world, blockSel.Position, slot.StackSize);
+            if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative) { slot.TakeOut(slot.StackSize - left); slot.MarkDirty(); }
         }
         else if (slot?.Itemstack == null)
         {
-            heap.GiveTo(byPlayer, 64);
+            int taken = CoalPile.TakeFromColumn(world, blockSel.Position, 64);
+            var item = world.GetItem(CoalItems.Raised);
+            if (item != null && taken > 0)
+            {
+                var stack = new ItemStack(item, taken);
+                if (!byPlayer.InventoryManager.TryGiveItemstack(stack, true)) world.SpawnItemEntity(stack, blockSel.Position.ToVec3d().Add(0.5, 1, 0.5));
+            }
         }
 
         return true;
     }
 
-    public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1f)
+    public override ItemStack[] GetDrops(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1f)
     {
-        // a big heap is dug away a stack at a time; the block goes with the last of it
-        if (world.Side == EnumAppSide.Server && world.BlockAccessor.GetBlockEntity(pos) is BlockEntityCoalHeap heap)
+        var item = world.GetItem(CoalItems.Raised);
+        int count = (world.BlockAccessor.GetBlockEntity(pos) as BlockEntityCoalHeap)?.Count ?? 0;
+        var drops = new List<ItemStack>();
+        while (item != null && count > 0)
         {
-            heap.Spill(64);
-            if (heap.Count > 0) return;
+            int n = Math.Min(count, item.MaxStackSize);
+            drops.Add(new ItemStack(item, n));
+            count -= n;
         }
 
-        base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
+        return drops.ToArray();
     }
 }
 
@@ -71,53 +81,20 @@ public class BlockEntityCoalHeap : BlockEntity
 {
     public int Count { get; private set; }
 
-    public void Add(int amount)
+    /// <summary>Sets what this block holds and makes it the right height; an empty one goes.</summary>
+    public void Set(int count)
     {
-        if (amount <= 0) return;
-        Count = (int)Math.Min(int.MaxValue, (long)Count + amount);
+        Count = Math.Clamp(count, 0, CoalPile.PerBlock);
+        var ba = Api.World.BlockAccessor;
+        if (Count == 0)
+        {
+            ba.SetBlock(0, Pos);
+            return;
+        }
+
+        var wanted = Api.World.GetBlock(new AssetLocation("froststory", "coalheap-" + CoalPile.Layers(Count)));
+        if (wanted != null && wanted.Id != Block.Id) ba.ExchangeBlock(wanted.Id, Pos);
         MarkDirty(true);
-    }
-
-    /// <summary>Takes up to <paramref name="amount"/> out and says how much came.</summary>
-    public int Take(int amount)
-    {
-        int taken = Math.Clamp(amount, 0, Count);
-        if (taken == 0) return 0;
-        Count -= taken;
-        MarkDirty(true);
-        return taken;
-    }
-
-    public void GiveTo(IPlayer player, int amount)
-    {
-        var item = Api.World.GetItem(CoalItems.Raised);
-        int taken = Take(amount);
-        if (item == null || taken == 0) return;
-        var stack = new ItemStack(item, taken);
-        if (!player.InventoryManager.TryGiveItemstack(stack, true)) Api.World.SpawnItemEntity(stack, Pos.ToVec3d().Add(0.5, 0.8, 0.5));
-    }
-
-    public void Spill(int amount)
-    {
-        var item = Api.World.GetItem(CoalItems.Raised);
-        int taken = Take(amount);
-        if (item != null && taken > 0) Api.World.SpawnItemEntity(new ItemStack(item, taken), Pos.ToVec3d().Add(0.5, 0.8, 0.5));
-    }
-
-    /// <summary>How big the heap is drawn: one for a few lumps, growing with the cube root of what it holds.</summary>
-    public float Scale => Math.Clamp(0.6f + 0.3f * MathF.Cbrt(Count / 32f), 0.6f, 6f);
-
-    public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
-    {
-        var shape = Vintagestory.API.Common.Shape.TryGet(Api, new AssetLocation("froststory", "shapes/block/generator/coalheap.json"));
-        if (shape == null) return false;
-        tessThreadTesselator.TesselateShape(Block, shape, out var mesh);
-        if (mesh == null) return false;
-
-        float s = Scale;
-        mesh.Scale(new Vec3f(0.5f, 0f, 0.5f), s, s, s);
-        mesher.AddMeshData(mesh);
-        return true;       // in place of the block's own shape
     }
 
     public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
@@ -135,9 +112,174 @@ public class BlockEntityCoalHeap : BlockEntity
     public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldAccessForResolve)
     {
         base.FromTreeAttributes(tree, worldAccessForResolve);
-        int before = Count;
         Count = tree.GetInt("count");
-        if (Api?.Side == EnumAppSide.Client && before != Count) Api.World.BlockAccessor.MarkBlockDirty(Pos);
+    }
+}
+
+/// <summary>
+/// Coal piles: how coal put on a pile finds its place, and how it is drawn off. A pile is made of heap
+/// blocks, each up to eight layers of 64. Coal put on rolls downhill until the slope is gentle, so a
+/// pile fed at one spot grows into a cone over whatever ground it stands on. Coal drawn off comes from
+/// the top of the pile.
+/// </summary>
+public static class CoalPile
+{
+    public const int PerLayer = 64;
+    public const int PerBlock = PerLayer * 8;
+    private const int Slope = 5;          // layers a column may stand above its neighbour before coal rolls
+    private const int DiagonalSlope = 7;
+    private const int MaxPile = 8192;     // heap blocks followed when drawing off
+
+    public static int Layers(int count) => Math.Clamp((count + PerLayer - 1) / PerLayer, 1, 8);
+
+    private static BlockEntityCoalHeap? HeapAt(IBlockAccessor ba, BlockPos pos) => ba.GetBlockEntity(pos) as BlockEntityCoalHeap;
+
+    private static bool Free(IBlockAccessor ba, BlockPos pos)
+    {
+        var block = ba.GetBlock(pos);
+        return block.Id == 0 || block is BlockPipeWarmth;
+    }
+
+    /// <summary>Height of the coal in a cell, in layers from the bottom of the world.</summary>
+    private static int Height(IBlockAccessor ba, BlockPos pos) => pos.Y * 8 + (HeapAt(ba, pos) is { } heap ? Layers(heap.Count) : 0);
+
+    /// <summary>
+    /// The cell coal would land in on this column near a height: the part-full heap block on top, or the
+    /// free cell resting on the pile or the ground. Null where something is in the way.
+    /// </summary>
+    private static BlockPos? Surface(IBlockAccessor ba, int x, int z, BlockPos near)
+    {
+        var pos = new BlockPos(x, near.Y, z, near.dimension);
+        if (ba.GetChunkAtBlockPos(pos) == null) return null;
+
+        for (int i = 0; i < 48 && HeapAt(ba, pos) is { Count: >= PerBlock }; i++) pos.Up();
+        if (HeapAt(ba, pos) != null) return pos;
+        if (!Free(ba, pos)) return null;
+
+        for (int i = 0; i < 24 && pos.Y > 1; i++)
+        {
+            var below = pos.DownCopy();
+            if (HeapAt(ba, below) is { } heap) return heap.Count >= PerBlock ? pos : below;
+            if (!Free(ba, below)) return pos;
+            pos.Down();
+        }
+
+        return null;      // a drop too deep to fill
+    }
+
+    /// <summary>Puts coal on the pile at a spot. Returns what could not be placed.</summary>
+    public static int Add(IWorldAccessor world, BlockPos at, int amount)
+    {
+        var ba = world.BlockAccessor;
+        var block = world.GetBlock(new AssetLocation("froststory", "coalheap-1"));
+        if (block == null) return amount;
+
+        while (amount > 0)
+        {
+            var cell = Surface(ba, at.X, at.Z, at);
+            if (cell == null) return amount;
+
+            // roll downhill while a neighbouring column stands well below this one
+            for (int step = 0; step < 96; step++)
+            {
+                BlockPos? lower = null;
+                int here = Height(ba, cell), drop = 0;
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    for (int dz = -1; dz <= 1; dz++)
+                    {
+                        if (dx == 0 && dz == 0) continue;
+                        var beside = Surface(ba, cell.X + dx, cell.Z + dz, cell);
+                        if (beside == null) continue;
+
+                        // a corner is further off, so it has to be lower still: that rounds the pile
+                        int fall = here - Height(ba, beside) - (dx != 0 && dz != 0 ? DiagonalSlope : Slope);
+                        if (fall > drop) { drop = fall; lower = beside; }
+                    }
+                }
+
+                if (lower == null) break;
+                cell = lower;
+            }
+
+            var heap = HeapAt(ba, cell);
+            if (heap == null)
+            {
+                ba.SetBlock(block.Id, cell);
+                heap = HeapAt(ba, cell);
+                if (heap == null) return amount;
+            }
+
+            int toLayer = PerLayer - heap.Count % PerLayer;
+            int put = Math.Min(amount, Math.Min(toLayer, PerBlock - heap.Count));
+            if (put <= 0) return amount;
+            heap.Set(heap.Count + put);
+            amount -= put;
+        }
+
+        return 0;
+    }
+
+    /// <summary>Every heap block of the pile this one belongs to.</summary>
+    private static List<BlockEntityCoalHeap> Pile(IBlockAccessor ba, BlockPos start)
+    {
+        var pile = new List<BlockEntityCoalHeap>();
+        if (HeapAt(ba, start) is not { } first) return pile;
+
+        var seen = new HashSet<BlockPos> { start.Copy() };
+        var todo = new Queue<BlockEntityCoalHeap>();
+        todo.Enqueue(first);
+        while (todo.Count > 0 && pile.Count < MaxPile)
+        {
+            var heap = todo.Dequeue();
+            pile.Add(heap);
+            foreach (var face in BlockFacing.ALLFACES)
+            {
+                var next = heap.Pos.AddCopy(face);
+                if (seen.Add(next) && HeapAt(ba, next) is { } other) todo.Enqueue(other);
+            }
+        }
+
+        return pile;
+    }
+
+    public static long Total(IWorldAccessor world, BlockPos start)
+    {
+        long sum = 0;
+        foreach (var heap in Pile(world.BlockAccessor, start)) sum += heap.Count;
+        return sum;
+    }
+
+    /// <summary>Draws coal off the top of the pile this block belongs to, a layer at a time. Returns what came.</summary>
+    public static int Take(IWorldAccessor world, BlockPos start, int amount)
+    {
+        if (amount <= 0) return 0;
+        var ba = world.BlockAccessor;
+        var pile = Pile(ba, start);
+        pile.Sort((a, b) => Height(ba, b.Pos).CompareTo(Height(ba, a.Pos)));
+
+        int got = 0;
+        foreach (var heap in pile)
+        {
+            if (got >= amount) break;
+            int take = Math.Min(amount - got, heap.Count);
+            got += take;
+            heap.Set(heap.Count - take);
+        }
+
+        return got;
+    }
+
+    /// <summary>Takes coal from the top of the column a block is in: what a player's hand reaches.</summary>
+    public static int TakeFromColumn(IWorldAccessor world, BlockPos pos, int amount)
+    {
+        var ba = world.BlockAccessor;
+        var top = pos.Copy();
+        for (int i = 0; i < 64 && HeapAt(ba, top.UpCopy()) != null; i++) top.Up();
+        if (HeapAt(ba, top) is not { } heap) return 0;
+        int take = Math.Min(amount, heap.Count);
+        heap.Set(heap.Count - take);
+        return take;
     }
 }
 
@@ -206,42 +348,27 @@ public class BlockEntityBorer : BlockEntity
         int whole = (int)raised;
         if (whole <= 0) return;
 
-        var heap = Heap();
+        int left = whole;
+        foreach (var spot in Spots())
+        {
+            left = CoalPile.Add(Api.World, spot, whole);
+            if (left < whole) break;
+        }
+
         bool was = blocked;
-        blocked = heap == null;
-        if (heap != null)
-        {
-            heap.Add(whole);
-            raised -= whole;
-        }
-        else
-        {
-            raised = Math.Min(raised, 1f);      // nowhere to put it: it stops, it does not save up
-        }
+        blocked = left >= whole;
+        raised = blocked ? Math.Min(raised, 1f) : raised - (whole - left);      // with nowhere to put it, it stops; it does not save up
 
         if (was != blocked) MarkDirty();
     }
 
-    /// <summary>The heap beside the borer: east of it first, then the other sides. Starts one where there is room.</summary>
-    private BlockEntityCoalHeap? Heap()
+    /// <summary>Where the borer tips its coal: east of it first, then the other sides.</summary>
+    private IEnumerable<BlockPos> Spots()
     {
-        var ba = Api.World.BlockAccessor;
-        var spots = new[] { Pos.AddCopy(2, 0, 0), Pos.AddCopy(2, 0, 1), Pos.AddCopy(-1, 0, 0), Pos.AddCopy(-1, 0, 1), Pos.AddCopy(0, 0, 2), Pos.AddCopy(1, 0, 2), Pos.AddCopy(0, 0, -1), Pos.AddCopy(1, 0, -1) };
-        foreach (var spot in spots)
-        {
-            if (ba.GetBlockEntity(spot) is BlockEntityCoalHeap heap) return heap;
-        }
-
-        var block = Api.World.GetBlock(new AssetLocation("froststory", "coalheap"));
-        if (block == null) return null;
-        foreach (var spot in spots)
-        {
-            if (ba.GetBlock(spot).Id != 0 && ba.GetBlock(spot) is not BlockPipeWarmth) continue;
-            ba.SetBlock(block.Id, spot);
-            return ba.GetBlockEntity(spot) as BlockEntityCoalHeap;
-        }
-
-        return null;
+        yield return Pos.AddCopy(2, 0, 0);
+        yield return Pos.AddCopy(-1, 0, 1);
+        yield return Pos.AddCopy(1, 0, 2);
+        yield return Pos.AddCopy(0, 0, -1);
     }
 
     public string Summary()
@@ -285,7 +412,7 @@ public class BlockEntityBorer : BlockEntity
 
 /// <summary>
 /// Bucket conveyors carry coal from heaps to whatever they end at. Any conveyor touching another is the
-/// same line. Whoever is at the end asks the line, and it draws from every heap the line touches.
+/// same line. Whoever is at the end asks the line, and it draws from every coal pile the line touches.
 /// </summary>
 public static class Conveyors
 {
@@ -300,7 +427,7 @@ public static class Conveyors
         var ba = world.BlockAccessor;
         var seen = new HashSet<BlockPos> { end.Copy() };
         var line = new Queue<BlockPos>();
-        var heaps = new List<BlockEntityCoalHeap>();
+        var heaps = new List<BlockPos>();
         line.Enqueue(end.Copy());
 
         while (line.Count > 0 && seen.Count < MaxLine)
@@ -311,14 +438,14 @@ public static class Conveyors
                 var next = at.AddCopy(face);
                 if (!seen.Add(next) || ba.GetChunkAtBlockPos(next) == null) continue;
                 if (IsConveyor(ba.GetBlock(next))) line.Enqueue(next);
-                else if (!at.Equals(end) && ba.GetBlockEntity(next) is BlockEntityCoalHeap heap) heaps.Add(heap);
+                else if (!at.Equals(end) && ba.GetBlockEntity(next) is BlockEntityCoalHeap) heaps.Add(next);
             }
         }
 
         int got = 0;
         foreach (var heap in heaps)
         {
-            got += heap.Take(amount - got);
+            got += CoalPile.Take(world, heap, amount - got);
             if (got >= amount) break;
         }
 

@@ -2,16 +2,9 @@
 	"code": "coalheap",
 	"class": "FrostStoryCoalHeap",
 	"entityClass": "FrostStoryCoalHeap",
-	"creativeinventory": {
-		"general": [
-			"*"
-		],
-		"froststory": [
-			"*"
-		]
-	},
+	"creativeinventory": {},
 	"shape": {
-		"base": "block/generator/coalheap"
+		"base": "block/generator/coalheap-{layers}"
 	},
 	"textures": {
 		"coal": {
@@ -20,20 +13,8 @@
 	},
 	"blockmaterial": "Stone",
 	"resistance": 1.5,
-	"drops": [],
-	"collisionSelectionBox": {
-		"x1": 0,
-		"y1": 0,
-		"z1": 0,
-		"x2": 1,
-		"y2": 0.5,
-		"z2": 1
-	},
 	"drawtype": "json",
 	"faceCullMode": "NeverCull",
-	"sidesolid": {
-		"all": false
-	},
 	"sideopaque": {
 		"all": false
 	},
@@ -47,5 +28,100 @@
 		"place": "game:block/gravel",
 		"break": "game:block/gravel",
 		"hit": "game:block/gravel"
+	},
+	"variantgroups": [
+		{
+			"code": "layers",
+			"states": [
+				"1",
+				"2",
+				"3",
+				"4",
+				"5",
+				"6",
+				"7",
+				"8"
+			]
+		}
+	],
+	"collisionSelectionBoxByType": {
+		"*-1": {
+			"x1": 0,
+			"y1": 0,
+			"z1": 0,
+			"x2": 1,
+			"y2": 0.125,
+			"z2": 1
+		},
+		"*-2": {
+			"x1": 0,
+			"y1": 0,
+			"z1": 0,
+			"x2": 1,
+			"y2": 0.25,
+			"z2": 1
+		},
+		"*-3": {
+			"x1": 0,
+			"y1": 0,
+			"z1": 0,
+			"x2": 1,
+			"y2": 0.375,
+			"z2": 1
+		},
+		"*-4": {
+			"x1": 0,
+			"y1": 0,
+			"z1": 0,
+			"x2": 1,
+			"y2": 0.5,
+			"z2": 1
+		},
+		"*-5": {
+			"x1": 0,
+			"y1": 0,
+			"z1": 0,
+			"x2": 1,
+			"y2": 0.625,
+			"z2": 1
+		},
+		"*-6": {
+			"x1": 0,
+			"y1": 0,
+			"z1": 0,
+			"x2": 1,
+			"y2": 0.75,
+			"z2": 1
+		},
+		"*-7": {
+			"x1": 0,
+			"y1": 0,
+			"z1": 0,
+			"x2": 1,
+			"y2": 0.875,
+			"z2": 1
+		},
+		"*-8": {
+			"x1": 0,
+			"y1": 0,
+			"z1": 0,
+			"x2": 1,
+			"y2": 1.0,
+			"z2": 1
+		}
+	},
+	"sidesolidByType": {
+		"*-8": {
+			"all": true
+		},
+		"*": {
+			"all": false,
+			"down": true
+		}
+	},
+	"attributes": {
+		"handbook": {
+			"exclude": true
+		}
 	}
 }
