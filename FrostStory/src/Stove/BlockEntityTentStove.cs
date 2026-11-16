@@ -25,22 +25,41 @@ public class BlockEntityTentStove : BlockEntity
         else RegisterGameTickListener(Smoke, 400);
     }
 
-    /// <summary>The top of the flue standing on the stove, or null when there is none.</summary>
-    public BlockPos? FlueTop()
+    /// <summary>
+    /// Follows the flue from the stove, up and round any elbow, to its last piece. Returns that piece
+    /// and the way smoke leaves it, or null when no flue stands on the stove.
+    /// </summary>
+    public (BlockPos End, BlockFacing Out)? FlueEnd()
     {
         var ba = Api.World.BlockAccessor;
         var pos = Pos.UpCopy();
-        if (ba.GetBlock(pos) is not BlockStoveFlue) return null;
-        for (int i = 0; i < MaxFlue && ba.GetBlock(pos.UpCopy()) is BlockStoveFlue; i++) pos.Up();
-        return pos;
+        var heading = BlockFacing.UP;
+        (BlockPos, BlockFacing)? end = null;
+
+        for (int i = 0; i < MaxFlue; i++)
+        {
+            if (ba.GetBlock(pos) is not BlockStoveFlue flue) break;
+            var next = flue.Carry(heading);
+            if (next == null) break;
+
+            heading = next;
+            end = (pos.Copy(), heading);
+            if (flue.IsCap) break;
+            pos.Add(heading);
+        }
+
+        return end;
     }
 
     /// <summary>Null when the stove can draw; otherwise the lang key of what is wrong.</summary>
     public string? FlueProblem()
     {
-        var top = FlueTop();
-        if (top == null) return "stove-noflue";
-        return Api.World.BlockAccessor.GetRainMapHeightAt(top) > top.Y ? "stove-flueblocked" : null;
+        var end = FlueEnd();
+        if (end == null) return "stove-noflue";
+
+        // where the smoke comes out has to be under open sky
+        var mouth = end.Value.End.AddCopy(end.Value.Out);
+        return Api.World.BlockAccessor.GetRainMapHeightAt(mouth) >= mouth.Y ? "stove-flueblocked" : null;
     }
 
     /// <summary>Puts one piece of fuel from the slot on the fire. Returns a lang key when it will not go in.</summary>
@@ -106,10 +125,12 @@ public class BlockEntityTentStove : BlockEntity
     private void Smoke(float dt)
     {
         if (!IsLit) return;
-        var top = FlueTop();
-        if (top == null) return;
+        var end = FlueEnd();
+        if (end == null) return;
 
-        var min = new Vec3d(top.X + 0.4, top.Y + 1.0, top.Z + 0.4);
+        var n = end.Value.Out.Normali;
+        var top = end.Value.End;
+        var min = new Vec3d(top.X + 0.4 + n.X * 0.6, top.Y + 0.4 + n.Y * 0.6, top.Z + 0.4 + n.Z * 0.6);
         var smoke = new SimpleParticleProperties(
             1, 2,
             ColorUtil.ToRgba(120, 70, 70, 70),

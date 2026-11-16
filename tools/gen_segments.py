@@ -1054,8 +1054,8 @@ def steamport():
     m.vprism(0, 0, 0.0, 0.12, 0.46, "band", caps=(False, True), captex="band")
     m.vprism(0, 0, 0.12, 0.5, 0.3, "pipe")
     m.vprism(0, 0, 0.16, 0.84, 0.36, "red", caps=(True, True), captex="band")      # valve body
-    m.hprism((0.3, 0.5, 0), (0.44, 0.5, 0), 0.3, "pipe")
-    m.box((0.44, 0.5, 0), (0.12, 0.86, 0.86), "band")                              # outlet flange
+    m.hprism((0.3, 0.5, 0), (0.44, 0.5, 0), 0.16, "pipe")
+    m.hprism((0.42, 0.5, 0), (0.5, 0.5, 0), 0.24, "band", caps=(True, True), captex="band")      # outlet flange
     m.vprism(0, 0, 0.84, 0.96, 0.05, "steel")
     m.handwheel(0, 0.95, 0, a=0.3)
     return m
@@ -1130,7 +1130,18 @@ def mainstand():
     return m
 
 
-RUN_BORE = 0.24       # bore of a small pipe run
+PIPE_BORE = 0.16      # a small pipe, rigid or strung: about a third of a block across
+PIPE_FLANGE = 0.24
+RUN_BORE = PIPE_BORE
+
+
+def pipe():
+    """One block of rigid steam pipe, standing upright: a slim tube with a bolted flange at each end."""
+    m = Model("pipe", (0, 1, 0))
+    m.vprism(0, 0, 0.0, 1.0, PIPE_BORE, "pipe", chunk=1.0)
+    for y0, y1 in ((0.0, 0.07), (0.93, 1.0)):
+        m.vprism(0, 0, y0, y1, PIPE_FLANGE, "band", caps=(True, True), captex="band")
+    return m
 
 
 def runpiece(big):
@@ -1205,8 +1216,8 @@ def distributor(kind, side):
         m.box((0.12, y, z), (0.36, 1.9, 1.9), "band")                                                 # header plate
         for oy in (0.5, 1.5):
             for oz in (0.0, 1.0):
-                m.hprism((0.3, oy, oz), (0.5, oy, oz), 0.3, "pipe")
-                m.hprism((0.42, oy, oz), (0.5, oy, oz), 0.4, "band", caps=(True, True), captex="band")
+                m.hprism((0.3, oy, oz), (0.5, oy, oz), 0.16, "pipe")
+                m.hprism((0.43, oy, oz), (0.5, oy, oz), 0.24, "band", caps=(True, True), captex="band")
         m.vprism(0.12, z, y + 0.95, y + 1.0, 0.2, "steel", caps=(False, True), captex="steel")       # lifting boss
     else:
         m.hprism((-0.38, y, z), (0.1, y, z), MAIN_BORE, "pipe")
@@ -1214,8 +1225,8 @@ def distributor(kind, side):
         m.vprism(0.5, z, 1.95, 2.0, 0.4, "steel", caps=(False, True), captex="steel")
         for ox in (0.0, 1.0):
             for oz in (0.0, 1.0):
-                m.vprism(ox, oz, 0.0, 0.3, 0.3, "pipe")
-                m.vprism(ox, oz, 0.0, 0.08, 0.4, "band", caps=(True, True), captex="band")
+                m.vprism(ox, oz, 0.0, 0.3, 0.16, "pipe")
+                m.vprism(ox, oz, 0.0, 0.07, 0.24, "band", caps=(True, True), captex="band")
     return m
 
 
@@ -1252,8 +1263,8 @@ def radiator(back):
             m.box((x, 0.02, z), (0.16, 0.04, 0.14), "band")          # foot
     for x in (0.0, 1.0):                                              # a tail behind each block
         m.box((x, 0.5, -0.18), (0.3, 0.2, 0.1), "band")              # boss across the columns
-        m.hprism((x, 0.5, -0.5), (x, 0.5, -0.2), 0.085, "pipe")
-        m.hprism((x, 0.5, -0.5), (x, 0.5, -0.43), 0.16, "band", caps=(True, True), captex="band")
+        m.hprism((x, 0.5, -0.5), (x, 0.5, -0.2), 0.12, "pipe")
+        m.hprism((x, 0.5, -0.5), (x, 0.5, -0.43), 0.24, "band", caps=(True, True), captex="band")
     m.box((1.0, 0.5, 0.18), (0.3, 0.2, 0.1), "band")                 # the valve, on the front, away from the wall
     m.vprism(1.0, 0.33, 0.4, 0.62, 0.1, "brass", caps=(True, True), captex="brass")
     m.vprism(1.0, 0.33, 0.62, 0.72, 0.03, "steel")
@@ -1263,7 +1274,7 @@ def radiator(back):
 
 def floorgrate():
     """An underfloor grate: a one-block floor tray with a heating coil in it and grating over the top to
-    walk on. A pipe mount hangs under the middle; the sides are plain plate."""
+    walk on. A pipe mount hangs under the middle, and there is one in the middle of each side."""
     m = Model("floorgrate", (0, 1, 0))
     m.box((0, 0.04, 0), (1, 0.08, 1), "darkplate")                               # tray floor
     for sx, sz, size in ((0.46, 0, (0.08, 1, 1)), (-0.46, 0, (0.08, 1, 1)), (0, 0.46, (0.84, 1, 0.08)), (0, -0.46, (0.84, 1, 0.08))):
@@ -1276,8 +1287,15 @@ def floorgrate():
         m.hprism((x, 0.5, z0), (x, 0.5, z1), 0.1, "pipe")
     m.vprism(0, 0, 0.08, 0.42, 0.09, "pipe")                                     # riser from the mount
     m.box((0, 0.96, 0), (0.84, 0.06, 0.84), "grating")
-    m.vprism(0, 0, -0.06, 0.06, 0.4, "band", caps=(True, True), captex="band")   # mount underneath
-    m.vprism(0, 0, -0.07, 0.0, 0.26, "black", caps=(True, True), captex="black")
+    m.vprism(0, 0, -0.06, 0.06, 0.26, "band", caps=(True, True), captex="band")  # mount underneath
+    m.vprism(0, 0, -0.07, 0.0, 0.16, "black", caps=(True, True), captex="black")
+    for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):                            # and one in the middle of each side
+        def side_at(d, dx=dx, dz=dz):
+            return (dx * d, 0.5, dz * d)
+        a, b = (side_at(0.44), side_at(0.56)) if dx + dz > 0 else (side_at(0.56), side_at(0.44))
+        m.hprism(a, b, 0.26, "band", caps=(True, True), captex="band")
+        a, b = (side_at(0.5), side_at(0.57)) if dx + dz > 0 else (side_at(0.57), side_at(0.5))
+        m.hprism(a, b, 0.16, "black", caps=(True, True), captex="black")
     return m
 
 
@@ -1312,11 +1330,28 @@ def tentstove(state):
     return m
 
 
-def stoveflue():
-    """A length of stove flue: a thin pipe up the middle of its block, with a joint ring at the foot."""
-    m = Model("stoveflue", (0, 1, 0))
-    m.vprism(0, 0, 0.0, 1.0, 0.12, "pipe")
-    m.vprism(0, 0, 0.0, 0.07, 0.15, "band", caps=(True, True), captex="band")
+def stoveflue(kind="pipe"):
+    """Stove flue. 'pipe' is a length of it: a thin pipe up the middle of its block, with a joint ring
+    at the foot. 'cap' ends a flue: a short stub under a conical rain cowl on four stays. 'elbow' takes
+    a flue coming up from below and turns it out through the north side."""
+    m = Model("stoveflue" if kind == "pipe" else "stoveflue-" + kind, (0, 1, 0))
+    if kind == "pipe":
+        m.vprism(0, 0, 0.0, 1.0, 0.12, "pipe")
+        m.vprism(0, 0, 0.0, 0.07, 0.15, "band", caps=(True, True), captex="band")
+    elif kind == "cap":
+        m.vprism(0, 0, 0.0, 0.42, 0.12, "pipe", caps=(False, True), captex="black")
+        m.vprism(0, 0, 0.0, 0.07, 0.15, "band", caps=(True, True), captex="band")
+        for sx, sz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            m.box((sx * 0.13, 0.5, sz * 0.13), (0.03, 0.2, 0.03), "steel")          # stays
+        for y, a in ((0.58, 0.3), (0.64, 0.24), (0.7, 0.17), (0.76, 0.1)):        # the cowl, stepping in
+            m.vprism(0, 0, y, y + 0.06, a, "band", caps=(True, True), captex="band")
+        m.vprism(0, 0, 0.82, 0.9, 0.04, "brass", caps=(False, True), captex="brass")
+    else:
+        m.vprism(0, 0, 0.0, 0.5, 0.12, "pipe")
+        m.vprism(0, 0, 0.0, 0.07, 0.15, "band", caps=(True, True), captex="band")
+        m.box((0, 0.5, 0), (0.3, 0.3, 0.3), "band")                                # the knuckle
+        m.hprism((0, 0.5, -0.5), (0, 0.5, -0.1), 0.12, "pipe")
+        m.hprism((0, 0.5, -0.5), (0, 0.5, -0.43), 0.15, "band", caps=(True, True), captex="band")
     return m
 
 
@@ -1395,14 +1430,14 @@ def wallpass(axis):
     for sign in (-1, 1):
         if axis == "ud":
             y0, y1 = sorted((0.5 + sign * 0.42, 0.5 + sign * 0.56))
-            m.vprism(0, 0, y0, y1, 0.4, "band", caps=(True, True), captex="band")
+            m.vprism(0, 0, y0, y1, 0.26, "band", caps=(True, True), captex="band")
             y0, y1 = sorted((0.5 + sign * 0.5, 0.5 + sign * 0.57))
-            m.vprism(0, 0, y0, y1, 0.26, "black", caps=(True, True), captex="black")
+            m.vprism(0, 0, y0, y1, 0.16, "black", caps=(True, True), captex="black")
         else:
             def at(d):
                 return (sign * d, 0.5, 0) if axis == "we" else (0, 0.5, sign * d)
-            m.hprism(at(0.42), at(0.56), 0.4, "band", caps=(True, True), captex="band")
-            m.hprism(at(0.5), at(0.57), 0.26, "black", caps=(True, True), captex="black")
+            m.hprism(at(0.42), at(0.56), 0.26, "band", caps=(True, True), captex="band")
+            m.hprism(at(0.5), at(0.57), 0.16, "black", caps=(True, True), captex="black")
     return m
 
 
@@ -1503,7 +1538,7 @@ def main():
     parts += [distributor(k, s) for k in ("straight", "drop") for s in DISTRIBUTOR_SIDES]
     parts += [wallpass(a) for a in ("ud", "ns", "we")]
     parts += [radiator(b) for b in RADIATOR_SIDES]
-    parts += [steamhub(), hubframe("leg"), hubframe("head"), floorgrate(), tentstove("cold"), tentstove("lit"), stoveflue()]
+    parts += [steamhub(), hubframe("leg"), hubframe("head"), floorgrate(), tentstove("cold"), tentstove("lit"), stoveflue(), stoveflue("cap"), stoveflue("elbow"), pipe()]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:
         part.save(os.path.join(SHAPE_DIR, ".."))

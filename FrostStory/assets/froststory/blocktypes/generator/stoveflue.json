@@ -3,31 +3,33 @@
 	"class": "FrostStoryStoveFlue",
 	"creativeinventory": {
 		"general": [
-			"*"
+			"*-ud",
+			"*-cap",
+			"*-elbownorth"
 		],
 		"froststory": [
-			"*"
+			"*-ud",
+			"*-cap",
+			"*-elbownorth"
 		]
 	},
 	"drawtype": "json",
-	"shape": {
-		"base": "block/generator/stoveflue"
-	},
 	"textures": {
 		"band": {
 			"base": "block/generator/segment/band"
 		},
 		"pipe": {
 			"base": "block/generator/segment/pipe"
+		},
+		"black": {
+			"base": "block/generator/segment/black"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"brass": {
+			"base": "block/generator/segment/brass"
 		}
-	},
-	"collisionSelectionBox": {
-		"x1": 0.34,
-		"y1": 0,
-		"z1": 0.34,
-		"x2": 0.66,
-		"y2": 1,
-		"z2": 0.66
 	},
 	"blockmaterial": "Metal",
 	"sidesolid": {
@@ -49,5 +51,114 @@
 		"break": "game:block/chute",
 		"hit": "game:block/chute",
 		"walk": "game:walk/stone"
+	},
+	"variantgroups": [
+		{
+			"code": "type",
+			"states": [
+				"ud",
+				"ns",
+				"we",
+				"cap",
+				"elbownorth",
+				"elboweast",
+				"elbowsouth",
+				"elbowwest"
+			]
+		}
+	],
+	"shapeByType": {
+		"*-ud": {
+			"base": "block/generator/stoveflue"
+		},
+		"*-ns": {
+			"base": "block/generator/stoveflue",
+			"rotateX": 90
+		},
+		"*-we": {
+			"base": "block/generator/stoveflue",
+			"rotateZ": 90
+		},
+		"*-cap": {
+			"base": "block/generator/stoveflue-cap"
+		},
+		"*-elbownorth": {
+			"base": "block/generator/stoveflue-elbow",
+			"rotateY": 0
+		},
+		"*-elbowwest": {
+			"base": "block/generator/stoveflue-elbow",
+			"rotateY": 90
+		},
+		"*-elbowsouth": {
+			"base": "block/generator/stoveflue-elbow",
+			"rotateY": 180
+		},
+		"*-elboweast": {
+			"base": "block/generator/stoveflue-elbow",
+			"rotateY": 270
+		}
+	},
+	"collisionSelectionBoxByType": {
+		"*-ud": {
+			"x1": 0.34,
+			"y1": 0,
+			"z1": 0.34,
+			"x2": 0.66,
+			"y2": 1,
+			"z2": 0.66
+		},
+		"*-ns": {
+			"x1": 0.34,
+			"y1": 0.34,
+			"z1": 0,
+			"x2": 0.66,
+			"y2": 0.66,
+			"z2": 1
+		},
+		"*-we": {
+			"x1": 0,
+			"y1": 0.34,
+			"z1": 0.34,
+			"x2": 1,
+			"y2": 0.66,
+			"z2": 0.66
+		},
+		"*-cap": {
+			"x1": 0.2,
+			"y1": 0,
+			"z1": 0.2,
+			"x2": 0.8,
+			"y2": 0.9,
+			"z2": 0.8
+		},
+		"*": {
+			"x1": 0.3,
+			"y1": 0,
+			"z1": 0.3,
+			"x2": 0.7,
+			"y2": 0.7,
+			"z2": 0.7
+		}
+	},
+	"dropsByType": {
+		"*-cap": [
+			{
+				"type": "block",
+				"code": "stoveflue-cap"
+			}
+		],
+		"*-elbow*": [
+			{
+				"type": "block",
+				"code": "stoveflue-elbownorth"
+			}
+		],
+		"*": [
+			{
+				"type": "block",
+				"code": "stoveflue-ud"
+			}
+		]
 	}
 }

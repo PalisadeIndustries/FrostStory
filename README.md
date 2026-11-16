@@ -128,8 +128,8 @@ arrive with the Steam Core stage and go live when the generator is fired.
   away from you. With steam in it, it gives five times the warmth of a pipe (the
   same as a firepit at the default setting).
 - An **underfloor grate** is a floor block to walk on with a heating coil under its grating. It
-  has a pipe mount underneath, for a pipe or one pipe run, and also takes a pipe against any
-  side. Grates laid side by side pass steam along, so one feed warms a whole floor. It gives
+  has a pipe mount underneath, for a pipe or one pipe run, and one in the middle of each side
+  for a pipe. Grates laid side by side pass steam along, so one feed warms a whole floor. It gives
   three times the warmth of a pipe, and is solid for closing a room. Nothing joins on top.
 - Look at a pipe to see whether it is carrying steam.
 
@@ -205,12 +205,14 @@ pipes reach it.
 - Put fuel in by hand (anything a firepit burns), one piece a click, then light it the way you
   light a firepit. Fuel lasts three times as long as in a firepit and the stove holds about half
   an hour of it. Look at it to see how long is left.
-- It only draws with a **stove flue** standing on it, stacked until the top is in the open. The
-  flue can go up through tent cloth, and closes the hole it makes. If the top ends up under
-  cover the fire goes out.
+- It only draws with a **stove flue** standing on it that comes out under open sky. Stack
+  lengths straight up through the cloth, or put a **flue elbow** on and carry on sideways out
+  through a wall; the flue closes the hole it makes. A **flue cap** on the top keeps the rain
+  out. If the end is under cover the fire goes out.
 - Lit, it gives the warmth of a firepit and a little light.
 - An iron plate over two iron plates over three iron ingots makes a stove; four iron plates in
-  two columns make eight flues. `StoveHeatStrength` and `StoveFuelEfficiency` in the config
+  two columns make eight flues; an iron plate over a flue makes a cap; three flues in an L make
+  two elbows. `StoveHeatStrength` and `StoveFuelEfficiency` in the config
   change the warmth and how long fuel lasts.
 
 ### Admin commands (`controlserver` privilege)
@@ -311,7 +313,7 @@ steam. Tent panels go up between rods, come down, and follow a rod that is remov
 higher and lower ground. Both distributors carry steam from a main to a pipe on each of their four
 outlets and to four pipe runs (a fifth is refused), and stay shut to pipes and mains on every other side. A wall passthrough carries steam between its two mounts by pipe or by run,
 stays shut on its other four sides, and counts as a solid, heat-keeping block. A radiator takes steam at the two hookups on its back and from
-underneath, by pipe or by run, passes it on, and stays shut on its front, ends and top. A tent stove lights with fuel and a flue to open sky, refuses without a flue or with the flue top under
+underneath, by pipe or by run, passes it on, and stays shut on its front, ends and top. A tent stove lights with fuel and a flue to open sky (straight up with a cap, or round an elbow and out sideways), refuses without a flue or with the flue top under
 cover, burns its fuel down and goes out, and goes out when its flue is removed. A hub tower comes up with its legs, tapered head, fitting, drop main and hub in place, the hub three blocks off the ground and live. A steam hub takes a main on top, refuses pipes, lays warm air over uneven ground out to its radius that is warm
 only while the hub has steam and weaker further out, and takes it up again when broken. Underfloor grates take steam from underneath or the side, pass it
 along a row, take one run underneath, and stay shut on top. Every shape file loads cleanly through the game's own

@@ -62,8 +62,43 @@
 		"height": 2,
 		"output": {
 			"type": "block",
-			"code": "froststory:stoveflue",
+			"code": "froststory:stoveflue-ud",
 			"quantity": 8
+		}
+	},
+	{
+		"ingredientPattern": "P,F",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"F": {
+				"type": "block",
+				"code": "froststory:stoveflue-ud"
+			}
+		},
+		"width": 1,
+		"height": 2,
+		"output": {
+			"type": "block",
+			"code": "froststory:stoveflue-cap"
+		}
+	},
+	{
+		"ingredientPattern": "FF,F_",
+		"ingredients": {
+			"F": {
+				"type": "block",
+				"code": "froststory:stoveflue-ud"
+			}
+		},
+		"width": 2,
+		"height": 2,
+		"output": {
+			"type": "block",
+			"code": "froststory:stoveflue-elbownorth",
+			"quantity": 2
 		}
 	}
 ]

@@ -679,7 +679,7 @@ def shape_console():
     ])
 
 
-SHAPES = [shape_pipe, shape_girder, shape_grating, shape_ladder, shape_console]
+SHAPES = [shape_girder, shape_grating, shape_ladder, shape_console]
 
 
 def main():

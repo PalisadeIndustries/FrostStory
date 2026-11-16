@@ -79,8 +79,48 @@ public class BlockTentStove : Block, IHeatSource, IIgnitable
     public EnumIgniteState OnTryIgniteStack(EntityAgent byEntity, BlockPos pos, ItemSlot slot, float secondsIgniting) => EnumIgniteState.NotIgnitable;
 }
 
-/// <summary>A length of stove flue. It is a thin pipe, but it closes the hole it makes in a tent or a roof.</summary>
+/// <summary>
+/// Stove flue: straight lengths (upright or lying), an elbow that turns a rising flue out sideways, and
+/// a cap for the top. It is a thin pipe, but it closes the hole it makes in a tent, a wall or a roof.
+/// </summary>
 public class BlockStoveFlue : Block
 {
+    /// <summary>True for the cap: smoke leaves here.</summary>
+    public bool IsCap { get; private set; }
+
+    private EnumAxis? axis;          // a straight length lies along this
+    private BlockFacing? turnsTo;    // an elbow takes smoke coming up and sends it this way
+
+    public override void OnLoaded(ICoreAPI api)
+    {
+        base.OnLoaded(api);
+        string type = Variant["type"] ?? "ud";
+        IsCap = type == "cap";
+        if (type.StartsWith("elbow")) turnsTo = BlockFacing.FromCode(type.Substring(5));
+        else if (!IsCap) axis = type == "ns" ? EnumAxis.Z : type == "we" ? EnumAxis.X : EnumAxis.Y;
+    }
+
+    /// <summary>
+    /// Which way smoke travelling <paramref name="heading"/> leaves this piece, or null when it cannot
+    /// come in that way.
+    /// </summary>
+    public BlockFacing? Carry(BlockFacing heading)
+    {
+        if (turnsTo != null || IsCap) return heading == BlockFacing.UP ? turnsTo ?? BlockFacing.UP : null;
+        return heading.Axis == axis ? heading : null;
+    }
+
+    public override bool TryPlaceBlock(IWorldAccessor world, IPlayer byPlayer, ItemStack itemstack, BlockSelection blockSel, ref string failureCode)
+    {
+        if (byPlayer == null || IsCap) return base.TryPlaceBlock(world, byPlayer, itemstack, blockSel, ref failureCode);
+
+        // a length lies along the side it is set against; an elbow turns away from whoever sets it
+        string type = turnsTo != null
+            ? "elbow" + SuggestedHVOrientation(byPlayer, blockSel)[0].Opposite.Code
+            : blockSel.Face.Axis switch { EnumAxis.Y => "ud", EnumAxis.Z => "ns", _ => "we" };
+        var turned = world.GetBlock(CodeWithVariant("type", type)) ?? this;
+        return turned.CanPlaceBlock(world, byPlayer, blockSel, ref failureCode) && turned.DoPlaceBlock(world, byPlayer, blockSel, itemstack);
+    }
+
     public override int GetRetention(BlockPos pos, BlockFacing facing, EnumRetentionType type) => 1;
 }
