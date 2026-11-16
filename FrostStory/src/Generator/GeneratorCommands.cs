@@ -128,6 +128,33 @@ public static class GeneratorCommands
                 })
             .EndSubCommand()
 
+            .BeginSubCommand("coal")
+                .WithDescription("Report on a generator console, coal heap or steam borer at a position. Optionally add coal to it and let that many hours pass for it.")
+                .WithArgs(parsers.WorldPosition("position"), parsers.OptionalInt("add"), parsers.OptionalFloat("hours"))
+                .HandleWith(args =>
+                {
+                    var be = api.World.BlockAccessor.GetBlockEntity(((Vec3d)args[0]).AsBlockPos);
+                    int add = args.Parsers[1].IsMissing ? 0 : (int)args[1];
+                    double hours = args.Parsers[2].IsMissing ? 0 : (float)args[2];
+                    switch (be)
+                    {
+                        case BlockEntityGeneratorConsole console:
+                            console.AddCoal(add);
+                            console.AdvanceFuel(hours);
+                            return TextCommandResult.Success($"Bunker {console.Coal:0.#}. {(console.IsLit ? $"Running: sending {console.SteamOut():0.#} steam, burning {console.BurnPerHour:0.#} an hour." : "Not lit.")}");
+                        case FrostStory.Coal.BlockEntityCoalHeap heap:
+                            heap.Add(add);
+                            return TextCommandResult.Success($"Heap holds {heap.Count}.");
+                        case FrostStory.Coal.BlockEntityBorer borer:
+                            if (borer.OreCount < 0) borer.Survey();
+                            borer.Advance(hours);
+                            return TextCommandResult.Success(borer.Summary());
+                        default:
+                            return TextCommandResult.Error("There is no generator console, coal heap or steam borer there.");
+                    }
+                })
+            .EndSubCommand()
+
             .BeginSubCommand("valve")
                 .WithDescription("Set a stop valve: 0 is shut, 8 fully open.")
                 .WithArgs(parsers.WorldPosition("position"), parsers.IntRange("setting", 0, 8))

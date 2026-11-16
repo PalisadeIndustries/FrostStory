@@ -78,6 +78,9 @@ public class BlockSteamConduit : Block, IHeatSource
     /// </summary>
     private int legLevels;
 
+    /// <summary>True for steam borers: they take a pipe on any side and draw steam to raise coal.</summary>
+    public bool IsBorer { get; private set; }
+
     /// <summary>True for stop valves: a length of pipe that can be shut, or part shut to hold steam back.</summary>
     public bool IsValve { get; private set; }
 
@@ -123,11 +126,17 @@ public class BlockSteamConduit : Block, IHeatSource
             "floorgrate" => 3f,
             "radiator" => 6f,
             "steamhub" => 30f,
+            "borer" => 20f,
             _ => 0f
         };
 
         switch (kind)
         {
+            case "borer":
+                IsBig = managesFill = IsBorer = true;      // no openings of its own: mains never join it
+                Size = new Vec3i(2, 3, 2);
+                break;
+
             case "steamvalve":
                 IsValve = true;
                 OpenAlong(Variant["axis"]);
@@ -247,6 +256,7 @@ public class BlockSteamConduit : Block, IHeatSource
     {
         if (IsDistributor) return face == Outlet;
         if (IsHub) return false;      // a hub takes a main, nothing smaller
+        if (IsBorer) return face.IsHorizontal;
         if (IsRadiator) return face == BlockFacing.DOWN || face == Back;
         return IsBig && !IsStructural && (!IsPort || connects[face.Index]);
     }
@@ -258,7 +268,7 @@ public class BlockSteamConduit : Block, IHeatSource
     /// </summary>
     private AssetLocation FillCode(int x, int y, int z) =>
         IsRadiator ? new AssetLocation("froststory", $"radiatorfill-o{x}{y}{z}")
-        : IsHub || legLevels > 0 ? new AssetLocation("froststory", y < 0 ? $"hubfill-d{x}{-y}{z}" : $"hubfill-o{x}{y}{z}")
+        : IsHub || IsBorer || legLevels > 0 ? new AssetLocation("froststory", y < 0 ? $"hubfill-d{x}{-y}{z}" : $"hubfill-o{x}{y}{z}")
         : BlockSteamMainFill.CodeFor(x, y, z);
 
     /// <summary>Every cell the conduit fills, including anything hanging below the part steam flows through.</summary>
@@ -286,7 +296,7 @@ public class BlockSteamConduit : Block, IHeatSource
 
     public IEnumerable<(BlockFacing Face, Vec3d Point)> RunPoints(BlockPos anchor, bool big)
     {
-        if (IsHub && !big) yield break;
+        if (IsBorer || (IsHub && !big)) yield break;
 
         if (IsFloorGrate)
         {

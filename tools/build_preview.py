@@ -414,6 +414,8 @@ def pipework_example(codes, atlas):
     )
     stove = (15, 1, 12)
     rods = rods + [(*stove, "tentstove-lit-west")] + [(stove[0], y, stove[2], "stoveflue-ud") for y in range(2, 5)] + [(stove[0], 5, stove[2], "stoveflue-cap")]
+    # a steam borer with its heap, and a bucket conveyor leading off from it
+    rods = rods + [(20, 1, 14, "borer"), (22, 1, 14, "coalheap")] + [(x, 1, 14, "bucketconveyor-we") for x in (23, 24, 25)] + [(26, y, 14, "bucketconveyor-ud") for y in (1, 2, 3)]
     # a crossover over the heating pipes: steps up, a metre of catwalk above the pipe, steps down
     rods = rods + [(11, 1, 8, "catwalkstair-west"), (12, 2, 8, "catwalk-we"), (13, 1, 8, "catwalkstair-east")]
     small_cells = cells((*e, "pipejunction"), (*f, "pipejunction"), *[(x, 1, z, heat_code(x, z)) for x, z in heat], *rods)

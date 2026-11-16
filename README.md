@@ -133,6 +133,27 @@ arrive with the Steam Core stage and go live when the generator is fired.
   three times the warmth of a pipe, and is solid for closing a room. Nothing joins on top.
 - Look at a pipe to see whether it is carrying steam.
 
+**Coal.** A running generator burns coal from a bunker behind its console: 2 an hour to stay
+lit, plus 1 an hour for every 10 units of steam its ports are actually sending out. So a base
+port flat out costs 4 an hour, a large port 25, and throttling a branch with a valve saves coal.
+The bunker holds 4000. Put coal in by clicking the console with it in hand (charcoal, coke,
+lignite, bituminous coal or anthracite); clicking with anything else fires or banks it. With an
+empty bunker the fire goes out and the ports go cold until it is coaled and fired again.
+
+- A **steam borer** raises coal by itself. It is two blocks square and three high, takes a pipe
+  on any side and draws 20 steam. It raises 30 coal an hour, plus 0.2 for each block of coal ore
+  within 12 blocks around it and 32 below, up to 300 blocks (90 an hour at best). The rock is
+  looked at once, when the borer is set down, and the count is kept: mine the seam afterwards
+  and nothing changes, and it never runs out. Starved of steam it raises proportionally less.
+- The coal goes onto a **coal heap** beside the borer, east of it if there is room. A heap is
+  one block that holds any amount and is drawn bigger as it fills. Take coal from it with an
+  empty hand, a stack at a time; add to it with coal in hand.
+- **Bucket conveyors** carry coal from heaps to the bunker. Lay a line of them from beside a
+  heap to beside the console; any conveyors that touch are one line, up, down or along, and a
+  line draws from every heap it touches, up to 400 an hour.
+- `RequireCoal`, `IdleCoalPerHour`, `CoalPerSteamHour`, `BunkerCapacity`, `ConveyorCoalPerHour`,
+  `BorerCoalPerHour`, `BorerCoalPerOre` and `BorerOreCap` in the config change all of this.
+
 **Crossing pipework.** Pipes on the ground are in the way. **Pipe crossover steps** are a flight
 one block high with handrails; set one down facing the way you want to climb. A **crossover
 catwalk** is a metre of railed deck that goes in the block above the pipe, standing on legs that
@@ -204,7 +225,7 @@ Hull stage and go live with the rest.
 
 Recipes: two iron plates make four pipes; four iron plates make four fittings; eight iron plates
 in a ring make four mains; four mains make two main fittings; a main fitting over four iron
-ingots makes a stand; a pipe with an iron plate on each of its four sides makes two wall passthroughs; three iron plates over pipe, plate, pipe make a radiator; two gratings over two pipes over two iron plates make two underfloor grates; six iron plates over a main fitting make a steam hub; a steam hub over two columns of two iron ingots makes a hub tower; an iron plate over pipe, plate, pipe makes a stop valve, and a glass block over the same makes a gauge station; a main with four pipes makes a distributor (main and two pipes over two
+ingots makes a stand; a pipe with an iron plate on each of its four sides makes two wall passthroughs; three iron plates over pipe, plate, pipe make a radiator; two gratings over two pipes over two iron plates make two underfloor grates; six iron plates over a main fitting make a steam hub; a steam hub over two columns of two iron ingots makes a hub tower; an iron ingot over ingot, pipe, ingot over three iron plates makes a steam borer; ingot, gap, ingot over three plates over ingot, gap, ingot makes eight bucket conveyors; an iron plate over pipe, plate, pipe makes a stop valve, and a glass block over the same makes a gauge station; a main with four pipes makes a distributor (main and two pipes over two
 pipes) or a drop distributor (main over two rows of two pipes).
 
 A pipe is traced back to its port on demand, so the route has to be in loaded chunks. A run that
@@ -263,6 +284,7 @@ pipes reach it.
 | `/frostgen status [pos]` | Reports a console's state |
 | `/frostgen steam [pos]` | Says whether a pipe, fitting or port is carrying steam |
 | `/frostgen valve <pos> <0-8>` | Sets a stop valve |
+| `/frostgen coal <pos> [add] [hours]` | Reports on a console, coal heap or borer; adds coal and lets hours pass for it |
 | `/frostgen stove <pos> [seconds]` | Reports on a tent stove; with a number, adds that much fuel and lights it |
 | `/frostgen stand [pos] [hub]` | Raises a steam main stand with its post starting there; `true` raises a steam hub tower |
 | `/frostgen run <from> <to> [main]` | Strings a pipe run between two fittings or ports, or takes it down |
@@ -347,7 +369,7 @@ higher and lower ground. Both distributors carry steam from a main to a pipe on 
 outlets and to four pipe runs (a fifth is refused), and stay shut to pipes and mains on every other side. A wall passthrough carries steam between its two mounts by pipe or by run,
 stays shut on its other four sides, and counts as a solid, heat-keeping block. A radiator takes steam at the two hookups on its back and from
 underneath, by pipe or by run, passes it on, and stays shut on its front, ends and top. A tent stove lights with fuel and a flue to open sky (straight up with a cap, round an elbow and out sideways, or on round an upturn to a cap outside), refuses without a flue or with the flue top under
-cover, burns its fuel down and goes out, and goes out when its flue is removed. A stop valve shuts a line, and part open passes only its share so that what is beyond is fed in proportion; a gauge reads the supply reaching it and the draw beyond it, and both follow a valve being turned and things being added. An overloaded port starves its whole line. A hub tower comes up with its legs, tapered head, fitting, drop main and hub in place, the hub three blocks off the ground and live. A steam hub takes a main on top, refuses pipes, lays warm air over uneven ground out to its radius that is warm
+cover, burns its fuel down and goes out, and goes out when its flue is removed. The generator burns coal in step with the steam it sends out and goes out when the bunker is empty; a borer counts the coal round it once and raises coal onto a heap at the rate that gives, less when starved; a conveyor line carries it from the heap to the bunker. A stop valve shuts a line, and part open passes only its share so that what is beyond is fed in proportion; a gauge reads the supply reaching it and the draw beyond it, and both follow a valve being turned and things being added. An overloaded port starves its whole line. A hub tower comes up with its legs, tapered head, fitting, drop main and hub in place, the hub three blocks off the ground and live. A steam hub takes a main on top, refuses pipes, lays warm air over uneven ground out to its radius that is warm
 only while the hub has steam and weaker further out, and takes it up again when broken. Underfloor grates take steam from underneath or the side, pass it
 along a row, take one run underneath, and stay shut on top. Every shape file loads cleanly through the game's own
 shape class.

@@ -314,5 +314,48 @@
 			"code": "froststory:catwalkstair-north",
 			"quantity": 4
 		}
+	},
+	{
+		"ingredientPattern": "_I_,ISI,PPP",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"S": {
+				"type": "block",
+				"code": "froststory:steampipe-ud"
+			},
+			"I": {
+				"type": "item",
+				"code": "game:ingot-iron"
+			}
+		},
+		"width": 3,
+		"height": 3,
+		"output": {
+			"type": "block",
+			"code": "froststory:borer"
+		}
+	},
+	{
+		"ingredientPattern": "I_I,PPP,I_I",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"I": {
+				"type": "item",
+				"code": "game:ingot-iron"
+			}
+		},
+		"width": 3,
+		"height": 3,
+		"output": {
+			"type": "block",
+			"code": "froststory:bucketconveyor-ud",
+			"quantity": 8
+		}
 	}
 ]

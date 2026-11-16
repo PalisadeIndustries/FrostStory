@@ -88,6 +88,9 @@
 		"checker": {
 			"base": "block/generator/segment/checker"
 		},
+		"coal": {
+			"base": "block/generator/coal"
+		},
 		"coil": {
 			"base": "block/generator/segment/coil-cold"
 		},

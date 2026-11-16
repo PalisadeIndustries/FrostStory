@@ -267,6 +267,13 @@ def tex_junction():
 
 
 
+def tex_coal():
+    t = Tex("coal", (34, 32, 36), grain=12, blotch=14)
+    t.rust(22, (12, 11, 14))            # deep cracks between the lumps
+    t.rust(10, (86, 84, 96))            # and the odd bright face
+    return t
+
+
 def tex_paint_red():
     t = Tex("paint-red", PAINT_RED, grain=6, blotch=8)
     t.rust(5, (70, 34, 26))
@@ -571,7 +578,7 @@ def tex_canvas():
 TEXTURES = [
     tex_steel, tex_hull_plain, tex_hull_riveted, tex_hull_vent, tex_foundation,
     lambda: tex_lining("shaftlining-plain", False), lambda: tex_lining("shaftlining-ribbed", True), tex_lining_top,
-    tex_pipe, tex_pipe_end, tex_junction, tex_paint_red,
+    tex_pipe, tex_pipe_end, tex_junction, tex_paint_red, tex_coal,
     tex_grating, tex_pole, tex_canvas, tex_girder, tex_girder_node, tex_console_front, tex_console_side, tex_console_top,
 ]
 

@@ -27,7 +27,7 @@ public sealed class SteamNetwork
 
     /// <summary>What is remembered about one conduit: how well fed it is (0 to 1), how much steam can
     /// reach it, and how much everything beyond it draws.</summary>
-    private readonly record struct Entry(float Ratio, float Available, float Demand, long Expires);
+    private readonly record struct Entry(float Ratio, float Available, float Demand, long Expires, float Delivered, BlockPos? Key);
 
     /// <summary>What a fully open stop valve passes; each of its eight steps is an eighth of this.</summary>
     public const float ValveCapacity = 40f;
@@ -105,6 +105,16 @@ public sealed class SteamNetwork
     {
         var entry = Look(pos);
         return entry == null ? (0f, 0f, 0f) : (entry.Value.Available, entry.Value.Demand, entry.Value.Ratio);
+    }
+
+    /// <summary>
+    /// The whole run this conduit is on: a position that names it (the same for every conduit on the
+    /// run) and the steam its ports are actually sending out. Null when the run has no live port.
+    /// </summary>
+    public (BlockPos Key, float Delivered)? RunOf(BlockPos pos)
+    {
+        var entry = Look(pos);
+        return entry?.Key == null ? null : (entry.Value.Key, entry.Value.Delivered);
     }
 
     private Entry? Look(BlockPos pos)
@@ -292,12 +302,23 @@ public sealed class SteamNetwork
             for (int z = 0; z < stretches; z++) ratio[z] = before.Ratio;
         }
 
+        // the run is named after the first of its live ports, and sends out what is asked of it, up to what it has
+        BlockPos? key = null;
+        for (int i = 0; i < count; i++)
+        {
+            if (supply[i] <= 0f) continue;
+            var p = nodes[i];
+            if (key == null || p.X < key.X || (p.X == key.X && (p.Y < key.Y || (p.Y == key.Y && p.Z < key.Z)))) key = p;
+        }
+
+        float sent = Math.Min(total, wanted);
+
         if (known.Count > MaxRemembered) known.Clear();
         long expires = now + RememberMs;
         for (int i = 0; i < count; i++)
         {
             int z = stretchOf[i];
-            known[nodes[i]] = new Entry(ratio[z], available[z], beyond[z], expires);
+            known[nodes[i]] = new Entry(ratio[z], available[z], beyond[z], expires, sent, key);
         }
     }
 }

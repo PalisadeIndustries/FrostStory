@@ -1,0 +1,58 @@
+{
+	"code": "borer",
+	"class": "FrostStorySteamConduit",
+	"entityClass": "FrostStoryBorer",
+	"creativeinventory": {
+		"general": [
+			"*"
+		],
+		"froststory": [
+			"*"
+		]
+	},
+	"shape": {
+		"base": "block/generator/borer"
+	},
+	"textures": {
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"brass": {
+			"base": "block/generator/segment/brass"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"girder": {
+			"base": "block/generator/segment/girder"
+		},
+		"checker": {
+			"base": "block/generator/segment/checker"
+		}
+	},
+	"blockmaterial": "Metal",
+	"resistance": 8,
+	"requiredMiningTier": 3,
+	"drawtype": "json",
+	"faceCullMode": "NeverCull",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

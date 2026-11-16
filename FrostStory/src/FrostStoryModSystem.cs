@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FrostStory.Generator;
+using FrostStory.Coal;
 using FrostStory.Steam;
 using FrostStory.Stove;
 using FrostStory.Tent;
@@ -49,6 +50,9 @@ public class FrostStoryModSystem : ModSystem
         api.RegisterBlockClass("FrostStoryTentFill", typeof(BlockTentFill));
         api.RegisterBlockEntityClass("FrostStorySteamValve", typeof(BlockEntitySteamValve));
         api.RegisterBlockEntityClass("FrostStorySteamGauge", typeof(BlockEntitySteamGauge));
+        api.RegisterBlockClass("FrostStoryCoalHeap", typeof(BlockCoalHeap));
+        api.RegisterBlockEntityClass("FrostStoryCoalHeap", typeof(BlockEntityCoalHeap));
+        api.RegisterBlockEntityClass("FrostStoryBorer", typeof(BlockEntityBorer));
         api.RegisterBlockEntityClass("FrostStoryTentRod", typeof(BlockEntityTentRod));
         api.RegisterBlockClass("FrostStoryTentStove", typeof(BlockTentStove));
         api.RegisterBlockClass("FrostStoryStoveFlue", typeof(BlockStoveFlue));
@@ -148,6 +152,30 @@ public class FrostStoryConfig
 
     /// <summary>Warmth given off by each pipe, fitting or port carrying steam. A firepit is 10.</summary>
     public float PipeHeatStrength = 2f;
+
+    /// <summary>False lets the generator run without coal.</summary>
+    public bool RequireCoal = true;
+
+    /// <summary>Coal the generator burns an hour just to stay lit.</summary>
+    public float IdleCoalPerHour = 2f;
+
+    /// <summary>Coal the generator burns an hour for each unit of steam its ports send out.</summary>
+    public float CoalPerSteamHour = 0.1f;
+
+    /// <summary>Coal the generator's bunker holds.</summary>
+    public int BunkerCapacity = 4000;
+
+    /// <summary>Coal a bucket conveyor line can bring the bunker in an hour.</summary>
+    public float ConveyorCoalPerHour = 400f;
+
+    /// <summary>Coal a steam borer raises an hour with no coal in the rock round it.</summary>
+    public float BorerCoalPerHour = 30f;
+
+    /// <summary>Extra coal an hour for each block of coal ore found when the borer was set down.</summary>
+    public float BorerCoalPerOre = 0.2f;
+
+    /// <summary>The most ore blocks that count towards a borer's rate.</summary>
+    public int BorerOreCap = 300;
 
     /// <summary>Steam a live port on the generator's base supplies. A radiator draws 6, a pipe 0.25 a block.</summary>
     public float PortSupply = 40f;

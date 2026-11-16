@@ -109,6 +109,21 @@ public class BlockEntityGeneratorConsole : BlockEntity
 
         if (IsComplete)
         {
+            var held = byPlayer.InventoryManager.ActiveHotbarSlot;
+            if (held?.Itemstack != null && FrostStory.Coal.CoalItems.IsCoal(held.Itemstack.Collectible))
+            {
+                int taken = AddCoal(held.StackSize);
+                if (taken > 0 && byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative) { held.TakeOut(taken); held.MarkDirty(); }
+                Tell(player, Lang.Get(taken > 0 ? "froststory:console-coaled" : "froststory:console-bunkerfull", taken, (int)coal));
+                return true;
+            }
+
+            if (!lit && Mod.Config.RequireCoal && coal <= 0f)
+            {
+                Tell(player, Lang.Get("froststory:console-nocoal"));
+                return true;
+            }
+
             SetLit(!lit);
             Tell(player, Lang.Get(lit ? "froststory:console-fired" : "froststory:console-banked"));
             return true;
@@ -170,9 +185,90 @@ public class BlockEntityGeneratorConsole : BlockEntity
 
     // ------------------------------------------------------------ construction
 
+    // ------------------------------------------------------------ coal
+
+    /// <summary>Coal in the bunker.</summary>
+    public float Coal => coal;
+
+    private float coal;
+    private double lastFuelHours = -1;
+    private float fuelWait;
+    private float conveyorOwed;
+
+    /// <summary>Steam the generator's ports are sending out now, each pipe run counted once.</summary>
+    public float SteamOut()
+    {
+        if (!lit) return 0f;
+        var steam = Mod.SteamFor(Api.World);
+        var center = Center;
+        var counted = new HashSet<BlockPos>();
+        float sum = 0f;
+        foreach (var swap in GeneratorBlueprint.LitSwaps)
+        {
+            if (!swap.Lit.Contains("port")) continue;
+            var run = steam.RunOf(center.AddCopy(swap.X, swap.Y, swap.Z));
+            if (run != null && counted.Add(run.Value.Key)) sum += run.Value.Delivered;
+        }
+
+        return sum;
+    }
+
+    /// <summary>Coal burnt an hour at the present load.</summary>
+    public float BurnPerHour => lit ? Mod.Config.IdleCoalPerHour + Mod.Config.CoalPerSteamHour * SteamOut() : 0f;
+
+    public int AddCoal(int amount)
+    {
+        int room = Math.Max(0, Mod.Config.BunkerCapacity - (int)Math.Ceiling(coal));
+        int taken = Math.Clamp(amount, 0, room);
+        coal += taken;
+        if (taken > 0) MarkDirty(true);
+        return taken;
+    }
+
+    /// <summary>Burns coal for the time that has passed and lets the conveyor bring more.</summary>
+    public void AdvanceFuel(double hours)
+    {
+        if (hours <= 0 || !IsComplete) return;
+        var config = Mod.Config;
+
+        conveyorOwed = Math.Min(conveyorOwed + (float)(config.ConveyorCoalPerHour * hours), config.BunkerCapacity);
+        int want = Math.Min((int)conveyorOwed, config.BunkerCapacity - (int)Math.Ceiling(coal));
+        if (want > 0)
+        {
+            int got = FrostStory.Coal.Conveyors.Collect(Api.World, Pos, want);
+            coal += got;
+            conveyorOwed -= got;
+        }
+
+        conveyorOwed = Math.Min(conveyorOwed, 64f);      // an idle conveyor does not save its turns up
+
+        if (lit && config.RequireCoal)
+        {
+            coal -= (float)(BurnPerHour * hours);
+            if (coal <= 0f)
+            {
+                coal = 0f;
+                SetLit(false);      // the fire is out: it has to be fired again once there is coal
+            }
+        }
+
+        MarkDirty();
+    }
+
+    private void FuelTick(float dt)
+    {
+        fuelWait += dt;
+        if (fuelWait < 2f) return;
+        fuelWait = 0f;
+
+        double now = Api.World.Calendar.TotalHours;
+        if (lastFuelHours >= 0) AdvanceFuel(Math.Clamp(now - lastFuelHours, 0, 1));
+        lastFuelHours = now;
+    }
+
     private void OnServerTick(float dt)
     {
-        if (IsComplete) return;
+        if (IsComplete) { FuelTick(dt); return; }
 
         var steps = Stages[stage].Steps;
         if (step >= steps.Count) { FinishStage(); MarkDirty(true); return; }
@@ -438,6 +534,13 @@ public class BlockEntityGeneratorConsole : BlockEntity
         if (IsComplete)
         {
             sb.AppendLine(Lang.Get(lit ? "froststory:console-running" : "froststory:console-ready"));
+            sb.AppendLine(Lang.Get("froststory:console-coal", (int)coal, Mod.Config.BunkerCapacity));
+            if (lit && Api.Side == EnumAppSide.Server)
+            {
+                float burn = BurnPerHour;
+                sb.AppendLine(Lang.Get("froststory:console-burn", Math.Round(burn, 1), Math.Round(SteamOut(), 1), burn > 0 ? Math.Round(coal / burn, 1) : 0));
+            }
+
             return;
         }
 
@@ -504,6 +607,7 @@ public class BlockEntityGeneratorConsole : BlockEntity
         tree.SetInt("cursor", cursor);
         tree.SetInt("total", total);
         tree.SetBool("lit", lit);
+        tree.SetFloat("coal", coal);
         tree["delivered"] = new IntArrayAttribute(delivered);
         tree["required"] = new IntArrayAttribute(required);
     }
@@ -524,6 +628,7 @@ public class BlockEntityGeneratorConsole : BlockEntity
         cursor = tree.GetInt("cursor");
         total = tree.GetInt("total");
         lit = tree.GetBool("lit");
+        coal = tree.GetFloat("coal");
         delivered = (tree["delivered"] as IntArrayAttribute)?.value ?? Array.Empty<int>();
         required = (tree["required"] as IntArrayAttribute)?.value ?? Array.Empty<int>();
         if (delivered.Length != required.Length) delivered = new int[required.Length];

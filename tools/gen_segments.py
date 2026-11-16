@@ -44,6 +44,7 @@ TEXTURES = {
     "steel": ("block/generator/steel", 16, 16),
     "pole": ("block/generator/pole", 16, 16),
     "canvas": ("block/generator/canvas", 16, 16),
+    "coal": ("block/generator/coal", 16, 16),
 }
 
 ALL = ("north", "east", "south", "west", "up", "down")
@@ -1525,6 +1526,66 @@ def crossover(kind):
     return m
 
 
+def coalheap():
+    """A heap of coal, as it is with a few dozen lumps on it: a low mound stepping in to a peak, with
+    loose lumps round the foot. The game draws it bigger as it fills."""
+    m = Model("coalheap", (0, 1, 0))
+    for y0, y1, a in ((0.0, 0.16, 0.5), (0.16, 0.3, 0.4), (0.3, 0.42, 0.28), (0.42, 0.52, 0.15)):
+        m.vprism(0, 0, y0, y1, a, "coal", caps=(False, True), captex="coal")
+    for x, z, s in ((0.4, 0.34, 0.14), (-0.38, 0.4, 0.12), (-0.42, -0.3, 0.15), (0.36, -0.4, 0.11), (0.05, 0.47, 0.1)):
+        m.box((x, s / 2, z), (s, s, s), "coal", (0, 30, 0))
+    return m
+
+
+def borer():
+    """A steam borer, two blocks square and three high: a timber-skid base, a four-legged derrick over
+    a boring rod that goes into the ground, a steam cylinder and flywheel to work it, and a chute that
+    tips the coal out to the east. A pipe mount on the west side; it takes a pipe on any side."""
+    m = Model("borer", (0, 1, 0))
+    c = 0.5
+    m.box((c, 0.1, c), (1.96, 0.2, 1.96), "girder")                                       # skid base
+    m.box((c, 0.24, c), (1.5, 0.08, 1.5), "checker")
+    for sx, sz in ((1, 1), (-1, 1), (-1, -1), (1, -1)):                                   # derrick
+        m.member((c + sx * 0.86, 0.2, c + sz * 0.86), (c + sx * 0.28, 2.86, c + sz * 0.28), 0.14, 0.14, "girder", chunk=2.0)
+    for y, r in ((1.1, 0.67), (2.0, 0.47)):
+        ring = [(c + sx * r, c + sz * r) for sx, sz in ((1, 1), (-1, 1), (-1, -1), (1, -1))]
+        for i in range(4):
+            (x0, z0), (x1, z1) = ring[i], ring[(i + 1) % 4]
+            m.member((x0, y, z0), (x1, y, z1), 0.09, 0.09, "steel", chunk=4.0)
+    m.box((c, 2.9, c), (0.8, 0.14, 0.8), "band")                                          # crown
+    m.vprism(c, c, 2.97, 3.0, 0.2, "brass", caps=(False, True), captex="brass")
+    m.vprism(c, c, 0.0, 2.84, 0.09, "steel")                                              # boring rod
+    m.vprism(c, c, 0.28, 0.6, 0.3, "band", caps=(True, True), captex="band")              # casing head
+    m.vprism(c, c, 1.5, 1.72, 0.22, "brass", caps=(True, True), captex="brass")           # crosshead on the rod
+    m.hprism((c - 0.2, 0.62, c + 0.62), (c + 0.7, 0.62, c + 0.62), 0.22, "brass", caps=(True, True), captex="band")   # cylinder
+    m.hprism((c - 0.6, 0.62, c + 0.62), (c - 0.2, 0.62, c + 0.62), 0.05, "steel")
+    m.wheel((c - 0.72, 0.9, c - 0.1), 0.6, 0.12, 0.1, "girder", axis="x")                 # flywheel
+    m.box((c - 0.72, 0.5, c - 0.1), (0.22, 0.6, 0.22), "band")                            # its pedestal
+    m.member((c + 0.3, 1.25, c - 0.45), (c + 1.5, 0.62, c - 0.45), 0.42, 0.06, "band", chunk=2.0)                    # chute, tipping east
+    for dz in (-0.2, 0.2):
+        m.member((c + 0.3, 1.33, c - 0.45 + dz), (c + 1.5, 0.7, c - 0.45 + dz), 0.04, 0.14, "band", chunk=2.0)
+    m.hprism((-0.5, 0.5, c + 0.62), (-0.2, 0.5, c + 0.62), PIPE_BORE, "pipe")             # steam inlet
+    m.hprism((-0.5, 0.5, c + 0.62), (-0.43, 0.5, c + 0.62), PIPE_FLANGE, "band", caps=(True, True), captex="band")
+    return m
+
+
+def bucketconveyor():
+    """A metre of bucket conveyor, standing upright: two side frames tied top and bottom, a chain up the
+    middle and two buckets on it."""
+    m = Model("bucketconveyor", (0, 1, 0))
+    for x in (-0.36, 0.36):
+        m.box((x, 0.5, 0), (0.07, 1.0, 0.36), "girder")
+        m.box((x, 0.5, 0), (0.1, 0.08, 0.5), "band")
+    for y in (0.04, 0.96):
+        m.box((0, y, -0.16), (0.72, 0.06, 0.05), "steel")
+        m.box((0, y, 0.16), (0.72, 0.06, 0.05), "steel")
+    m.box((0, 0.5, 0), (0.05, 1.0, 0.05), "steel")                                        # chain
+    for y in (0.26, 0.76):
+        m.box((0, y, 0), (0.52, 0.2, 0.26), "band")                                       # bucket
+        m.box((0, y + 0.11, 0), (0.44, 0.04, 0.2), "coal")                                # with coal in it
+    return m
+
+
 def wallpass(axis):
     """A wall passthrough: a solid block of plate that stands in for one block of a wall, with a pipe
     mount (a collar round an open bore) on each of two opposite sides. The collars stand a little proud
@@ -1643,7 +1704,7 @@ def main():
     parts += [wallpass(a) for a in ("ud", "ns", "we")]
     parts += [radiator(b) for b in RADIATOR_SIDES]
     parts += [steamhub(), hubframe("leg"), hubframe("head"), floorgrate(), tentstove("cold"), tentstove("lit"), stoveflue(), stoveflue("cap"), stoveflue("elbow"), stoveflue("upturn"), pipe()]
-    parts += [crossover("run"), crossover("stair")]
+    parts += [crossover("run"), crossover("stair"), coalheap(), borer(), bucketconveyor()]
     parts += [steamvalve(), valvepointer(), steamgauge()] + [gaugepart(k) for k in ("needle", "plain", "green", "red")]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:

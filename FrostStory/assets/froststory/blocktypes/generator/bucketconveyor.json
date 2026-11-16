@@ -1,0 +1,110 @@
+{
+	"code": "bucketconveyor",
+	"behaviors": [
+		{
+			"name": "Pillar",
+			"properties": {
+				"rotationVariantCode": "axis"
+			}
+		}
+	],
+	"variantgroups": [
+		{
+			"code": "axis",
+			"states": [
+				"ud",
+				"ns",
+				"we"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-ud"
+		],
+		"froststory": [
+			"*-ud"
+		]
+	},
+	"shapeByType": {
+		"*-ud": {
+			"base": "block/generator/bucketconveyor"
+		},
+		"*-ns": {
+			"base": "block/generator/bucketconveyor",
+			"rotateX": 90
+		},
+		"*-we": {
+			"base": "block/generator/bucketconveyor",
+			"rotateZ": 90
+		}
+	},
+	"textures": {
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"girder": {
+			"base": "block/generator/segment/girder"
+		},
+		"coal": {
+			"base": "block/generator/coal"
+		}
+	},
+	"collisionSelectionBoxByType": {
+		"*-ud": {
+			"x1": 0.1,
+			"y1": 0,
+			"z1": 0.25,
+			"x2": 0.9,
+			"y2": 1,
+			"z2": 0.75
+		},
+		"*-ns": {
+			"x1": 0.1,
+			"y1": 0.25,
+			"z1": 0,
+			"x2": 0.9,
+			"y2": 0.75,
+			"z2": 1
+		},
+		"*-we": {
+			"x1": 0,
+			"y1": 0.1,
+			"z1": 0.25,
+			"x2": 1,
+			"y2": 0.9,
+			"z2": 0.75
+		}
+	},
+	"blockmaterial": "Metal",
+	"resistance": 4,
+	"requiredMiningTier": 2,
+	"drops": [
+		{
+			"type": "block",
+			"code": "bucketconveyor-ud"
+		}
+	],
+	"drawtype": "json",
+	"faceCullMode": "NeverCull",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}
