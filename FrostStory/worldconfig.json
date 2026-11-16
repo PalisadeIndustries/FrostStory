@@ -1,0 +1,46 @@
+{
+	"playstyles": [
+		{
+			"code": "froststory-longwinter",
+			"playListCode": "survival",
+			"langCode": "preset-froststory-longwinter",
+			"mods": ["game", "survival", "froststory"],
+			"listOrder": 8,
+			"worldType": "standard",
+			"worldConfig": {
+				"froststoryLongWinter": "true",
+				"froststoryColdOffset": "-10",
+				"froststoryStormFrequency": "1",
+				"worldClimate": "realistic",
+				"gameMode": "survival",
+				"startingClimate": "icy",
+				"globalTemperature": "0.5",
+				"globalPrecipitation": "1.5",
+				"seasons": "winter",
+				"harshWinters": "true",
+				"snowAccum": "true",
+				"daysPerMonth": "9",
+				"graceTimer": "0",
+				"spawnRadius": "50",
+				"polarEquatorDistance": "50000",
+				"temporalStability": "true",
+				"temporalStorms": "veryrare",
+				"temporalStormSleeping": "1",
+				"temporalGearRespawnUses": "20",
+				"lungCapacity": "40000",
+				"microblockChiseling": "stonewood",
+				"propickNodeSearchRadius": "6",
+				"saplingGrowthRate": "2",
+				"allowUndergroundFarming": "true",
+				"allowFallingBlocks": "true",
+				"allowFireSpread": "true",
+				"clutterObtainable": "ifrepaired"
+			}
+		}
+	],
+	"worldConfigAttributes": [
+		{ "category": "froststory", "code": "froststoryLongWinter", "dataType": "bool", "default": "false", "onlyDuringWorldCreate": true },
+		{ "category": "froststory", "code": "froststoryColdOffset", "dataType": "dropdown", "values": ["-5", "-10", "-15", "-20", "-30"], "names": ["Bitter (-5 °C)", "Deep (-10 °C)", "Severe (-15 °C)", "Brutal (-20 °C)", "Killing (-30 °C)"], "default": "-10" },
+		{ "category": "froststory", "code": "froststoryStormFrequency", "dataType": "dropdown", "values": ["0", "0.5", "1", "1.5", "2"], "names": ["Off", "Rare", "Normal", "Often", "Relentless"], "default": "1" }
+	]
+}

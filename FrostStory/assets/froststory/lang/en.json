@@ -216,5 +216,24 @@
 
 	"blockhelp-console-deliver": "Deliver materials",
 	"blockhelp-console-fire": "Fire the generator",
-	"blockhelp-console-bank": "Shut the generator down"
+	"blockhelp-console-bank": "Shut the generator down",
+
+	"//climate": "-----",
+
+	"climate-wind-n": "north",
+	"climate-wind-ne": "north-east",
+	"climate-wind-e": "east",
+	"climate-wind-se": "south-east",
+	"climate-wind-s": "south",
+	"climate-wind-sw": "south-west",
+	"climate-wind-w": "west",
+	"climate-wind-nw": "north-west",
+	"climate-storm-building": "The wind is rising from the {0} and the horizon has gone white. A whiteout will be on you within {1} hours. Get under cover or near a fire.",
+	"climate-storm-hit": "Whiteout. Wind from the {0}, snow you cannot see through. Stay in shelter or by heat.",
+	"climate-storm-severe": "A killing whiteout is blowing in from the {0}. Anyone caught in the open will freeze. Get inside now.",
+	"climate-storm-easing": "The storm is easing. The wind from the {0} is dropping.",
+	"climate-storm-over": "The storm has blown itself out. The air is still and very cold.",
+	"climate-hypothermia": "You are hypothermic: your hands are numb and your legs will not answer. Get out of the wind and next to heat.",
+	"climate-hypothermia-short": "Hypothermia: get to heat",
+	"climate-warmedup": "Feeling comes back into your hands. You are warm enough to move properly again."
 }
