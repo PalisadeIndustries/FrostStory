@@ -155,5 +155,24 @@
 			"code": "froststory:wallpass-ns",
 			"quantity": 2
 		}
+	},
+	{
+		"ingredientPattern": "PPP,SPS",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"S": {
+				"type": "block",
+				"code": "froststory:steampipe-ud"
+			}
+		},
+		"width": 3,
+		"height": 2,
+		"output": {
+			"type": "block",
+			"code": "froststory:radiator-north"
+		}
 	}
 ]

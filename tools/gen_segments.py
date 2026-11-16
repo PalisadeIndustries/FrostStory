@@ -1219,6 +1219,47 @@ def distributor(kind, side):
     return m
 
 
+RADIATOR_SIDES = ("north", "east", "south", "west")     # where its back faces, by quarter turn
+
+
+def radiator(back):
+    """A cast-iron column radiator, two blocks long, one high and half a block deep, standing on four
+    feet in the middle of its cells. Each section is a front and a back column joined in a loop top
+    and bottom; a header runs through them top and bottom. The hookups are behind it, at a right angle
+    to its length: a tail out of the back of each block at pipe height, one of them with the valve.
+    Drawn lying east-west with its back to the north, and turned."""
+    turn = RADIATOR_SIDES.index(back)
+    turned = []
+    for x, z in ((0, 0), (1, 0)):
+        for _ in range(turn):
+            x, z = -z, x
+        turned.append((x, z))
+    m = Model("radiator-" + back, (min(x for x, _ in turned), 1, min(z for _, z in turned)), turn=turn)
+    n, pitch = 10, 0.16
+    x0 = 0.5 - pitch * (n - 1) / 2
+    for i in range(n):
+        x = x0 + i * pitch
+        for z in (-0.15, 0.15):
+            m.box((x, 0.5, z), (0.12, 0.62, 0.13), "steel")
+        m.box((x, 0.85, 0), (0.12, 0.1, 0.46), "steel")              # loop over the top
+        m.box((x, 0.93, 0), (0.09, 0.06, 0.3), "steel")              # and its crown
+        m.box((x, 0.17, 0), (0.12, 0.1, 0.46), "steel")              # loop underneath
+    for y in (0.83, 0.19):
+        m.hprism((x0 - 0.04, y, 0), (x0 + pitch * (n - 1) + 0.04, y, 0), 0.075, "band", caps=(True, True), captex="band")
+    for x in (x0, x0 + pitch * (n - 1)):
+        for z in (-0.17, 0.17):
+            m.box((x, 0.07, z), (0.1, 0.14, 0.09), "band")           # leg
+            m.box((x, 0.02, z), (0.16, 0.04, 0.14), "band")          # foot
+    for x in (0.0, 1.0):                                              # a tail behind each block
+        m.box((x, 0.5, -0.18), (0.3, 0.2, 0.1), "band")              # boss across the columns
+        m.hprism((x, 0.5, -0.5), (x, 0.5, -0.2), 0.085, "pipe")
+        m.hprism((x, 0.5, -0.5), (x, 0.5, -0.43), 0.16, "band", caps=(True, True), captex="band")
+    m.vprism(1.0, -0.33, 0.4, 0.62, 0.1, "brass", caps=(True, True), captex="brass")      # the valve
+    m.vprism(1.0, -0.33, 0.62, 0.72, 0.03, "steel")
+    m.handwheel(1.0, 0.74, -0.33, a=0.09)
+    return m
+
+
 def wallpass(axis):
     """A wall passthrough: a solid block of plate that stands in for one block of a wall, with a pipe
     mount (a collar round an open bore) on each of two opposite sides. The collars stand a little proud
@@ -1335,6 +1376,7 @@ def main():
              heatpipe("hub"), heatpipe("arm"), tentrod(), tentcloth("bundle"), tentcloth("piece")]
     parts += [distributor(k, s) for k in ("straight", "drop") for s in DISTRIBUTOR_SIDES]
     parts += [wallpass(a) for a in ("ud", "ns", "we")]
+    parts += [radiator(b) for b in RADIATOR_SIDES]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:
         part.save(os.path.join(SHAPE_DIR, ".."))

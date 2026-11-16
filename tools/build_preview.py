@@ -395,15 +395,15 @@ def pipework_example(codes, atlas):
         apex = (x + 0.5, 1.5, z1 + 1)
         small_runs += panel((ridge[0] + 0.5, 1.0, z1 + 0.5), (ridge[0] + 0.5, ridge[1], z1 + 0.5), apex, apex)
 
-    # A wall with a passthrough in it: rigid pipe from another base port up to one mount, and a run
-    # strung from the other mount to a fitting beyond. The wall stays whole.
-    gate, wall_x, beyond = (7, 1, -3), 10, (14, 2, -6)
+    # A wall with a passthrough in it: rigid pipe from another base port up to one mount, and a radiator
+    # standing along the far side with one of its hookups on the other mount. The wall stays whole.
+    gate, wall_x = (7, 1, -3), 10
     wall_cells = cells(
         (gate[0] + 1, 1, gate[2], "steampipe-we"), (gate[0] + 2, 1, gate[2], "steampipe-we"),
-        (wall_x, 1, gate[2], "wallpass-we"), (*beyond, "pipejunction"),
+        (wall_x, 1, gate[2], "wallpass-we"), (wall_x + 1, 1, gate[2] - 1, "radiator-west"),
         *[(wall_x, y, z, "hullplate-riveted" if y == 3 else "hullplate-plain")
           for y in (1, 2, 3) for z in range(gate[2] - 2, gate[2] + 3) if (y, z) != (1, gate[2])])
-    wall_runs = run((wall_x, 1, gate[2]), SMALL, "east", beyond, SMALL, "west", False)
+    wall_runs = []
 
     return [
         {"at": list(gate), "port": "steamport", "cells": wall_cells, "quads": wall_runs},

@@ -1,0 +1,106 @@
+{
+	"code": "radiator",
+	"class": "FrostStorySteamConduit",
+	"entityClass": "FrostStorySteamNode",
+	"variantgroups": [
+		{
+			"code": "side",
+			"states": [
+				"north",
+				"east",
+				"south",
+				"west"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-north"
+		],
+		"froststory": [
+			"*-north"
+		]
+	},
+	"shape": {
+		"base": "block/generator/radiator-{side}"
+	},
+	"textures": {
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		},
+		"brass": {
+			"base": "block/generator/segment/brass"
+		},
+		"red": {
+			"base": "block/generator/paint-red"
+		}
+	},
+	"collisionSelectionBoxByType": {
+		"*-north": {
+			"x1": 0,
+			"y1": 0,
+			"z1": 0.25,
+			"x2": 1,
+			"y2": 1,
+			"z2": 0.75
+		},
+		"*-south": {
+			"x1": 0,
+			"y1": 0,
+			"z1": 0.25,
+			"x2": 1,
+			"y2": 1,
+			"z2": 0.75
+		},
+		"*-east": {
+			"x1": 0.25,
+			"y1": 0,
+			"z1": 0,
+			"x2": 0.75,
+			"y2": 1,
+			"z2": 1
+		},
+		"*-west": {
+			"x1": 0.25,
+			"y1": 0,
+			"z1": 0,
+			"x2": 0.75,
+			"y2": 1,
+			"z2": 1
+		}
+	},
+	"drops": [
+		{
+			"type": "block",
+			"code": "radiator-north"
+		}
+	],
+	"drawtype": "json",
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 5,
+	"requiredMiningTier": 2,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

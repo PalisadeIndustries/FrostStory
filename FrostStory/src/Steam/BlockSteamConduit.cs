@@ -49,6 +49,13 @@ public class BlockSteamConduit : Block, IHeatSource
     public BlockFacing Inlet { get; private set; } = BlockFacing.WEST;
     public BlockFacing Outlet { get; private set; } = BlockFacing.EAST;
 
+    /// <summary>
+    /// True for radiators: two blocks long, with a hookup behind each block at a right angle to its
+    /// length (so it stands along the wall its pipe comes through), and much warmer than that pipe.
+    /// </summary>
+    public bool IsRadiator { get; private set; }
+    public BlockFacing Back { get; private set; } = BlockFacing.NORTH;
+
     /// <summary>True for the posts of a main stand: they carry a fitting but no steam.</summary>
     public bool IsStructural { get; private set; }
 
@@ -64,7 +71,7 @@ public class BlockSteamConduit : Block, IHeatSource
         mod = api.ModLoader.GetModSystem<FrostStoryModSystem>();
 
         string kind = FirstCodePart();
-        IsNode = kind is "pipejunction" or "mainjunction" or "steamport" or "mainport" or "distributor" or "wallpass";
+        IsNode = kind is "pipejunction" or "mainjunction" or "steamport" or "mainport" or "distributor" or "wallpass" or "radiator";
         if (IsNode && api.Side == EnumAppSide.Client)
         {
             PipeSegment = Vintagestory.API.Common.Shape.TryGet(api, new AssetLocation("froststory", "shapes/block/generator/pipeseg.json"));
@@ -106,6 +113,12 @@ public class BlockSteamConduit : Block, IHeatSource
                 Outlet = drop ? BlockFacing.DOWN : Inlet.Opposite;
                 Size = drop ? new Vec3i(2, 2, 2) : Inlet.Axis == EnumAxis.X ? new Vec3i(1, 2, 2) : new Vec3i(2, 2, 1);
                 connects[Inlet.Index] = true;      // only the inlet takes a main
+                break;
+
+            case "radiator":
+                IsBig = managesFill = IsRadiator = true;      // no openings of its own: mains never join it
+                Back = BlockFacing.FromCode(Variant["side"]) ?? BlockFacing.NORTH;
+                Size = Back.Axis == EnumAxis.X ? new Vec3i(1, 1, 2) : new Vec3i(2, 1, 1);
                 break;
 
             case "mainpost":
@@ -158,6 +171,7 @@ public class BlockSteamConduit : Block, IHeatSource
     public bool AcceptsTapOn(BlockFacing face)
     {
         if (IsDistributor) return face == Outlet;
+        if (IsRadiator) return face == BlockFacing.DOWN || face == Back;
         return IsBig && !IsStructural && (!IsPort || connects[face.Index]);
     }
 
@@ -166,8 +180,24 @@ public class BlockSteamConduit : Block, IHeatSource
     /// Most fittings offer the middle of each open side. A distributor offers its inlet to a main, and the
     /// four quarters of its outlet side to small runs.
     /// </summary>
+    private AssetLocation FillCode(int x, int y, int z) =>
+        IsRadiator ? new AssetLocation("froststory", $"radiatorfill-o{x}{y}{z}") : BlockSteamMainFill.CodeFor(x, y, z);
+
     public IEnumerable<(BlockFacing Face, Vec3d Point)> RunPoints(BlockPos anchor, bool big)
     {
+        if (IsRadiator)
+        {
+            // a small run to the hookup behind each of its two blocks
+            if (big) yield break;
+            var behind = SteamRuns.AttachPoint(this, anchor, Back);
+            for (int i = -1; i <= 1; i += 2)
+            {
+                yield return (Back, Back.Axis == EnumAxis.X ? behind.AddCopy(0, 0, i * 0.5) : behind.AddCopy(i * 0.5, 0, 0));
+            }
+
+            yield break;
+        }
+
         if (!IsDistributor)
         {
             foreach (var face in BlockFacing.ALLFACES)
@@ -215,7 +245,7 @@ public class BlockSteamConduit : Block, IHeatSource
     public float GetHeatStrength(IWorldAccessor world, BlockPos heatSourcePos, BlockPos heatReceiverPos)
     {
         if (!IsWarm(world, heatSourcePos)) return 0f;
-        return mod!.Config.PipeHeatStrength * (IsBig ? 3f : IsHeatPipe ? 2f : 1f);
+        return mod!.Config.PipeHeatStrength * (IsRadiator ? 5f : IsBig ? 3f : IsHeatPipe ? 2f : 1f);
     }
 
     public string SteamInfo(IWorldAccessor world, BlockPos pos)
@@ -273,6 +303,12 @@ public class BlockSteamConduit : Block, IHeatSource
         {
             string axis = blockSel.Face.Axis switch { EnumAxis.Y => "ud", EnumAxis.Z => "ns", _ => "we" };
             block = world.GetBlock(CodeWithParts(axis)) as BlockSteamConduit ?? this;
+        }
+        else if (IsRadiator && byPlayer != null)
+        {
+            // A radiator backs onto the wall it is set against; set on a floor, it backs away from the player.
+            var back = blockSel.Face.IsHorizontal ? blockSel.Face.Opposite : SuggestedHVOrientation(byPlayer, blockSel)[0].Opposite;
+            block = world.GetBlock(CodeWithVariant("side", back.Code)) as BlockSteamConduit ?? this;
         }
         else if (IsDistributor)
         {
@@ -391,7 +427,7 @@ public class BlockSteamConduit : Block, IHeatSource
                     for (int z = 0; z < Size.Z; z++)
                     {
                         if (x + y + z == 0) continue;
-                        var fill = world.GetBlock(BlockSteamMainFill.CodeFor(x, y, z));
+                        var fill = world.GetBlock(FillCode(x, y, z));
                         if (fill != null) world.BlockAccessor.SetBlock(fill.Id, blockPos.AddCopy(x, y, z));
                     }
         }
