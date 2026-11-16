@@ -564,6 +564,9 @@ prop("steering", "ship-steering", (-52, MAIN, -1), box_cells(3, 1, 3), iron(3, 8
 
 # =========================================================================================== the hull's models
 def edge(x, y):
+    """The outside of the plating at a station and a height. Past the stem the two sides have met."""
+    if x > X1 + 0.25:
+        x = X1 + 0.5
     return max(0.0, half(x, min(y, skin_top(round(max(X0, min(X1, x)))))) + 0.5)
 
 
@@ -579,24 +582,44 @@ for x in range(X0, X1 + 1):
     m = sec(x)
     top = skin_top(x)
     xa, xb = x - 0.5, x + 0.5
+    ks = [k for k in range(top + 1) if reach(x, k) is not None]
+    k0 = ks[0]
+    e_at = {k: edge(x, k) for k in ks}
+
+    def upright(k):
+        """Whether the side stands straight at this height: the same breadth below and above."""
+        return k > k0 and abs(e_at[k - 1] - e_at[k]) < 1e-6 and (k == top or abs(e_at[k + 1] - e_at[k]) < 1e-6)
+
+    def breadth(k):
+        """The breadth at the bottom of course k: the mean of the two courses that meet there, unless
+        one of them stands upright."""
+        if k > top:
+            return e_at[top]
+        if k == k0:
+            return e_at[k0]
+        if upright(k) or upright(k - 1):
+            return e_at[k] if upright(k) else e_at[k - 1]
+        return (e_at[k - 1] + e_at[k]) / 2
+
     for sign in (-1, 1):
-        runs, y = [], 0
-        while y <= top:
-            if reach(x, y) is None or (sign < 0 and (x, y) in BREACH):
-                y += 1
+        runs = []
+        for k in ks:
+            if sign < 0 and (x, k) in BREACH:
                 continue
-            key = (round(edge(xa, y), 3), round(edge(xb, y), 3), colour(x, y))
-            y1 = y
-            while y1 + 1 <= top and not (sign < 0 and (x, y1 + 1) in BREACH) and reach(x, y1 + 1) is not None \
-                    and (round(edge(xa, y1 + 1), 3), round(edge(xb, y1 + 1), 3), colour(x, y1 + 1)) == key:
-                y1 += 1
-            runs.append((y, y1, key))
-            y = y1 + 1
+            if not upright(k):
+                # the turn of the bilge, the forefoot and the counter: a plate leaning from one course to the next
+                m.member((x, k, sign * breadth(k)), (x, k + 1, sign * breadth(k + 1)), 0.14, 1.0, colour(x, k), chunk=2.0)
+                continue
+            key = (round(edge(xa, k), 3), round(edge(xb, k), 3), colour(x, k))
+            if runs and runs[-1][1] == k - 1 and runs[-1][2] == key:
+                runs[-1] = (runs[-1][0], k, key)
+            else:
+                runs.append((k, k, key))
         for ya, yb, (ea, eb, tex) in runs:
             m.member((xa, (ya + yb + 1) / 2, sign * ea), (xb, (ya + yb + 1) / 2, sign * eb), yb - ya + 1, 0.14, tex, chunk=2.0)
 
         e = edge(x, top)
-        if x % 3 == 0 and e > 1.0:                                                         # a frame showing through the plating
+        if x % 3 == 0 and e > 1.0 and abs(edge(x, WATER + 1) - e) < 1e-6:                                                         # a frame showing through the plating
             m.box((x, (WATER + top + 1) / 2 + 0.5, sign * (e + 0.09)), (0.14, top - WATER, 0.1), "band")
         cap = "pole" if not island(x) else "brass"                                         # rail cap on the bulwark; a rubbing strake on the islands
         m.member((xa, top + 1.05, sign * edge(xa, top)), (xb, top + 1.05, sign * edge(xb, top)), 0.1, 0.24, cap, chunk=2.0)
@@ -610,10 +633,13 @@ for x in range(X0, X1 + 1):
             for dy in (0.55, 1.05):
                 m.member((xa, UPPER + dy, sign * (edge(xa, top) - 0.1)), (xb, UPPER + dy, sign * (edge(xb, top) - 0.1)), 0.04, 0.04, "steel" if dy < 1 else "brass", chunk=2.0)
 
-    # the keel and the garboards, for when she is dug out
-    r0 = reach(x, 0)
-    if r0 is not None:
-        m.box((x, 0.06, 0), (1.0, 0.12, 2 * (half(x, 0) + 0.5)), "shiphull")
+    # the bottom plating, under the lowest course at this station, and the tank top inside
+    m.box((x, k0 + 0.06, 0), (1.0, 0.12, 2 * e_at[k0]), "shiphull")
+    if k0 > 0 and x > X0 and reach(x - 1 if x > 0 else x + 1, k0 - 1) is not None:
+        step_x = x - 0.45 if x > 0 else x + 0.45                                           # the riser where the bottom steps up
+        m.box((step_x, k0 - 0.5 + 0.06, 0), (0.12, 1.0, 2 * e_at[k0]), "shiphull")
+    if k0 <= TANK - 1:
+        m.box((x, TANK - 0.04, 0), (1.0, 0.08, 2 * (edge(x, TANK) - 0.08)), "darkplate")
 
 for (x, y, z) in DOORWAYS:
     if y == MAIN:
@@ -623,7 +649,10 @@ for (x, y, z) in DOORWAYS:
 
 # stem and stern
 bow, stern = hull[-1], hull[0]
-bow.box((X1 + 0.5, (skin_top(X1) + 1 + 4) / 2, 0), (0.24, skin_top(X1) - 3, 0.5), "band")
+first = min(k for k in range(skin_top(X1) + 1) if reach(X1, k) is not None)
+for k in range(first, skin_top(X1) + 1):                                                   # close the bows in to the stem
+    bow.box((X1 + 0.5 - 0.07, k + 0.5, 0), (0.14, 1.0, 2 * edge(X1, k) + 0.1), colour(X1, k))
+bow.box((X1 + 0.56, (first + skin_top(X1) + 1) / 2, 0), (0.3, skin_top(X1) + 1 - first, 0.5), "band")
 stern.box((X0 - 0.5, (6 + skin_top(X0) + 1) / 2, 0), (0.14, skin_top(X0) - 5, 2 * edge(X0 - 0.5, 9)), "shiphull")
 stern.box((X0 + 1.0, 2.5, 0), (0.3, 5.0, 0.16), "band")                                    # rudder post
 stern.box((X0 + 0.2, 2.6, 0), (1.6, 4.2, 0.12), "shiphull")                                # rudder
