@@ -880,7 +880,7 @@ MAIN_PORT_ANCHORS = {"east": (7, 15, 0), "south": (-1, 15, 7), "west": (-7, 15, 
 
 def mainport(side):
     """A large steam port: a 2 m nozzle from the hull, out through the frame bay over the first gallery,
-    with a gate valve and a flanged mouth for a steam main. Drawn for the east side and turned."""
+    with a wafer valve and a flanged mouth for a steam main. Drawn for the east side and turned."""
     turn = ("east", "south", "west", "north").index(side)
     m = Model("mainport-" + side, MAIN_PORT_ANCHORS[side], turn=turn)
     y, z = MAIN_PORT_Y, 0.5
@@ -888,11 +888,14 @@ def mainport(side):
     m.hprism((HULL, y, z), (7.5, y, z), MAIN_BORE - 0.02, "pipe")
     m.hprism((HULL + 0.14, y, z), (HULL + 0.4, y, z), MAIN_FLANGE - 0.03, "band", caps=(True, True), captex="band")
     m.hprism((7.3, y, z), (7.5, y, z), MAIN_FLANGE, "band", caps=(True, True), captex="band")     # the mouth
-    # gate valve
-    m.vprism(6.25, z, y - 0.95, y + 0.95, 0.62, "red", caps=(True, True), captex="band")
-    m.vprism(6.25, z, y + 0.95, y + 1.4, 0.32, "band", caps=(False, True), captex="band")
-    m.vprism(6.25, z, y + 1.4, y + 1.85, 0.07, "steel")
-    m.handwheel(6.25, y + 1.8, z, a=0.55)
+    # A wafer valve: a slim bolted ring round the bore, worked from a small gearbox with a hand-sized wheel.
+    m.hprism((6.13, y, z), (6.37, y, z), MAIN_FLANGE, "band", caps=(True, True), captex="band")
+    m.hprism((5.4, y, z), (5.52, y, z), MAIN_BORE + 0.06, "band", caps=(True, True), captex="band")     # stiffening band
+    top = y + MAIN_FLANGE
+    m.box((6.25, top + 0.14, z), (0.34, 0.28, 0.34), "band")
+    m.vprism(6.25, z, top + 0.28, top + 0.52, 0.035, "steel")
+    m.handwheel(6.25, top + 0.5, z, a=0.24)
+    m.box((6.25, top + 0.14, z + 0.3), (0.08, 0.08, 0.3), "red")                                        # position indicator
     # hangers down to the gallery
     for dz in (-0.45, 1.45):
         m.member((6.9, y - 0.75, dz), (6.55, 12.05, dz), 0.1, 0.1, "steel")
