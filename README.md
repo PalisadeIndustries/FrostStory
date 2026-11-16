@@ -115,6 +115,11 @@ arrive with the Steam Core stage and go live when the generator is fired.
 - Any pipe, fitting or port that is joined to a live port warms players near it (within about three
   blocks outdoors, or anywhere in the same room). Each one counts for a fifth of a firepit by default,
   and they add up, so a run of pipe along a wall heats a room.
+- A **pipe wall passthrough** is a solid block of wall with a pipe mount on each of two opposite
+  sides, so a pipe can go through a wall without leaving a gap in it. Set it in the wall while
+  looking through the wall: one mount faces you and the other faces away (look steeply up or
+  down to put it in a floor or roof). Each mount takes a pipe laid against it or one pipe run;
+  its other four sides are plain wall, and it keeps a room closed like any solid block.
 - Look at a pipe to see whether it is carrying steam.
 
 **Large ports and steam mains.** Four large ports, one to a side, come out of the hull through the
@@ -144,7 +149,7 @@ Hull stage and go live with the rest.
 
 Recipes: two iron plates make four pipes; four iron plates make four fittings; eight iron plates
 in a ring make four mains; four mains make two main fittings; a main fitting over four iron
-ingots makes a stand; a main with four pipes makes a distributor (main and two pipes over two
+ingots makes a stand; a pipe with an iron plate on each of its four sides makes two wall passthroughs; a main with four pipes makes a distributor (main and two pipes over two
 pipes) or a drop distributor (main over two rows of two pipes).
 
 A pipe is traced back to its port on demand, so the route has to be in loaded chunks. A run that
@@ -266,7 +271,8 @@ warm the air they cross, keep through banking, firing and a restart, and respect
 size limits. Heating pipes take the right shape as they are laid, branched and cut, and carry
 steam. Tent panels go up between rods, come down, and follow a rod that is removed. Main stands come up level and in line with a port or another fitting, on
 higher and lower ground. Both distributors carry steam from a main to a pipe on each of their four
-outlets and to four pipe runs (a fifth is refused), and stay shut to pipes and mains on every other side. Every shape file loads cleanly through the game's own
+outlets and to four pipe runs (a fifth is refused), and stay shut to pipes and mains on every other side. A wall passthrough carries steam between its two mounts by pipe or by run,
+stays shut on its other four sides, and counts as a solid, heat-keeping block. Every shape file loads cleanly through the game's own
 shape class.
 
 Not yet checked in a game client: whether tent cloth draws and moves in the wind (it uses the same
@@ -275,7 +281,7 @@ really registers as a room, how the heating pipe's arms line up, and whether pip
 the chunk mesh from short straight pieces using the game's tesselator, which I could only check
 against the engine's code and in the preview), and the two-click way of stringing them. Also: how the large segment models render and light in-engine, walking
 and climbing on the invisible collision cells, placing pipes and mains by hand (including a main
-lining itself up with a port, a distributor turning its inlet to what it is set against, and setting down a stand), how the two-block mains, the stand and
+lining itself up with a port, a distributor turning its inlet to what it is set against, a wall passthrough turning to the way you look, and setting down a stand), how the two-block mains, the stand and
 its post look in the game and the inventory, how much a pipe run actually
 warms a player, the footprint highlight, the console's hover text and the stack's steam particles. The preview page mirrors the engine's rotation and texture
 mapping rules, but it is not the engine.

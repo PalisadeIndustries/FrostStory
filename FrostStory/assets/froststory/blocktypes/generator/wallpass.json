@@ -1,0 +1,61 @@
+{
+	"code": "wallpass",
+	"class": "FrostStorySteamConduit",
+	"entityClass": "FrostStorySteamNode",
+	"variantgroups": [
+		{
+			"code": "axis",
+			"states": [
+				"ud",
+				"ns",
+				"we"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-ns"
+		],
+		"froststory": [
+			"*-ns"
+		]
+	},
+	"drawtype": "json",
+	"shape": {
+		"base": "block/generator/wallpass-{axis}"
+	},
+	"textures": {
+		"darkplate": {
+			"base": "block/generator/segment/darkplate"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"black": {
+			"base": "block/generator/segment/black"
+		}
+	},
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": true
+	},
+	"sideopaque": {
+		"all": true
+	},
+	"lightAbsorption": 99,
+	"replaceable": 90,
+	"resistance": 6,
+	"requiredMiningTier": 3,
+	"drops": [
+		{
+			"type": "block",
+			"code": "wallpass-ns"
+		}
+	],
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

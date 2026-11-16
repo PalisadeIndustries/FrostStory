@@ -64,7 +64,7 @@ public class BlockSteamConduit : Block, IHeatSource
         mod = api.ModLoader.GetModSystem<FrostStoryModSystem>();
 
         string kind = FirstCodePart();
-        IsNode = kind is "pipejunction" or "mainjunction" or "steamport" or "mainport" or "distributor";
+        IsNode = kind is "pipejunction" or "mainjunction" or "steamport" or "mainport" or "distributor" or "wallpass";
         if (IsNode && api.Side == EnumAppSide.Client)
         {
             PipeSegment = Vintagestory.API.Common.Shape.TryGet(api, new AssetLocation("froststory", "shapes/block/generator/pipeseg.json"));
@@ -74,6 +74,7 @@ public class BlockSteamConduit : Block, IHeatSource
         switch (kind)
         {
             case "steampipe":
+            case "wallpass":      // a solid block of wall with a mount on each of two opposite sides
                 OpenAlong(Variant["axis"]);
                 break;
 
@@ -255,6 +256,15 @@ public class BlockSteamConduit : Block, IHeatSource
 
     public override bool TryPlaceBlock(IWorldAccessor world, IPlayer byPlayer, ItemStack itemstack, BlockSelection blockSel, ref string failureCode)
     {
+        if (FirstCodePart() == "wallpass" && byPlayer != null)
+        {
+            // A passthrough goes through the wall the way the player is looking: one mount towards them, one away.
+            var look = SuggestedHVOrientation(byPlayer, blockSel);
+            string through = look[1] != null ? "ud" : look[0].Axis == EnumAxis.Z ? "ns" : "we";
+            var turned = world.GetBlock(CodeWithVariant("axis", through)) ?? this;
+            return turned.CanPlaceBlock(world, byPlayer, blockSel, ref failureCode) && turned.DoPlaceBlock(world, byPlayer, blockSel, itemstack);
+        }
+
         if (!managesFill) return base.TryPlaceBlock(world, byPlayer, itemstack, blockSel, ref failureCode);
 
         // A main lies along the face it is set against.

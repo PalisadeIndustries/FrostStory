@@ -1219,6 +1219,26 @@ def distributor(kind, side):
     return m
 
 
+def wallpass(axis):
+    """A wall passthrough: a solid block of plate that stands in for one block of a wall, with a pipe
+    mount (a collar round an open bore) on each of two opposite sides. The collars stand a little proud
+    of the block, inside the flange of whatever pipe is set against them."""
+    m = Model("wallpass-" + axis, (0, 1, 0))
+    m.box((0, 0.5, 0), (1, 1, 1), "darkplate")
+    for sign in (-1, 1):
+        if axis == "ud":
+            y0, y1 = sorted((0.5 + sign * 0.42, 0.5 + sign * 0.56))
+            m.vprism(0, 0, y0, y1, 0.4, "band", caps=(True, True), captex="band")
+            y0, y1 = sorted((0.5 + sign * 0.5, 0.5 + sign * 0.57))
+            m.vprism(0, 0, y0, y1, 0.26, "black", caps=(True, True), captex="black")
+        else:
+            def at(d):
+                return (sign * d, 0.5, 0) if axis == "we" else (0, 0.5, sign * d)
+            m.hprism(at(0.42), at(0.56), 0.4, "band", caps=(True, True), captex="band")
+            m.hprism(at(0.5), at(0.57), 0.26, "black", caps=(True, True), captex="black")
+    return m
+
+
 MAIN_PORT_ANCHORS = {"east": (7, 15, 0), "south": (-1, 15, 7), "west": (-7, 15, -1), "north": (0, 15, -7)}
 
 
@@ -1314,6 +1334,7 @@ def main():
     parts = [steamport(), mainjunction(), mainpost(), mainstand(), runpiece(False), runpiece(True),
              heatpipe("hub"), heatpipe("arm"), tentrod(), tentcloth("bundle"), tentcloth("piece")]
     parts += [distributor(k, s) for k in ("straight", "drop") for s in DISTRIBUTOR_SIDES]
+    parts += [wallpass(a) for a in ("ud", "ns", "we")]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:
         part.save(os.path.join(SHAPE_DIR, ".."))

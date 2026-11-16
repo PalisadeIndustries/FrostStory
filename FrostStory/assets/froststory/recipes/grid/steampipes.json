@@ -135,5 +135,25 @@
 			"type": "block",
 			"code": "froststory:distributor-drop-west"
 		}
+	},
+	{
+		"ingredientPattern": "_P_,PSP,_P_",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"S": {
+				"type": "block",
+				"code": "froststory:steampipe-ud"
+			}
+		},
+		"width": 3,
+		"height": 3,
+		"output": {
+			"type": "block",
+			"code": "froststory:wallpass-ns",
+			"quantity": 2
+		}
 	}
 ]
