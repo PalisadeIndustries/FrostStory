@@ -151,6 +151,10 @@ Tent rods and tent cloth make simple shelters.
 - With **tent cloth** in hand, click a rod, then another rod or the edge of any block. A panel is
   stretched between them, as wide as the whole pole the rod is part of. It sags a little and stirs
   in the wind; the two edges it hangs from stay still.
+- Hold the sprint key on the second click for a **triangle**: the cloth is drawn to a point, the
+  nearest end of the pole or corner of the block you clicked, instead of along an edge. Two
+  triangles off an end upright, one out to each ground rail, close a gable. A triangle and a full
+  panel between the same two poles are separate sheets.
 - A panel can span 12 blocks and be 16 wide, and takes one cloth per block of area. The same two
   clicks take it down and hand the cloth back; breaking a rod at either end does too.
 - Cloth has no collision, but it keeps rain out and counts as a wall when the game decides whether
@@ -176,7 +180,7 @@ Tent rods and tent cloth make simple shelters.
 | `/frostgen steam [pos]` | Says whether a pipe, fitting or port is carrying steam |
 | `/frostgen stand [pos]` | Raises a steam main stand with its post starting there |
 | `/frostgen run <from> <to> [main]` | Strings a pipe run between two fittings or ports, or takes it down |
-| `/frostgen cloth <rod> <rod>` | Stretches a tent cloth panel between two rods, or takes it down |
+| `/frostgen cloth <rod> <rod> [triangle]` | Stretches a tent cloth panel between two rods, or takes it down |
 
 Console commands take the console's position, or the one you are looking at.
 

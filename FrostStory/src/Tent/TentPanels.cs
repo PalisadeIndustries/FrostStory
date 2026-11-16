@@ -40,6 +40,21 @@ public static class TentPanels
                 centre.AddCopy(step.X * (forward + 0.5), step.Y * (forward + 0.5), step.Z * (forward + 0.5)));
     }
 
+    /// <summary>The end of a rod's pole nearest to a point, as an edge of no length: the far corner of a triangle.</summary>
+    public static (Vec3d From, Vec3d To) RodEnd(IBlockAccessor ba, BlockPos pos, Vec3d near)
+    {
+        var edge = RodEdge(ba, pos);
+        var end = edge.From.SquareDistanceTo(near) <= edge.To.SquareDistanceTo(near) ? edge.From : edge.To;
+        return (end, end);
+    }
+
+    /// <summary>The corner of an ordinary block nearest to where it was clicked, as an edge of no length.</summary>
+    public static (Vec3d From, Vec3d To) BlockCorner(BlockPos pos, Vec3d hit)
+    {
+        var corner = new Vec3d(pos.X + (hit.X < 0.5 ? 0 : 1), pos.Y + (hit.Y < 0.5 ? 0 : 1), pos.Z + (hit.Z < 0.5 ? 0 : 1));
+        return (corner, corner);
+    }
+
     /// <summary>The edge of an ordinary block nearest to where it was clicked.</summary>
     public static (Vec3d From, Vec3d To) BlockEdge(BlockPos pos, Vec3d hit)
     {
@@ -68,14 +83,6 @@ public static class TentPanels
         if (!IsRod(ba.GetBlock(rodPos)) || ba.GetBlockEntity(rodPos) is not BlockEntityTentRod rod) return "froststory:tent-needrod";
         if (rodPos.Equals(otherPos)) return "froststory:tent-same";
 
-        var existing = rod.Panels.Find(p => p.Other.Equals(otherPos));
-        if (existing != null)
-        {
-            cost = -existing.Cost;
-            TakeDown(world, rod, existing);
-            return "froststory:tent-removed";
-        }
-
         var near = RodEdge(ba, rodPos);
 
         // pair the ends so the sheet does not twist
@@ -84,6 +91,15 @@ public static class TentPanels
 
         Vec3f Local(Vec3d p) => new((float)(p.X - rodPos.X), (float)(p.Y - rodPos.Y), (float)(p.Z - rodPos.Z));
         var panel = new TentPanel { A0 = Local(near.From), A1 = Local(near.To), B0 = Local(farEdge.From), B1 = Local(farEdge.To), Other = otherPos.Copy() };
+
+        // the same sheet again takes it down; a different one to the same block (a triangle beside a full panel) is its own
+        var existing = rod.Panels.Find(p => p.Other.Equals(otherPos) && p.SameAs(panel));
+        if (existing != null)
+        {
+            cost = -existing.Cost;
+            TakeDown(world, rod, existing);
+            return "froststory:tent-removed";
+        }
 
         if (panel.Span < 0.5f) return "froststory:tent-same";
         if (panel.EdgeLength > MaxEdge || panel.Span > MaxSpan) return "froststory:tent-toofar";
@@ -162,7 +178,8 @@ public static class TentPanels
 
         var ba = world.BlockAccessor;
         var seen = new HashSet<BlockPos>();
-        int along = Math.Max(2, (int)MathF.Ceiling(panel.EdgeLength / 0.4f)), across = Math.Max(2, (int)MathF.Ceiling(panel.Span / 0.4f));
+        int along = Math.Max(2, (int)MathF.Ceiling(Math.Max(panel.A0.DistanceTo(panel.A1), panel.B0.DistanceTo(panel.B1)) / 0.4f));
+        int across = Math.Max(2, (int)MathF.Ceiling(panel.Span / 0.4f));
         for (int i = 0; i <= along; i++)
         {
             for (int j = 0; j <= across; j++)
@@ -210,7 +227,13 @@ public static class TentPanels
             return;
         }
 
-        var far = IsRod(clicked) ? RodEdge(ba, sel.Position) : BlockEdge(sel.Position, sel.HitPosition);
+        // Holding the sprint key draws the cloth to a point instead of along an edge, making a triangle:
+        // the nearest end of a pole, or the nearest corner of a block.
+        bool toPoint = player.Entity.Controls.CtrlKey;
+        var hitAt = sel.Position.ToVec3d().Add(sel.HitPosition);
+        var far = IsRod(clicked)
+            ? (toPoint ? RodEnd(ba, sel.Position, hitAt) : RodEdge(ba, sel.Position))
+            : (toPoint ? BlockCorner(sel.Position, sel.HitPosition) : BlockEdge(sel.Position, sel.HitPosition));
         bool creative = player.WorldData.CurrentGameMode == EnumGameMode.Creative;
         string result = Toggle(world, start.Rod, sel.Position, far, creative ? int.MaxValue : slot.StackSize, out int cost, out bool built);
 

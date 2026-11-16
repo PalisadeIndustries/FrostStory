@@ -365,7 +365,8 @@ def pipework_example(codes, atlas):
             return (a[0] + (b[0] - a[0]) * v, a[1] + (b[1] - a[1]) * v - sag, a[2] + (b[2] - a[2]) * v)
         edge = (math.dist(a0, a1) + math.dist(b0, b1)) / 2
         span = (math.dist(a0, b0) + math.dist(a1, b1)) / 2
-        along, across = max(1, min(16, math.ceil(edge))), max(2, min(16, math.ceil(span / 0.8)))
+        along = max(1, min(16, math.ceil(max(math.dist(a0, a1), math.dist(b0, b1)))))
+        across = max(2, min(16, math.ceil(span / 0.8)))
         quads = []
         for i in range(along):
             for j in range(across):
@@ -376,6 +377,9 @@ def pipework_example(codes, atlas):
     ridge0, ridge1 = (ridge[0] + 0.5, ridge[1] + 0.5, z0), (ridge[0] + 0.5, ridge[1] + 0.5, z1 + 1)
     for x in rails:
         small_runs += panel(ridge0, ridge1, (x + 0.5, 1.5, z0), (x + 0.5, 1.5, z1 + 1))
+        # the far end is closed with two triangles: from its upright out to the end of each rail
+        apex = (x + 0.5, 1.5, z1 + 1)
+        small_runs += panel((ridge[0] + 0.5, 1.0, z1 + 0.5), (ridge[0] + 0.5, ridge[1], z1 + 0.5), apex, apex)
 
     return [
         {"at": list(port), "port": "mainport", "cells": large_cells, "quads": large_runs},

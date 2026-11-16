@@ -112,14 +112,16 @@ public static class GeneratorCommands
             .EndSubCommand()
 
             .BeginSubCommand("cloth")
-                .WithDescription("Stretch a tent cloth panel from one tent rod to another, or take down the one that is there.")
-                .WithArgs(parsers.WorldPosition("rod"), parsers.WorldPosition("otherRod"))
+                .WithDescription("Stretch a tent cloth panel from one tent rod to another, or take down the one that is there. Add 'true' for a triangle to the nearer end of the other pole.")
+                .WithArgs(parsers.WorldPosition("rod"), parsers.WorldPosition("otherRod"), parsers.OptionalBool("triangle"))
                 .HandleWith(args =>
                 {
                     var rod = ((Vec3d)args[0]).AsBlockPos;
                     var other = ((Vec3d)args[1]).AsBlockPos;
                     if (api.World.BlockAccessor.GetBlock(other).FirstCodePart() != "tentrod") return TextCommandResult.Error("The second position is not a tent rod.");
-                    var edge = FrostStory.Tent.TentPanels.RodEdge(api.World.BlockAccessor, other);
+                    var edge = (bool)args[2]
+                        ? FrostStory.Tent.TentPanels.RodEnd(api.World.BlockAccessor, other, rod.ToVec3d().Add(0.5, 0.5, 0.5))
+                        : FrostStory.Tent.TentPanels.RodEdge(api.World.BlockAccessor, other);
                     string key = FrostStory.Tent.TentPanels.Toggle(api.World, rod, other, edge, int.MaxValue, out int cost, out bool built);
                     string text = Vintagestory.API.Config.Lang.Get(key, System.Math.Abs(cost));
                     return built || cost < 0 ? TextCommandResult.Success(text) : TextCommandResult.Error(text);

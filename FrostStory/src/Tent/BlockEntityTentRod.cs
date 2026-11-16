@@ -10,6 +10,7 @@ namespace FrostStory.Tent;
 /// <summary>
 /// A sheet of tent cloth stretched between two edges. Corners are relative to the rod that holds the
 /// panel: A0 and A1 are the ends of its own edge, B0 and B1 the ends of the far one, A0 opposite B0.
+/// When B0 and B1 are the same point the sheet is a triangle.
 /// </summary>
 public sealed class TentPanel
 {
@@ -34,7 +35,17 @@ public sealed class TentPanel
     public float Span => (A0.DistanceTo(B0) + A1.DistanceTo(B1)) / 2;
 
     /// <summary>Cells along the edges and across the span the sheet is drawn in.</summary>
-    public (int Along, int Across) Grid => (Math.Clamp((int)MathF.Ceiling(EdgeLength), 1, 16), Math.Clamp((int)MathF.Ceiling(Span / 0.8f), 2, 16));
+    public (int Along, int Across) Grid =>
+        (Math.Clamp((int)MathF.Ceiling(Math.Max(A0.DistanceTo(A1), B0.DistanceTo(B1))), 1, 16), Math.Clamp((int)MathF.Ceiling(Span / 0.8f), 2, 16));
+
+    public bool IsTriangle => B0.DistanceTo(B1) < 0.01f;
+
+    /// <summary>Whether this is the same sheet as another, whichever way round its far edge was given.</summary>
+    public bool SameAs(TentPanel other)
+    {
+        const float e = 0.02f;
+        return (B0.DistanceTo(other.B0) < e && B1.DistanceTo(other.B1) < e) || (B0.DistanceTo(other.B1) < e && B1.DistanceTo(other.B0) < e);
+    }
 }
 
 /// <summary>
