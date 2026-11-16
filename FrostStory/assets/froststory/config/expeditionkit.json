@@ -1,0 +1,32 @@
+{
+	"//": "The expedition survivor's starting kit, given once per player on first join to a Long Winter world. Codes are item or block codes; 'wear' puts it on when it is clothing or armour and the slot is free. A code that does not exist is left out with a warning in the server log.",
+	"items": [
+		{ "code": "game:axe-felling-iron", "quantity": 1 },
+		{ "code": "game:pickaxe-iron", "quantity": 1 },
+		{ "code": "game:knife-generic-iron", "quantity": 1 },
+		{ "code": "game:shovel-iron", "quantity": 1 },
+		{ "code": "game:hammer-iron", "quantity": 1 },
+		{ "code": "froststory:icepick-iron", "quantity": 1 },
+		{ "code": "froststory:icesaw-iron", "quantity": 1 },
+		{ "code": "game:firestarter", "quantity": 1 },
+
+		{ "code": "froststory:furhood", "quantity": 1, "wear": true },
+		{ "code": "froststory:furparka", "quantity": 1, "wear": true },
+		{ "code": "froststory:furtrousers", "quantity": 1, "wear": true },
+		{ "code": "froststory:furmittens", "quantity": 1, "wear": true },
+		{ "code": "froststory:furboots", "quantity": 1, "wear": true },
+		{ "code": "froststory:snowgoggles", "quantity": 1, "wear": true },
+
+		{ "code": "game:redmeat-cured", "quantity": 12 },
+		{ "code": "game:bread-spelt-perfect", "quantity": 8 },
+
+		{ "code": "froststory:tentrod-ud", "quantity": 16 },
+		{ "code": "froststory:tentcloth", "quantity": 40 },
+		{ "code": "froststory:tentstove-cold-north", "quantity": 1 },
+		{ "code": "froststory:stoveflue-ud", "quantity": 4 },
+		{ "code": "froststory:stoveflue-elbownorth", "quantity": 1 },
+		{ "code": "froststory:stoveflue-upturnnorth", "quantity": 1 },
+		{ "code": "froststory:stoveflue-cap", "quantity": 1 },
+		{ "code": "game:firewood", "quantity": 32 }
+	]
+}
