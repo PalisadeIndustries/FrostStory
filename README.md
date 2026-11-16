@@ -25,7 +25,7 @@ each a block shape several metres across, with octagonal walls, round pipes and 
 Invisible filler cells behind the models give you something to stand on, climb and bump into. Only
 the foundation pad and the rock lining of the shaft are ordinary blocks.
 
-It goes up in seven stages from the control console, and each stage goes up piece by piece: 42
+It goes up in eight stages from the control console, and each stage goes up piece by piece: 45
 pieces in all at full depth. A stage's materials are delivered to one running total, and every
 piece is raised as soon as that total covers its share. Deliver a third of a stage and a third of
 it stands there, waiting for the rest.
@@ -49,9 +49,12 @@ it stands there, waiting for the rest.
 7. **Thermal Hull** – the octagonal shell with doorways and louvres, heat-exchange risers up its
    flanks, the shoulder with its relief valves, the crown, and the stack under a weather cowl. Two
    outside service galleries (12 m and 24 m up) are reached by a ladder on the south frame, and
-   there is a third gallery inside. An insulating jacket rings the upper tower from 20 m up: it stands a
-   block and a half clear of the galleries on beams and raking struts, and hoods in at 45 degrees
-   below the stack. The hull goes up as three lifts, the shoulder, the stack, then the jacket. (6 pieces)
+   there is a third gallery inside. The hull goes up as three lifts, the shoulder, then the stack.
+   (5 pieces)
+8. **Insulating Jacket** – an outer shell of eight panels round the upper tower from 20 m up. It
+   stands a block and a half clear of the galleries on beams and raking struts, and hoods in at
+   45 degrees below the stack. It goes up in opposite pairs: east and west, north and south, then
+   the two diagonal pairs. (4 pieces)
 
 Then the console fires it: the core heart lights up and shows through the louvres, warms anyone near
 it, and the stack steams.
@@ -67,7 +70,7 @@ it, and the stack steams.
   Each piece builds itself as soon as it is paid for; deliver everything and the stage goes up
   piece after piece.
 - In creative mode, sneak + right-click empty-handed to skip the materials.
-- When all seven stages are done, right-click to fire the generator (and again to bank it).
+- When all eight stages are done, right-click to fire the generator (and again to bank it).
 
 Stage 1 removes whatever stands on the site, chests included. Breaking the console abandons the
 project; what is built stays. The generator itself cannot be selected or broken by hand: use
@@ -183,7 +186,7 @@ textures, stage by stage, with a section view of the shaft. (`pip install pillow
 
 ## Status
 
-Working and checked on a 1.22.7 dedicated server: assets load without errors, all seven stages
+Working and checked on a 1.22.7 dedicated server: assets load without errors, all eight stages
 build through the console, partial deliveries raise exactly the pieces they pay for and then wait,
 a build resumes mid-stage after a restart, firing and banking swap the lit models and the steam ports, and the
 result matches the blueprint cell for cell. Pipes and mains laid from the ports report steam when

@@ -39,6 +39,7 @@
 	"stage-frame-a": "Support Frame (east-west)",
 	"stage-frame-b": "Support Frame (north-south)",
 	"stage-hull": "Thermal Hull",
+	"stage-jacket": "Insulating Jacket",
 
 	"stagedesc-shaft": "A lined shaft sunk into warm rock under a headframe, with a foundation collar at its mouth. Everything above will stand on it, and everything the generator draws will come up through it.",
 	"stagedesc-valves": "The main riser and its heavy gate valves. They bleed surges from the deep off into relief ports, so the pressure stays inside what the machine can bear.",
@@ -46,7 +47,9 @@
 	"stagedesc-core": "The vessel where rising steam is split through the distribution header into working lines, for pumps, light, heat and industry. Eight steam ports come up through the pad rim for them.",
 	"stagedesc-frame-a": "A riveted portal frame that takes the load of the upper works. The generator needs two, set crosswise.",
 	"stagedesc-frame-b": "The second portal frame, set across the first. Together they carry the hull and the stack.",
-	"stagedesc-hull": "An insulating steel shell around the core, with heat-exchange risers up its flanks, relief valves on the shoulder, two service galleries, four large steam ports over the first of them, and an insulating jacket hung round the upper tower. It throws heat back inward and lets the operators decide how much of it escapes.",
+	"stagedesc-hull": "An insulating steel shell around the core, with heat-exchange risers up its flanks, relief valves on the shoulder, two service galleries and four large steam ports over the first of them. It throws heat back inward and lets the operators decide how much of it escapes.",
+
+	"stagedesc-jacket": "An outer shell of eight panels hung round the upper tower, clear of the galleries, on beams off the frames and the hull. It goes up in opposite pairs so the tower stays in balance, and keeps the cold off the crown.",
 
 	"req-stonebricks": "Ashlar blocks (any stone)",
 
@@ -66,7 +69,7 @@
 	"step-hullc": "Hull, third lift with the second gallery",
 	"step-shoulder": "Shoulder and crown",
 	"step-stack": "Stack",
-	"step-jacket": "Insulating jacket",
+	"step-jacketpanels": "Jacket panels, pair {0} of {1}",
 
 	"console-stage": "Stage {0} of {1}: {2}",
 	"console-piece": "Piece {0} of {1}: {2}",

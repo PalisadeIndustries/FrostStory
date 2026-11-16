@@ -112,7 +112,7 @@ public static class GeneratorBlueprint
 
     public static readonly string[] StageIds =
     {
-        "shaft", "valves", "pumps", "core", "frame-a", "frame-b", "hull"
+        "shaft", "valves", "pumps", "core", "frame-a", "frame-b", "hull", "jacket"
     };
 
     // Service ladder runs up the north side, one cell in from the wall.
@@ -145,7 +145,8 @@ public static class GeneratorBlueprint
             BuildCore(),
             BuildFrame("frame-a", 0),
             BuildFrame("frame-b", 1),
-            BuildHull()
+            BuildHull(),
+            BuildJacket()
         };
     }
 
@@ -610,7 +611,7 @@ public static class GeneratorBlueprint
                 case 11: b.Step("hullb", weight: 4); break;
                 case 20: b.Step("hullc", weight: 3); break;
                 case 30: b.Step("shoulder", weight: 2); break;
-                case 35: b.Step("stack"); break;
+                case 35: b.Step("stack", weight: 2); break;
             }
 
             if (y <= 29)
@@ -668,15 +669,56 @@ public static class GeneratorBlueprint
             if (part != null) b.Set(1, y, 0, Blocks.Segment(part));
         }
 
-        // Last, the insulating jacket is hung round the upper tower.
-        b.Step("jacket", weight: 4);
-        for (int y = JacketBottom; y <= JacketTop + 2; y++)
-        {
-            for (int x = -9; x <= 9; x++)
-                for (int z = -9; z <= 9; z++)
-                    if (InJacket(x, y, z)) b.Set(x, y, z, Blocks.FillSolid);
+        return b.Build();
+    }
 
-            if (y == 22) b.Set(8, y, 0, Blocks.Segment("jacket"));
+    // ---------------------------------------------------------------- stage 7
+
+    /// <summary>Which of the jacket's eight panels a cell belongs to: 0 is east, counting round towards north.</summary>
+    private static int JacketPanel(int x, int z)
+    {
+        double turns = Math.Atan2(-z, x) / (Math.PI / 4);
+        return ((int)Math.Round(turns) % 8 + 8) % 8;
+    }
+
+    /// <summary>
+    /// The insulating jacket goes up as four pieces, each a pair of opposite panels with the beams that
+    /// carry them: east and west, north and south, then the two diagonal pairs.
+    /// </summary>
+    private static StageBlueprint BuildJacket()
+    {
+        var b = new StageBuilder("jacket");
+
+        // (panel, panel, part, turn, turn): the axis panel is modelled facing east, the diagonal one north-east
+        var pairs = new[]
+        {
+            (0, 4, "jacketaxis", 0, 2),
+            (2, 6, "jacketaxis", 3, 1),
+            (1, 5, "jacketdiag", 0, 2),
+            (3, 7, "jacketdiag", 3, 1)
+        };
+
+        for (int i = 0; i < pairs.Length; i++)
+        {
+            var (first, second, part, turnA, turnB) = pairs[i];
+            b.Step("jacketpanels", number: i + 1, of: pairs.Length);
+
+            for (int y = JacketBottom; y <= JacketTop + 2; y++)
+            {
+                for (int x = -9; x <= 9; x++)
+                    for (int z = -9; z <= 9; z++)
+                    {
+                        if (!InJacket(x, y, z)) continue;
+                        int panel = JacketPanel(x, z);
+                        if (panel == first || panel == second) b.Set(x, y, z, Blocks.FillSolid);
+                    }
+            }
+
+            foreach (int turn in new[] { turnA, turnB })
+            {
+                var (ax, az) = part == "jacketaxis" ? Rot(8, 0, turn) : Rot(6, -6, turn);
+                b.Set(ax, 22, az, Blocks.Segment(part, turn));
+            }
         }
 
         return b.Build();

@@ -210,7 +210,7 @@ class Model:
             self.east(k * 45, (a - t / 2, y0 + (i + 0.5) * step, (z0 + z1) / 2), (t, step, z1 - z0), tex, faces=faces,
                       facetex={"west": intex or tex}, uvoff=((z0 + s / 2) * 16, 0))
 
-    def cone(self, y0, y1, a0, a1, t, tex, ribtex="band", courses=3, origin=(0, 0), ribs=True, inside=True):
+    def cone(self, y0, y1, a0, a1, t, tex, ribtex="band", courses=3, origin=(0, 0), ribs=True, inside=True, sides=range(8)):
         """A faceted taper between two octagons: plated courses with a rib over each hip."""
         tilt = math.degrees(math.atan2(a0 - a1, y1 - y0))
         for i in range(courses):
@@ -218,14 +218,14 @@ class Model:
             yb, yt = y0 + (y1 - y0) * f0, y0 + (y1 - y0) * f1
             ab, at = a0 + (a1 - a0) * f0, a0 + (a1 - a0) * f1
             length = math.hypot(ab - at, yt - yb)
-            for k in range(8):
+            for k in sides:
                 self.east(k * 45, ((ab + at) / 2 - t / 2, (yb + yt) / 2, 0), (t, length, side((ab + at) / 2)), tex, tilt=tilt,
                           origin=origin, faces=["east"] + (["west"] if inside else []), uvoff=(k * 24, i * 20))
         if ribs:
             rb, rt = a0 / C22, a1 / C22
             rib_tilt = math.degrees(math.atan2(rb - rt, y1 - y0))
             length = math.hypot(rb - rt, y1 - y0)
-            for k in range(8):
+            for k in sides:
                 self.east(k * 45 + 22.5, ((rb + rt) / 2 - 0.04, (y0 + y1) / 2, 0), (0.2, length, 0.5), ribtex, tilt=rib_tilt,
                           origin=origin, faces=["east", "north", "south"])
 
@@ -955,58 +955,63 @@ JACKET = 8.2          # outer apothem: a block and a half clear of the galleries
 JACKET_Y0, JACKET_Y1 = 20.0, 33.0
 
 
-def jacket():
-    """An outer insulating jacket round the upper half of the tower. It stands clear of the galleries,
-    hung off the frames and the hull on beams and raking struts, open at the foot and round the stack."""
-    m = Model("jacket", (8, 22, 0))
+def jacket(kind):
+    """One panel of the insulating jacket round the upper tower, with the beams and struts that carry it.
+
+    The jacket is an octagon of eight such panels standing clear of the galleries, open at the foot and
+    round the stack. 'axis' is the east panel, hung off the frame columns, with a louvred opening;
+    'diag' is the north-east panel, hung off the hull between the risers. The rest are these two turned."""
+    axis = kind == "axis"
+    k = 0 if axis else 1
+    m = Model("jacket" + kind, (8, 22, 0) if axis else (6, 22, -6))
     t = 0.25
     half = side(JACKET) / 2
-    win = 1.2           # half-width of the louvred opening on each axis side
+    win = 1.2           # half-width of the louvred opening on an axis panel
     wy0, wy1 = 22.6, 27.4
 
-    for k in range(8):
-        if k % 2:
-            m.wall(k, JACKET, t, JACKET_Y0, JACKET_Y1, -half, 0, "plating")
-            m.wall(k, JACKET, t, JACKET_Y0, JACKET_Y1, 0, half, "plating")
-        else:
-            m.wall(k, JACKET, t, JACKET_Y0, JACKET_Y1, -half, -win, "plating")
-            m.wall(k, JACKET, t, JACKET_Y0, JACKET_Y1, win, half, "plating")
-            m.wall(k, JACKET, t, JACKET_Y0, wy0, -win, win, "plating")
-            m.wall(k, JACKET, t, wy1, JACKET_Y1, -win, win, "plating")
-            louvre(m, k, JACKET, wy0, wy1, width=2 * win)
-        # upright ribs: one over the seam in the middle of each side, one either side of it
-        for z in (-half * 0.5, 0.0, half * 0.5):
-            if k % 2 == 0 and z == 0.0:
-                continue
-            m.east(k * 45, (JACKET + 0.07, (JACKET_Y0 + JACKET_Y1) / 2, z), (0.16, JACKET_Y1 - JACKET_Y0, 0.24), "band",
-                   faces=["east", "north", "south"])
+    if axis:
+        m.wall(k, JACKET, t, JACKET_Y0, JACKET_Y1, -half, -win, "plating")
+        m.wall(k, JACKET, t, JACKET_Y0, JACKET_Y1, win, half, "plating")
+        m.wall(k, JACKET, t, JACKET_Y0, wy0, -win, win, "plating")
+        m.wall(k, JACKET, t, wy1, JACKET_Y1, -win, win, "plating")
+        louvre(m, k, JACKET, wy0, wy1, width=2 * win)
+    else:
+        m.wall(k, JACKET, t, JACKET_Y0, JACKET_Y1, -half, 0, "plating")
+        m.wall(k, JACKET, t, JACKET_Y0, JACKET_Y1, 0, half, "plating")
+    # upright ribs: one over the seam in the middle of a plain panel, one either side of it
+    for z in (-half * 0.5, 0.0, half * 0.5):
+        if axis and z == 0.0:
+            continue
+        m.east(k * 45, (JACKET + 0.07, (JACKET_Y0 + JACKET_Y1) / 2, z), (0.16, JACKET_Y1 - JACKET_Y0, 0.24), "band",
+               faces=["east", "north", "south"])
+    # a heavier rib closes the joint with the next panel round
+    m.east(k * 45 + 22.5, (JACKET / C22 + 0.02, (JACKET_Y0 + JACKET_Y1) / 2, 0), (0.22, JACKET_Y1 - JACKET_Y0, 0.5), "band",
+           faces=["east", "north", "south", "west"])
 
     for y in (JACKET_Y0, 24.2, 28.5, JACKET_Y1 - 0.45):
-        m.flange(y, y + 0.45, JACKET + 0.16, t=0.45)
-    m.cone(JACKET_Y0 - 0.8, JACKET_Y0, JACKET - 0.8, JACKET, 0.2, "plating", courses=1)       # drip skirt
-    m.cone(JACKET_Y1, JACKET_Y1 + 2.0, JACKET, JACKET - 2.0, 0.22, "plating", courses=2)      # 45 degree hood
-    m.flange(JACKET_Y1 + 1.9, JACKET_Y1 + 2.25, JACKET - 1.95, t=0.4)
+        m.ring(y, y + 0.45, JACKET + 0.16, 0.45, "band", sides=[k], chunk=99)
+    m.cone(JACKET_Y0 - 0.8, JACKET_Y0, JACKET - 0.8, JACKET, 0.2, "plating", courses=1, sides=[k])       # drip skirt
+    m.cone(JACKET_Y1, JACKET_Y1 + 2.0, JACKET, JACKET - 2.0, 0.22, "plating", courses=2, sides=[k])      # 45 degree hood
+    m.ring(JACKET_Y1 + 1.9, JACKET_Y1 + 2.25, JACKET - 1.95, 0.4, "band", sides=[k], chunk=99)
 
     inner = JACKET - t
-    col = COLUMN_X + 0.3
-    for k in range(4):
+    if axis:
         # off the frame columns: level beams, and raking struts under the foot
+        col = COLUMN_X + 0.3
         for sz in (1, -1):
-            def at(x, y, z=sz * COLUMN_Z):
-                rx, rz = yaw(k * 90, x, z)
-                return (rx, y, rz)
-
+            z = sz * COLUMN_Z
             for y in (21.0, 26.6, 31.8):
-                m.member(at(col, y), at(inner, y), 0.3, 0.3, "girder")
-                m.box(at(inner - 0.1, y), (0.9, 0.9, 0.2), "band", rot=(0, k * 90 + 90, 0))    # bearing plate on the jacket
-            m.member(at(col, JACKET_Y0 - 2.4), at(inner - 0.1, JACKET_Y0 + 0.1), 0.26, 0.26, "girder")
-        # off the diagonal hull faces, between the risers
+                m.member((col, y, z), (inner, y, z), 0.3, 0.3, "girder")
+                m.box((inner - 0.1, y, z), (0.2, 0.9, 0.9), "band")                                  # bearing plate
+            m.member((col, JACKET_Y0 - 2.4, z), (inner - 0.1, JACKET_Y0 + 0.1, z), 0.26, 0.26, "girder")
+    else:
+        # off the diagonal hull face, between the risers
+        hx, hz = yaw(45, HULL, 0)
         for y in (21.0, 26.6):
-            hx, hz = yaw(k * 90 + 45, HULL, 0)
-            jx, jz = yaw(k * 90 + 45, inner, 0)
+            jx, jz = yaw(45, inner, 0)
             m.member((hx, y, hz), (jx, y, jz), 0.3, 0.3, "girder")
-        hx, hz = yaw(k * 90 + 45, HULL, 0)
-        jx, jz = yaw(k * 90 + 45, inner - 0.1, 0)
+            m.east(45, (inner - 0.1, y, 0), (0.2, 0.9, 0.9), "band")
+        jx, jz = yaw(45, inner - 0.1, 0)
         m.member((hx, JACKET_Y0 - 3.3, hz), (jx, JACKET_Y0 + 0.1, jz), 0.26, 0.26, "girder")
     return m
 
@@ -1106,7 +1111,7 @@ def build_all():
         injectors(), injectors(top=True), pump(), ringmain(),
         core(True, False), core(True, True), core(False, False), core(False, True), manifold(), exhaust(),
         frame(0), frame(1), frame(2), frame(2, lapped=True),
-        hull(0), hull(0, lit=True), hull(1), hull(1, lit=True), hull(2), shoulder(), stack(), jacket(),
+        hull(0), hull(0, lit=True), hull(1), hull(1, lit=True), hull(2), shoulder(), stack(), jacket("axis"), jacket("diag"),
     ]
 
 
