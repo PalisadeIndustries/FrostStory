@@ -30,6 +30,8 @@
 	"block-radiator-*": "Radiator",
 	"blockdesc-radiator-*": "A cast-iron column radiator, two blocks long. Its two hookups are on its back, one behind each block, at a right angle to its length, so it stands along the wall its pipe comes through. Each takes a pipe or a pipe run; a pipe can also feed it from underneath. Set it against a wall and it backs onto it. With steam in it, it gives five times the warmth of a pipe.",
 	"block-radiatorfill-*": "Radiator",
+	"block-floorgrate": "Underfloor grate",
+	"blockdesc-floorgrate": "A floor block to walk on, with a heating coil under the grating. Feed it with a pipe or a pipe run to the mount underneath, or a pipe against any side. Grates laid side by side pass steam along, so one feed warms a whole floor. With steam in it, it gives three times the warmth of a pipe.",
 	"block-heatpipe-*": "Heating pipe",
 	"blockdesc-heatpipe-*": "A low pipe that lies on the ground and joins whatever pipe, fitting or port is beside it, turning corners and branching by itself. Low enough to step over. Carrying steam, it gives off twice the warmth of an ordinary pipe.",
 	"block-tentrod-*": "Tent rod",

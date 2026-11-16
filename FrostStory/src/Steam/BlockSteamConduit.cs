@@ -56,6 +56,12 @@ public class BlockSteamConduit : Block, IHeatSource
     public bool IsRadiator { get; private set; }
     public BlockFacing Back { get; private set; } = BlockFacing.NORTH;
 
+    /// <summary>
+    /// True for underfloor grates: a floor block to walk on, with a heating coil under the grating. Fed
+    /// from underneath or from the side; grates laid side by side pass steam along.
+    /// </summary>
+    public bool IsFloorGrate { get; private set; }
+
     /// <summary>True for the posts of a main stand: they carry a fitting but no steam.</summary>
     public bool IsStructural { get; private set; }
 
@@ -71,7 +77,7 @@ public class BlockSteamConduit : Block, IHeatSource
         mod = api.ModLoader.GetModSystem<FrostStoryModSystem>();
 
         string kind = FirstCodePart();
-        IsNode = kind is "pipejunction" or "mainjunction" or "steamport" or "mainport" or "distributor" or "wallpass" or "radiator";
+        IsNode = kind is "pipejunction" or "mainjunction" or "steamport" or "mainport" or "distributor" or "wallpass" or "radiator" or "floorgrate";
         if (IsNode && api.Side == EnumAppSide.Client)
         {
             PipeSegment = Vintagestory.API.Common.Shape.TryGet(api, new AssetLocation("froststory", "shapes/block/generator/pipeseg.json"));
@@ -113,6 +119,11 @@ public class BlockSteamConduit : Block, IHeatSource
                 Outlet = drop ? BlockFacing.DOWN : Inlet.Opposite;
                 Size = drop ? new Vec3i(2, 2, 2) : Inlet.Axis == EnumAxis.X ? new Vec3i(1, 2, 2) : new Vec3i(2, 2, 1);
                 connects[Inlet.Index] = true;      // only the inlet takes a main
+                break;
+
+            case "floorgrate":
+                IsFloorGrate = true;
+                foreach (var face in BlockFacing.ALLFACES) connects[face.Index] = face != BlockFacing.UP;
                 break;
 
             case "radiator":
@@ -185,6 +196,13 @@ public class BlockSteamConduit : Block, IHeatSource
 
     public IEnumerable<(BlockFacing Face, Vec3d Point)> RunPoints(BlockPos anchor, bool big)
     {
+        if (IsFloorGrate)
+        {
+            // one run, to the mount underneath
+            if (!big) yield return (BlockFacing.DOWN, SteamRuns.AttachPoint(this, anchor, BlockFacing.DOWN));
+            yield break;
+        }
+
         if (IsRadiator)
         {
             // a small run to the hookup behind each of its two blocks
@@ -245,7 +263,7 @@ public class BlockSteamConduit : Block, IHeatSource
     public float GetHeatStrength(IWorldAccessor world, BlockPos heatSourcePos, BlockPos heatReceiverPos)
     {
         if (!IsWarm(world, heatSourcePos)) return 0f;
-        return mod!.Config.PipeHeatStrength * (IsRadiator ? 5f : IsBig ? 3f : IsHeatPipe ? 2f : 1f);
+        return mod!.Config.PipeHeatStrength * (IsRadiator ? 5f : IsBig || IsFloorGrate ? 3f : IsHeatPipe ? 2f : 1f);
     }
 
     public string SteamInfo(IWorldAccessor world, BlockPos pos)

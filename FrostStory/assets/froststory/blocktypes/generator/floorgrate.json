@@ -1,0 +1,56 @@
+{
+	"code": "floorgrate",
+	"class": "FrostStorySteamConduit",
+	"entityClass": "FrostStorySteamNode",
+	"creativeinventory": {
+		"general": [
+			"*"
+		],
+		"froststory": [
+			"*"
+		]
+	},
+	"drawtype": "json",
+	"shape": {
+		"base": "block/generator/floorgrate"
+	},
+	"textures": {
+		"darkplate": {
+			"base": "block/generator/segment/darkplate"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"black": {
+			"base": "block/generator/segment/black"
+		},
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		},
+		"grating": {
+			"base": "block/generator/segment/grating"
+		}
+	},
+	"renderPass": "OpaqueNoCull",
+	"faceCullMode": "NeverCull",
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": true
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 6,
+	"requiredMiningTier": 3,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

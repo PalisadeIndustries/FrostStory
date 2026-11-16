@@ -127,6 +127,10 @@ arrive with the Steam Core stage and go live when the generator is fired.
   feed it from underneath. Set against a wall it backs onto that wall; set on a floor it backs
   away from you. With steam in it, it gives five times the warmth of a pipe (the
   same as a firepit at the default setting).
+- An **underfloor grate** is a floor block to walk on with a heating coil under its grating. It
+  has a pipe mount underneath, for a pipe or one pipe run, and also takes a pipe against any
+  side. Grates laid side by side pass steam along, so one feed warms a whole floor. It gives
+  three times the warmth of a pipe, and is solid for closing a room. Nothing joins on top.
 - Look at a pipe to see whether it is carrying steam.
 
 **Large ports and steam mains.** Four large ports, one to a side, come out of the hull through the
@@ -156,7 +160,7 @@ Hull stage and go live with the rest.
 
 Recipes: two iron plates make four pipes; four iron plates make four fittings; eight iron plates
 in a ring make four mains; four mains make two main fittings; a main fitting over four iron
-ingots makes a stand; a pipe with an iron plate on each of its four sides makes two wall passthroughs; three iron plates over pipe, plate, pipe make a radiator; a main with four pipes makes a distributor (main and two pipes over two
+ingots makes a stand; a pipe with an iron plate on each of its four sides makes two wall passthroughs; three iron plates over pipe, plate, pipe make a radiator; two gratings over two pipes over two iron plates make two underfloor grates; a main with four pipes makes a distributor (main and two pipes over two
 pipes) or a drop distributor (main over two rows of two pipes).
 
 A pipe is traced back to its port on demand, so the route has to be in loaded chunks. A run that
@@ -280,7 +284,8 @@ steam. Tent panels go up between rods, come down, and follow a rod that is remov
 higher and lower ground. Both distributors carry steam from a main to a pipe on each of their four
 outlets and to four pipe runs (a fifth is refused), and stay shut to pipes and mains on every other side. A wall passthrough carries steam between its two mounts by pipe or by run,
 stays shut on its other four sides, and counts as a solid, heat-keeping block. A radiator takes steam at the two hookups on its back and from
-underneath, by pipe or by run, passes it on, and stays shut on its front, ends and top. Every shape file loads cleanly through the game's own
+underneath, by pipe or by run, passes it on, and stays shut on its front, ends and top. Underfloor grates take steam from underneath or the side, pass it
+along a row, take one run underneath, and stay shut on top. Every shape file loads cleanly through the game's own
 shape class.
 
 Not yet checked in a game client: whether tent cloth draws and moves in the wind (it uses the same

@@ -1261,6 +1261,26 @@ def radiator(back):
     return m
 
 
+def floorgrate():
+    """An underfloor grate: a one-block floor tray with a heating coil in it and grating over the top to
+    walk on. A pipe mount hangs under the middle; the sides are plain plate."""
+    m = Model("floorgrate", (0, 1, 0))
+    m.box((0, 0.04, 0), (1, 0.08, 1), "darkplate")                               # tray floor
+    for sx, sz, size in ((0.46, 0, (0.08, 1, 1)), (-0.46, 0, (0.08, 1, 1)), (0, 0.46, (0.84, 1, 0.08)), (0, -0.46, (0.84, 1, 0.08))):
+        m.box((sx, 0.5, sz), size, "darkplate")
+    for z in (-0.28, 0.0, 0.28):                                                 # the coil
+        m.hprism((-0.4, 0.5, z), (0.4, 0.5, z), 0.1, "pipe")
+        for x in (-0.25, 0.25):
+            m.hprism((x - 0.03, 0.5, z), (x + 0.03, 0.5, z), 0.13, "band", caps=(True, True), captex="band")
+    for x, z0, z1 in ((0.34, -0.28, 0.0), (-0.34, 0.0, 0.28)):                   # return bends
+        m.hprism((x, 0.5, z0), (x, 0.5, z1), 0.1, "pipe")
+    m.vprism(0, 0, 0.08, 0.42, 0.09, "pipe")                                     # riser from the mount
+    m.box((0, 0.96, 0), (0.84, 0.06, 0.84), "grating")
+    m.vprism(0, 0, -0.06, 0.06, 0.4, "band", caps=(True, True), captex="band")   # mount underneath
+    m.vprism(0, 0, -0.07, 0.0, 0.26, "black", caps=(True, True), captex="black")
+    return m
+
+
 def wallpass(axis):
     """A wall passthrough: a solid block of plate that stands in for one block of a wall, with a pipe
     mount (a collar round an open bore) on each of two opposite sides. The collars stand a little proud
@@ -1378,6 +1398,7 @@ def main():
     parts += [distributor(k, s) for k in ("straight", "drop") for s in DISTRIBUTOR_SIDES]
     parts += [wallpass(a) for a in ("ud", "ns", "we")]
     parts += [radiator(b) for b in RADIATOR_SIDES]
+    parts += [floorgrate()]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:
         part.save(os.path.join(SHAPE_DIR, ".."))

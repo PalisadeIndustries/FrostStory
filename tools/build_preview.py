@@ -401,6 +401,8 @@ def pipework_example(codes, atlas):
     wall_cells = cells(
         (gate[0] + 1, 1, gate[2], "steampipe-we"), (gate[0] + 2, 1, gate[2], "steampipe-we"),
         (wall_x, 1, gate[2], "wallpass-we"), (wall_x + 1, 1, gate[2] - 1, "radiator-west"),
+        *[(x, 0, z, "floorgrate") for x in (wall_x + 2, wall_x + 3) for z in (gate[2] - 1, gate[2], gate[2] + 1)],
+        (wall_x + 1, 0, gate[2], "steampipe-we"), (wall_x + 1, 0, gate[2] - 1, "pipejunction"), 
         *[(wall_x, y, z, "hullplate-riveted" if y == 3 else "hullplate-plain")
           for y in (1, 2, 3) for z in range(gate[2] - 2, gate[2] + 3) if (y, z) != (1, gate[2])])
     wall_runs = []

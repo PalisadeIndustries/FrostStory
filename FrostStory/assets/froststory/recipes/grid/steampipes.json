@@ -174,5 +174,29 @@
 			"type": "block",
 			"code": "froststory:radiator-north"
 		}
+	},
+	{
+		"ingredientPattern": "GG,SS,PP",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"S": {
+				"type": "block",
+				"code": "froststory:steampipe-ud"
+			},
+			"G": {
+				"type": "block",
+				"code": "froststory:grating"
+			}
+		},
+		"width": 2,
+		"height": 3,
+		"output": {
+			"type": "block",
+			"code": "froststory:floorgrate",
+			"quantity": 2
+		}
 	}
 ]
