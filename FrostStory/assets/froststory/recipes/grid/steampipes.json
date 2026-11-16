@@ -373,5 +373,28 @@
 			"code": "game:metalplate-iron",
 			"quantity": 3
 		}
+	},
+	{
+		"ingredientPattern": "_S_,GPG,PPP",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"G": {
+				"type": "item",
+				"code": "game:gear-rusty"
+			},
+			"S": {
+				"type": "block",
+				"code": "froststory:steampipe-ud"
+			}
+		},
+		"width": 3,
+		"height": 3,
+		"output": {
+			"type": "block",
+			"code": "froststory:steamengine-north"
+		}
 	}
 ]

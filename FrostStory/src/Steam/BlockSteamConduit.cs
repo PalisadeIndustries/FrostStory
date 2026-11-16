@@ -33,7 +33,7 @@ public class BlockSteamConduit : Block, IHeatSource
     public bool IsBig { get; private set; }
 
     /// <summary>True for fittings and ports: the places pipe runs are strung between.</summary>
-    public bool IsNode { get; private set; }
+    public bool IsNode { get; protected set; }
 
     /// <summary>The straight pieces pipe runs are drawn from (client only).</summary>
     public Vintagestory.API.Common.Shape? PipeSegment { get; private set; }
@@ -100,7 +100,7 @@ public class BlockSteamConduit : Block, IHeatSource
     public const float MainDraw = 0.5f;
 
     /// <summary>Steam this conduit draws from its run.</summary>
-    public float Draw { get; private set; }
+    public float Draw { get; protected set; }
 
     /// <summary>True for the posts of a main stand: they carry a fitting but no steam.</summary>
     public bool IsStructural { get; private set; }
@@ -117,7 +117,8 @@ public class BlockSteamConduit : Block, IHeatSource
         mod = api.ModLoader.GetModSystem<FrostStoryModSystem>();
 
         string kind = FirstCodePart();
-        IsNode = kind is "pipejunction" or "mainjunction" or "steamport" or "mainport" or "distributor" or "wallpass" or "radiator" or "floorgrate" or "steamhub";
+        IsNode = kind is "pipejunction" or "mainjunction" or "steamport" or "mainport" or "distributor" or "wallpass" or "radiator" or "floorgrate" or "steamhub"
+                 || this is BlockSteamEngine;
         if (IsNode && api.Side == EnumAppSide.Client)
         {
             PipeSegment = Vintagestory.API.Common.Shape.TryGet(api, new AssetLocation("froststory", "shapes/block/generator/pipeseg.json"));
@@ -135,6 +136,9 @@ public class BlockSteamConduit : Block, IHeatSource
             "borer" => 20f,
             _ => 0f
         };
+
+        // Any conduit may set its own draw in its attributes; other mods' engines and fittings use this.
+        Draw = Attributes?["steamDraw"].AsFloat(Draw) ?? Draw;
 
         switch (kind)
         {
@@ -251,6 +255,12 @@ public class BlockSteamConduit : Block, IHeatSource
                 for (int i = 0; i < 6; i++) connects[i] = true;
                 break;
         }
+    }
+
+    /// <summary>Opens every side but one; for a block that does something else on that side.</summary>
+    protected void OpenAllBut(BlockFacing closed)
+    {
+        foreach (var face in BlockFacing.ALLFACES) connects[face.Index] = face != closed;
     }
 
     private void OpenAlong(string axis)

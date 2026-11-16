@@ -190,6 +190,25 @@ see if it is.
 - Red costs nothing yet: there is no fuel or wear behind the steam. Large ports and mains have
   no valve or gauge of their own yet; a gauge on a pipe tapped off a main reads off the scale.
 
+**Steam engines.** A steam engine turns steam into the game's own mechanical power, the same
+power windmills and water wheels make, so it drives axles, gears, querns, pulverizers, helve hammers
+and anything from another mod that runs off them.
+
+- It is one block: a small vertical engine on a bedplate, with a flywheel and a crankshaft that
+  comes out of one side. That side takes an axle, a gear or any other mechanical power block; pipes
+  join it on every other side, and pipe runs can be strung to it like a fitting.
+- Set it beside an axle or a gear and the shaft turns to meet it. Otherwise the shaft points the way
+  you are facing, so the axle goes on beyond it.
+- It draws 20 steam. With all of it, it drives with 1.5 times the torque of a four-sail windmill and
+  brings its network up to a speed of 0.75 (a windmill in a gale manages 0.6). Starved, or throttled
+  by a stop valve upstream, it gives that share of both: a valve at 2 of 8 passes 10 of its 20 and
+  the engine runs at half speed. Shut the valve to stop it; it draws nothing then.
+- What it draws is paid for in coal at the generator like everything else on the line.
+- It runs either way round: it takes up whichever way its network is already turning. So any number
+  of engines on one network pull together, even two facing each other on the same axle (two
+  windmills that way would fight to a standstill).
+- Look at it to see how well it is fed and what it is putting out.
+
 **Large ports and steam mains.** Four large ports, one to a side, come out of the hull through the
 frames with their mouths over the first gallery, 2 m above its deck. Each has a valve whose spindle
 drops to a handwheel at chest height on the gallery (the wheel is not operable yet). They arrive with the Thermal
@@ -229,7 +248,7 @@ Hull stage and go live with the rest.
 
 Recipes: two iron plates make four pipes; four iron plates make four fittings; eight iron plates
 in a ring make four mains; four mains make two main fittings; a main fitting over four iron
-ingots makes a stand; a pipe with an iron plate on each of its four sides makes two wall passthroughs; three iron plates over pipe, plate, pipe make a radiator; two gratings over two pipes over two iron plates make two underfloor grates; six iron plates over a main fitting make a steam hub; a steam hub over two columns of two iron ingots makes a hub tower; an iron ingot over ingot, pipe, ingot over three iron plates makes a steam borer; ingot, gap, ingot over three plates over ingot, gap, ingot makes eight bucket conveyors; an iron plate over pipe, plate, pipe makes a stop valve, and a glass block over the same makes a gauge station; a main with four pipes makes a distributor (main and two pipes over two
+ingots makes a stand; a pipe with an iron plate on each of its four sides makes two wall passthroughs; three iron plates over pipe, plate, pipe make a radiator; two gratings over two pipes over two iron plates make two underfloor grates; six iron plates over a main fitting make a steam hub; a steam hub over two columns of two iron ingots makes a hub tower; an iron ingot over ingot, pipe, ingot over three iron plates makes a steam borer; ingot, gap, ingot over three plates over ingot, gap, ingot makes eight bucket conveyors; an iron plate over pipe, plate, pipe makes a stop valve, and a glass block over the same makes a gauge station; a pipe over a rusty gear, an iron plate and a rusty gear over three iron plates makes a steam engine; a main with four pipes makes a distributor (main and two pipes over two
 pipes) or a drop distributor (main over two rows of two pipes).
 
 A pipe is traced back to its port on demand, so the route has to be in loaded chunks. A run that
@@ -330,6 +349,35 @@ pipes reach it.
   two elbows; an elbow on its own in the grid becomes an upturn, and back. `StoveHeatStrength` and `StoveFuelEfficiency` in the config
   change the warmth and how long fuel lasts.
 
+### Working with other mods
+
+Steam reaches other mods through the game's mechanical power network. A steam engine is an ordinary
+power source on it, so any mod whose machines take power from vanilla axles and gears runs off
+steam with no changes on either side. Some mods turn mechanical power into something else
+(electricity, for example) with a generator block on an axle, and steam reaches those too.
+
+Content mods can also make steam machines of their own from JSON alone, without code:
+
+- **An engine of your own.** Give a block `"class": "FrostStorySteamEngine"`,
+  `"entityClass": "FrostStorySteamNode"`, a `side` variant (north, east, south or west: the side the
+  shaft comes out of) and the `FrostStorySteamEngine` entity behaviour. Its properties are all
+  optional: `torque` (1.5), `speed` (0.75), `resistance` (0.004) and `driveShape`, the turning part,
+  with `{side}` standing for the variant. `attributes.steamDraw` sets what it draws (20). See
+  `blocktypes/generator/steamengine.json`.
+- **Anything that draws steam.** Any block of class `FrostStorySteamConduit` takes its draw from
+  `attributes.steamDraw`, and a JSON patch can change the draw of FrostStory's own fittings the same
+  way (`/attributes/steamDraw`).
+- **Tuning.** The engine's power and draw are in its blocktype, so a patch on
+  `froststory:blocktypes/generator/steamengine.json` rebalances it.
+
+Code mods can ask the steam network directly through `FrostStory.Steam.SteamApi`:
+
+```csharp
+float fed = FrostStory.Steam.SteamApi.Fed(world, pos);           // 0 (cold) to 1 (all it draws)
+var (available, demand, ratio) = FrostStory.Steam.SteamApi.Reading(world, pos);
+bool steam = FrostStory.Steam.SteamApi.IsSteamBlock(world, pos);
+```
+
 ### Admin commands (`controlserver` privilege)
 
 | Command | Does |
@@ -387,7 +435,8 @@ FrostStory/
   src/Generator/GeneratorBuilder.cs     writes blueprint cells into the world
   src/Generator/BlockEntityGeneratorConsole.cs   deliveries, timed construction, firing
   src/Generator/GeneratorCommands.cs    /frostgen
-  src/Steam/                            pipe runs, pipes, mains, fittings and ports; tracing back to a live port
+  src/Steam/                            pipe runs, pipes, mains, fittings and ports; tracing back to a live port;
+                                        the steam engine (SteamEngine.cs) and the API for other mods (SteamApi.cs)
   src/Tent/                             tent rods and stretched cloth panels
   assets/froststory/                    blocktypes, shapes, textures, lang, recipes, stage config
 tools/

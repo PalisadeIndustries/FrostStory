@@ -89,7 +89,9 @@ public class BlockEntitySteamNode : BlockEntity
 
     public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
     {
-        if (Runs.Count == 0 || Block is not BlockSteamConduit conduit) return false;
+        // behaviours first: a steam engine's drive lights itself from here
+        bool skipDefault = base.OnTesselation(mesher, tessThreadTesselator);
+        if (Runs.Count == 0 || Block is not BlockSteamConduit conduit) return skipDefault;
 
         MeshData? small = null, large = null;
         foreach (var run in Runs)
@@ -106,7 +108,7 @@ public class BlockEntitySteamNode : BlockEntity
             AddTube(mesher, piece, run);
         }
 
-        return false;
+        return skipDefault;
     }
 
     /// <summary>

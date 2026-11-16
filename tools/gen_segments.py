@@ -1574,6 +1574,49 @@ def borer():
     return m
 
 
+ENGINE_SIDES = ("north", "east", "south", "west")      # the side the drive shaft comes out of
+
+
+def steamengine(shaft):
+    """A small inverted vertical steam engine on a cast bedplate. Its crankshaft runs through the middle
+    of the block and out of the `shaft` side, where an axle takes the drive. The cylinder stands over the
+    back of the crankshaft on four columns, fed by a pipe that comes in low through the back and rises
+    to the valve chest. Drawn here with the shaft north; the flywheel, shaft and crank are a separate
+    model the game turns."""
+    m = Model("steamengine-" + shaft, (0, 1, 0), turn=ENGINE_SIDES.index(shaft))
+    m.box((0, 0.05, 0.02), (0.92, 0.1, 0.92), "darkplate")                                # bedplate
+    m.box((0, 0.11, 0.02), (0.8, 0.02, 0.8), "checker")
+    for z in (-0.12, 0.3):                                                                # bearing pedestals
+        m.box((0, 0.27, z), (0.34, 0.3, 0.1), "band")
+        m.box((0, 0.5, z), (0.3, 0.16, 0.12), "brass", faces=("north", "south", "up", "east", "west"))
+    for sx in (-1, 1):                                                                    # columns up to the cylinder
+        for z in (0.0, 0.34):
+            m.box((sx * 0.3, 0.42, z), (0.06, 0.62, 0.06), "steel")
+    m.box((0, 0.74, 0.17), (0.7, 0.04, 0.42), "band")                                     # entablature
+    m.vprism(0, 0.17, 0.76, 0.96, 0.17, "brass", caps=(True, True), captex="band")        # cylinder
+    m.vprism(0, 0.17, 0.96, 1.0, 0.11, "band", caps=(False, True), captex="band")         # cover
+    m.box((0.2, 0.86, 0.17), (0.1, 0.16, 0.2), "darkplate")                               # valve chest
+    m.hprism((0, 0.5, 0.5), (0, 0.5, 0.42), PIPE_FLANGE, "band", caps=(True, True), captex="band")   # steam inlet at the back
+    m.hprism((0, 0.5, 0.5), (0, 0.5, 0.42), PIPE_BORE, "pipe")
+    m.vprism(0, 0.42, 0.42, 0.88, 0.06, "pipe", caps=(True, True), captex="pipe")         # rising to the chest
+    m.hprism((0, 0.86, 0.42), (0, 0.86, 0.3), 0.06, "pipe")
+    return m
+
+
+def steamengine_drive(shaft):
+    """The moving part of a steam engine: the crankshaft from the middle of the `shaft` face back to the
+    rear bearing, the flywheel near the front and a crank under the cylinder. It turns about the block
+    centre; the axle it meets is the same square section."""
+    m = Model("steamengine-drive-" + shaft, (0, 1, 0), turn=ENGINE_SIDES.index(shaft))
+    m.box((0, 0.5, -0.07), (0.22, 0.22, 0.86), "girder")                                  # crankshaft
+    m.wheel((0, 0.5, -0.32), 0.37, 0.07, 0.09, "steel", axis="z")                         # flywheel
+    m.box((0, 0.5, -0.32), (0.16, 0.16, 0.14), "brass")                                   # its boss
+    for z in (0.11, 0.23):                                                                # crank webs
+        m.box((0, 0.56, z), (0.2, 0.3, 0.05), "steel")
+    m.box((0, 0.66, 0.17), (0.08, 0.08, 0.17), "brass")                                   # crank pin
+    return m
+
+
 def bucketconveyor():
     """A metre of bucket conveyor, standing upright: two side frames tied top and bottom, a chain up the
     middle and two buckets on it."""
@@ -1805,6 +1848,7 @@ def main():
     parts += [shipcrate(), boilersection()]
     parts += [panel(k) for k in PANEL_TYPES] + [panel("door", True), roofslope()]
     parts += [crossover("run"), crossover("stair"), borer(), bucketconveyor()] + [coalheap(n) for n in range(1, 9)]
+    parts += [steamengine(s) for s in ENGINE_SIDES] + [steamengine_drive(s) for s in ENGINE_SIDES]
     parts += [steamvalve(), valvepointer(), steamgauge()] + [gaugepart(k) for k in ("needle", "plain", "green", "red")]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:

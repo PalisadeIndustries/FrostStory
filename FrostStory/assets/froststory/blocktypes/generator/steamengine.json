@@ -1,0 +1,100 @@
+{
+	"code": "steamengine",
+	"class": "FrostStorySteamEngine",
+	"entityClass": "FrostStorySteamNode",
+	"entityBehaviors": [
+		{
+			"name": "FrostStorySteamEngine",
+			"properties": {
+				"torque": 1.5,
+				"speed": 0.75,
+				"resistance": 0.004,
+				"driveShape": "froststory:block/generator/steamengine-drive-{side}"
+			}
+		}
+	],
+	"attributes": {
+		"steamDraw": 20,
+		"handbook": {
+			"groupBy": [
+				"steamengine-*"
+			]
+		}
+	},
+	"variantgroups": [
+		{
+			"code": "side",
+			"states": [
+				"north",
+				"east",
+				"south",
+				"west"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-north"
+		],
+		"mechanics": [
+			"*-north"
+		],
+		"froststory": [
+			"*-north"
+		]
+	},
+	"shape": {
+		"base": "block/generator/steamengine-{side}"
+	},
+	"textures": {
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"brass": {
+			"base": "block/generator/segment/brass"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"girder": {
+			"base": "block/generator/segment/girder"
+		},
+		"checker": {
+			"base": "block/generator/segment/checker"
+		},
+		"darkplate": {
+			"base": "block/generator/segment/darkplate"
+		}
+	},
+	"drops": [
+		{
+			"type": "block",
+			"code": "steamengine-north"
+		}
+	],
+	"drawtype": "json",
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"resistance": 6,
+	"requiredMiningTier": 2,
+	"heldTpIdleAnimation": "holdbothhandslarge",
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}
