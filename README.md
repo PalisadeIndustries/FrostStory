@@ -37,7 +37,9 @@ It goes up in seven stages, each started from the control console:
 7. **Thermal Hull** – the octagonal shell with doorways and louvres, heat-exchange risers up its
    flanks, the shoulder with its relief valves, the crown, and the stack under a weather cowl. Two
    outside service galleries (12 m and 24 m up) are reached by a ladder on the south frame, and
-   there is a third gallery inside.
+   there is a third gallery inside. An insulating jacket rings the upper tower from 20 m up: it stands a
+   block and a half clear of the galleries on beams and raking struts, and hoods in at 45 degrees
+   below the stack.
 
 Then the console fires it: the core heart lights up and shows through the louvres, warms anyone near
 it, and the stack steams.
@@ -71,7 +73,8 @@ arrive with the Steam Core stage and go live when the generator is fired.
 - Look at a pipe to see whether it is carrying steam.
 
 **Large ports and steam mains.** Four large ports, one to a side, come out of the hull through the
-frames with their mouths over the first gallery, 2 m above its deck. They arrive with the Thermal
+frames with their mouths over the first gallery, 2 m above its deck. Each has a valve whose spindle
+drops to a handwheel at chest height on the gallery (the wheel is not operable yet). They arrive with the Thermal
 Hull stage and go live with the rest.
 
 - A **steam main** is two blocks across. Set one against the mouth of a large port, or the end of

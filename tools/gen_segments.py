@@ -819,6 +819,68 @@ def ringmain():
     return m
 
 
+# ----------------------------------------------------------------------------- insulating jacket
+
+JACKET = 8.2          # outer apothem: a block and a half clear of the galleries
+JACKET_Y0, JACKET_Y1 = 20.0, 33.0
+
+
+def jacket():
+    """An outer insulating jacket round the upper half of the tower. It stands clear of the galleries,
+    hung off the frames and the hull on beams and raking struts, open at the foot and round the stack."""
+    m = Model("jacket", (8, 22, 0))
+    t = 0.25
+    half = side(JACKET) / 2
+    win = 1.2           # half-width of the louvred opening on each axis side
+    wy0, wy1 = 22.6, 27.4
+
+    for k in range(8):
+        if k % 2:
+            m.wall(k, JACKET, t, JACKET_Y0, JACKET_Y1, -half, 0, "plating")
+            m.wall(k, JACKET, t, JACKET_Y0, JACKET_Y1, 0, half, "plating")
+        else:
+            m.wall(k, JACKET, t, JACKET_Y0, JACKET_Y1, -half, -win, "plating")
+            m.wall(k, JACKET, t, JACKET_Y0, JACKET_Y1, win, half, "plating")
+            m.wall(k, JACKET, t, JACKET_Y0, wy0, -win, win, "plating")
+            m.wall(k, JACKET, t, wy1, JACKET_Y1, -win, win, "plating")
+            louvre(m, k, JACKET, wy0, wy1, width=2 * win)
+        # upright ribs: one over the seam in the middle of each side, one either side of it
+        for z in (-half * 0.5, 0.0, half * 0.5):
+            if k % 2 == 0 and z == 0.0:
+                continue
+            m.east(k * 45, (JACKET + 0.07, (JACKET_Y0 + JACKET_Y1) / 2, z), (0.16, JACKET_Y1 - JACKET_Y0, 0.24), "band",
+                   faces=["east", "north", "south"])
+
+    for y in (JACKET_Y0, 24.2, 28.5, JACKET_Y1 - 0.45):
+        m.flange(y, y + 0.45, JACKET + 0.16, t=0.45)
+    m.cone(JACKET_Y0 - 0.8, JACKET_Y0, JACKET - 0.8, JACKET, 0.2, "plating", courses=1)       # drip skirt
+    m.cone(JACKET_Y1, JACKET_Y1 + 2.0, JACKET, JACKET - 2.0, 0.22, "plating", courses=2)      # 45 degree hood
+    m.flange(JACKET_Y1 + 1.9, JACKET_Y1 + 2.25, JACKET - 1.95, t=0.4)
+
+    inner = JACKET - t
+    col = COLUMN_X + 0.3
+    for k in range(4):
+        # off the frame columns: level beams, and raking struts under the foot
+        for sz in (1, -1):
+            def at(x, y, z=sz * COLUMN_Z):
+                rx, rz = yaw(k * 90, x, z)
+                return (rx, y, rz)
+
+            for y in (21.0, 26.6, 31.8):
+                m.member(at(col, y), at(inner, y), 0.3, 0.3, "girder")
+                m.box(at(inner - 0.1, y), (0.9, 0.9, 0.2), "band", rot=(0, k * 90 + 90, 0))    # bearing plate on the jacket
+            m.member(at(col, JACKET_Y0 - 2.4), at(inner - 0.1, JACKET_Y0 + 0.1), 0.26, 0.26, "girder")
+        # off the diagonal hull faces, between the risers
+        for y in (21.0, 26.6):
+            hx, hz = yaw(k * 90 + 45, HULL, 0)
+            jx, jz = yaw(k * 90 + 45, inner, 0)
+            m.member((hx, y, hz), (jx, y, jz), 0.3, 0.3, "girder")
+        hx, hz = yaw(k * 90 + 45, HULL, 0)
+        jx, jz = yaw(k * 90 + 45, inner - 0.1, 0)
+        m.member((hx, JACKET_Y0 - 3.3, hz), (jx, JACKET_Y0 + 0.1, jz), 0.26, 0.26, "girder")
+    return m
+
+
 # ----------------------------------------------------------------------------- steam port
 
 def steamport():
@@ -888,14 +950,17 @@ def mainport(side):
     m.hprism((HULL, y, z), (7.5, y, z), MAIN_BORE - 0.02, "pipe")
     m.hprism((HULL + 0.14, y, z), (HULL + 0.4, y, z), MAIN_FLANGE - 0.03, "band", caps=(True, True), captex="band")
     m.hprism((7.3, y, z), (7.5, y, z), MAIN_FLANGE, "band", caps=(True, True), captex="band")     # the mouth
-    # A wafer valve: a slim bolted ring round the bore, worked from a small gearbox with a hand-sized wheel.
-    m.hprism((6.13, y, z), (6.37, y, z), MAIN_FLANGE, "band", caps=(True, True), captex="band")
-    m.hprism((5.4, y, z), (5.52, y, z), MAIN_BORE + 0.06, "band", caps=(True, True), captex="band")     # stiffening band
-    top = y + MAIN_FLANGE
-    m.box((6.25, top + 0.14, z), (0.34, 0.28, 0.34), "band")
-    m.vprism(6.25, z, top + 0.28, top + 0.52, 0.035, "steel")
-    m.handwheel(6.25, top + 0.5, z, a=0.24)
-    m.box((6.25, top + 0.14, z + 0.3), (0.08, 0.08, 0.3), "red")                                        # position indicator
+    # A wafer valve: a slim bolted ring round the bore, just outside the frame. Its spindle drops to a
+    # handwheel at chest height on the gallery (deck at 12 m), where an operator can reach it.
+    vx = 5.85
+    m.hprism((vx - 0.12, y, z), (vx + 0.12, y, z), MAIN_FLANGE, "band", caps=(True, True), captex="band")
+    m.hprism((6.6, y, z), (6.72, y, z), MAIN_BORE + 0.06, "band", caps=(True, True), captex="band")     # stiffening band
+    low = y - MAIN_FLANGE
+    m.box((vx, low - 0.14, z), (0.34, 0.28, 0.34), "band")                                              # gearbox
+    m.vprism(vx, z, 12.0, low - 0.28, 0.04, "steel")                                                    # spindle
+    m.vprism(vx, z, 12.0, 12.12, 0.16, "band", caps=(False, True), captex="band")                       # foot
+    m.handwheel(vx, 13.15, z, a=0.24)
+    m.box((vx, low - 0.14, z + 0.3), (0.08, 0.08, 0.3), "red")                                          # position indicator
     # hangers down to the gallery
     for dz in (-0.45, 1.45):
         m.member((6.9, y - 0.75, dz), (6.55, 12.05, dz), 0.1, 0.1, "steel")
@@ -911,7 +976,7 @@ def build_all():
         injectors(), pump(), ringmain(),
         core(True, False), core(True, True), core(False, False), core(False, True), manifold(), exhaust(),
         frame(0), frame(1), frame(2), frame(2, lapped=True),
-        hull(0), hull(0, lit=True), hull(1), hull(1, lit=True), hull(2), shoulder(), stack(),
+        hull(0), hull(0, lit=True), hull(1), hull(1, lit=True), hull(2), shoulder(), stack(), jacket(),
     ]
 
 

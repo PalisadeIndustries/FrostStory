@@ -46,7 +46,7 @@
 	"stagedesc-core": "The vessel where rising steam is split through the distribution header into working lines, for pumps, light, heat and industry. Eight steam ports come up through the pad rim for them.",
 	"stagedesc-frame-a": "A riveted portal frame that takes the load of the upper works. The generator needs two, set crosswise.",
 	"stagedesc-frame-b": "The second portal frame, set across the first. Together they carry the hull and the stack.",
-	"stagedesc-hull": "An insulating steel shell around the core, with heat-exchange risers up its flanks, relief valves on the shoulder, two service galleries, and four large steam ports over the first of them. It throws heat back inward and lets the operators decide how much of it escapes.",
+	"stagedesc-hull": "An insulating steel shell around the core, with heat-exchange risers up its flanks, relief valves on the shoulder, two service galleries, four large steam ports over the first of them, and an insulating jacket hung round the upper tower. It throws heat back inward and lets the operators decide how much of it escapes.",
 
 	"req-stonebricks": "Ashlar blocks (any stone)",
 

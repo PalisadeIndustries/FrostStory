@@ -51,7 +51,7 @@ public static class GeneratorBlueprint
 
     public const int HullRadius = 4;
     public const int PadRadius = 8;
-    public const int ClearRadiusUpper = 7;
+    public const int ClearRadiusUpper = 9;
 
     /// <summary>Where the control console stands relative to the centre, before rotation: on the pad rim.</summary>
     public const int ConsoleDistance = 8;
@@ -213,6 +213,26 @@ public static class GeneratorBlueprint
         int ax = Math.Abs(x), az = Math.Abs(z);
         double r = Math.Max(Math.Max(ax, az), (ax + az) / Math.Sqrt(2));
         return r >= 5.5 && r <= 6.75;
+    }
+
+    /// <summary>Distance from the axis measured the way an octagon measures it: to the nearest flat or diagonal side.</summary>
+    private static double OctRadius(int x, int z)
+    {
+        int ax = Math.Abs(x), az = Math.Abs(z);
+        return Math.Max(Math.Max(ax, az), (ax + az) / Math.Sqrt(2));
+    }
+
+    // The insulating jacket rings the upper tower outside the galleries, then hoods in at 45 degrees.
+    private const int JacketBottom = 20;
+    private const int JacketTop = 33;
+
+    private static bool InJacket(int x, int y, int z)
+    {
+        double r = OctRadius(x, z);
+        if (y >= JacketBottom && y <= JacketTop) return r >= 7.6 && r <= 8.55;
+        if (y == JacketTop + 1) return r >= 6.9 && r < 7.9;
+        if (y == JacketTop + 2) return r >= 5.9 && r < 6.9;
+        return false;
     }
 
     private static int Modules(int depth) => depth / ShaftModule;
@@ -507,6 +527,13 @@ public static class GeneratorBlueprint
                 ForDisc(1, (x, z) => { if (x != 0 || z != 0) b.Set(x, y, z, Blocks.FillSolid); });            // stack
             }
 
+            if (y >= JacketBottom && y <= JacketTop + 2)
+            {
+                for (int x = -9; x <= 9; x++)
+                    for (int z = -9; z <= 9; z++)
+                        if (InJacket(x, y, z)) b.Set(x, y, z, Blocks.FillSolid);
+            }
+
             string? part = y switch
             {
                 2 => "hulla",
@@ -517,6 +544,7 @@ public static class GeneratorBlueprint
                 _ => null
             };
             if (part != null) b.Set(1, y, 0, Blocks.Segment(part));
+            if (y == 22) b.Set(8, y, 0, Blocks.Segment("jacket"));
         }
 
         return b.Build();
