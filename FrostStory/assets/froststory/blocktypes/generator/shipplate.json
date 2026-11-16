@@ -1,0 +1,43 @@
+{
+	"code": "shipplate",
+	"drawtype": "cube",
+	"blockmaterial": "Metal",
+	"creativeinventory": {
+		"general": [
+			"*"
+		],
+		"froststory": [
+			"*"
+		]
+	},
+	"textures": {
+		"all": {
+			"base": "block/generator/shiphull"
+		}
+	},
+	"sidesolid": {
+		"all": true
+	},
+	"sideopaque": {
+		"all": true
+	},
+	"replaceable": 90,
+	"resistance": 7,
+	"requiredMiningTier": 2,
+	"drops": [
+		{
+			"type": "item",
+			"code": "game:metalbit-iron",
+			"quantity": {
+				"avg": 4,
+				"var": 1
+			}
+		}
+	],
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

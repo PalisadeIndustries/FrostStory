@@ -357,6 +357,29 @@ def coal_pile(at, amount, blocked=()):
     return cells
 
 
+SHIP_AT = (0, -3, 58)      # the middle of the wreck's keel: its waterline is level with the ground
+
+
+def ship_example(blueprint, atlas):
+    """The wrecked freighter, set down south of the generator with ice packed round it."""
+    ox, oy, oz = SHIP_AT
+    ship = blueprint["ship"]
+    cells = []
+    for i in range(0, len(ship), 4):
+        cells += [ship[i] + ox, ship[i + 1] + oy, ship[i + 2] + oz, ship[i + 3]]
+
+    ice = blueprint["shipIce"]
+    top = max(ice[i + 1] for i in range(0, len(ice), 3))
+    uv = [atlas.uv("block/generator/ice", u, v) for u, v in ((0, 0), (1, 0), (1, 1), (0, 1))]
+    quads = []
+    for i in range(0, len(ice), 3):
+        if ice[i + 1] != top:
+            continue
+        x, y, z = ice[i] + ox, top + oy + 1, ice[i + 2] + oz
+        quads.append(quad([(x * 16, y * 16, z * 16), ((x + 1) * 16, y * 16, z * 16), ((x + 1) * 16, y * 16, (z + 1) * 16), (x * 16, y * 16, (z + 1) * 16)], uv, 4))
+    return {"at": [0, 0, 0], "port": None, "cells": cells, "quads": quads}
+
+
 def pipework_example(codes, atlas):
     """A sample of what a player can build off the generator, so every steam part can be seen in place.
 
@@ -528,7 +551,7 @@ def main():
         "height": blueprint["height"],
         "consoleDistance": blueprint["consoleDistance"],
         "swaps": blueprint["swaps"],
-        "pipework": pipework_example(blueprint["codes"], atlas),
+        "pipework": pipework_example(blueprint["codes"], atlas) + [ship_example(blueprint, atlas)],
         "codes": [c.split(":")[-1] for c in blueprint["codes"]],
         "consoleCode": blueprint["codes"].index("froststory:generatorconsole-north"),
         "figure": list(atlas.uv("block/generator/paint-red", 0.2, 0.2) + atlas.uv("block/generator/paint-red", 0.8, 0.8)),

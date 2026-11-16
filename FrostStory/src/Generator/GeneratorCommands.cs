@@ -128,6 +128,21 @@ public static class GeneratorCommands
                 })
             .EndSubCommand()
 
+            .BeginSubCommand("ship")
+                .WithDescription("Set the wrecked freighter down frozen in, bow to the east. The position (or where you stand) is on the ice amidships. Add 'false' for no ice.")
+                .WithArgs(parsers.OptionalWorldPosition("position"), parsers.OptionalBool("ice"))
+                .HandleWith(args =>
+                {
+                    var at = CentreFrom(api, args);
+                    bool ice = args.Parsers[1].IsMissing || (bool)args[1];
+                    var keel = at.DownCopy(FrostStory.Generator.Blueprint.ShipBlueprint.Waterline);
+                    int placed = FrostStory.Ship.ShipBuilder.Place(api.World, keel, ice);
+                    return placed < 0
+                        ? TextCommandResult.Error("Part of the site is in unloaded chunks: the ship is 53 blocks long, east to west. Stand nearer the middle of it.")
+                        : TextCommandResult.Success($"The wreck is in: {placed} blocks, keel at {keel.X} {keel.Y} {keel.Z}, bow to the east.");
+                })
+            .EndSubCommand()
+
             .BeginSubCommand("coal")
                 .WithDescription("Report on a generator console, coal heap or steam borer at a position. Optionally add coal to it and let that many hours pass for it.")
                 .WithArgs(parsers.WorldPosition("position"), parsers.OptionalInt("add"), parsers.OptionalFloat("hours"))

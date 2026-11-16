@@ -235,6 +235,25 @@ pipes) or a drop distributor (main over two rows of two pipes).
 A pipe is traced back to its port on demand, so the route has to be in loaded chunks. A run that
 leaves the loaded world keeps the state it last had until the server restarts.
 
+### The wreck
+
+A steam freighter lies frozen in, 53 blocks long and 11 in the beam, bow to the east: the
+early game's iron. `/frostgen ship [pos]` sets it down (it is not yet placed by world generation).
+
+- The **hull** is real riveted plate. Every block broken out gives about four iron bits (twenty bits smelt to an ingot), so the whole hull is about 200 ingots for the
+  patient. It takes a copper-tier pickaxe or better.
+- The ways in: a hole stove in the port side at the level of the ice, and a hatch with a ladder
+  over each hold.
+- **Packing cases** in the fore and aft holds break open for iron ingots, nails, rope, coal and
+  planks, and now and then an iron tool.
+- The **boiler room** amidships has two boilers and a coal bunker holding about 5,000 coal as
+  ordinary coal pile. A boiler breaks down into four **boiler sections**: heavy, one to an
+  inventory slot, meant to be hauled home. A section on its own in the grid cuts up into three
+  iron plates.
+- The **engine**, the **funnel** and the two **masts** break down whole for plates, ingots,
+  nails, planks and rope. The deck is planking.
+- Ice is packed round the hull up to the waterline. The ship always lies east to west.
+
 ### Tents
 
 Tent rods and tent cloth make simple shelters.
@@ -288,6 +307,7 @@ pipes reach it.
 | `/frostgen status [pos]` | Reports a console's state |
 | `/frostgen steam [pos]` | Says whether a pipe, fitting or port is carrying steam |
 | `/frostgen valve <pos> <0-8>` | Sets a stop valve |
+| `/frostgen ship [pos] [ice]` | Sets the wrecked freighter down frozen in, bow east; the position is on the ice amidships |
 | `/frostgen coal <pos> [add] [hours]` | Reports on a console, coal heap or borer; adds coal and lets hours pass for it |
 | `/frostgen stove <pos> [seconds]` | Reports on a tent stove; with a number, adds that much fuel and lights it |
 | `/frostgen stand [pos] [hub]` | Raises a steam main stand with its post starting there; `true` raises a steam hub tower |

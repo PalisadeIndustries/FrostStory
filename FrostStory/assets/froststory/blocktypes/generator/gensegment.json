@@ -97,6 +97,9 @@
 		"coillit": {
 			"base": "block/generator/segment/coil-lit"
 		},
+		"crate": {
+			"base": "block/generator/crate"
+		},
 		"darkplate": {
 			"base": "block/generator/segment/darkplate"
 		},
@@ -120,6 +123,12 @@
 		},
 		"red": {
 			"base": "block/generator/paint-red"
+		},
+		"shipdeck": {
+			"base": "block/generator/shipdeck"
+		},
+		"shiphull": {
+			"base": "block/generator/shiphull"
 		},
 		"steel": {
 			"base": "block/generator/steel"

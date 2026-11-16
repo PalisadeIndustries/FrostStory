@@ -267,6 +267,49 @@ def tex_junction():
 
 
 
+def tex_ship_hull():
+    """Ship's plating: black paint going to rust, a lap seam and a row of rivets along each plate edge."""
+    t = Tex("shiphull", (58, 50, 48), grain=8, blotch=14)
+    t.streaks(6)
+    t.panel(0, 0, S, 16, 10, -20)
+    t.panel(0, 16, S, S, 10, -20)
+    t.rivet_row(2, 4, 1)
+    t.rivet_row(18, 4, 3)
+    t.rust(26, (126, 68, 38))
+    t.rust(10, (150, 92, 50))
+    return t
+
+
+def tex_ship_deck():
+    """Deck planking: grey weathered boards laid fore and aft, caulked seams between them."""
+    t = Tex("shipdeck", (122, 106, 86), grain=7, blotch=10)
+    t.streaks(8, vertical=False)
+    for y in range(0, 32, 8):
+        t.rect_shade(0, y, 32, y + 1, -34)
+    for x, y in ((9, 0), (22, 8), (5, 16), (27, 24)):
+        t.rect_shade(x, y, x + 1, y + 8, -24)
+    return t
+
+
+def tex_crate():
+    """A packing case: boards in a frame, with a darker batten round the edge."""
+    t = Tex("crate", (140, 108, 70), grain=7, blotch=10)
+    t.streaks(7)
+    for x in range(0, 32, 8):
+        t.rect_shade(x, 0, x + 1, 32, -22)
+    for a, b in ((0, 4), (28, 32)):
+        t.rect_shade(0, a, 32, b, -28)
+        t.rect_shade(a, 0, b, 32, -28)
+    return t
+
+
+def tex_ice():
+    t = Tex("ice", (178, 204, 220), grain=4, blotch=12)
+    t.rust(8, (228, 240, 246))
+    t.rust(5, (140, 174, 198))
+    return t
+
+
 def tex_coal():
     t = Tex("coal", (34, 32, 36), grain=12, blotch=14)
     t.rust(22, (12, 11, 14))            # deep cracks between the lumps
@@ -578,7 +621,7 @@ def tex_canvas():
 TEXTURES = [
     tex_steel, tex_hull_plain, tex_hull_riveted, tex_hull_vent, tex_foundation,
     lambda: tex_lining("shaftlining-plain", False), lambda: tex_lining("shaftlining-ribbed", True), tex_lining_top,
-    tex_pipe, tex_pipe_end, tex_junction, tex_paint_red, tex_coal,
+    tex_pipe, tex_pipe_end, tex_junction, tex_paint_red, tex_coal, tex_ship_hull, tex_ship_deck, tex_crate, tex_ice,
     tex_grating, tex_pole, tex_canvas, tex_girder, tex_girder_node, tex_console_front, tex_console_side, tex_console_top,
 ]
 

@@ -1,0 +1,46 @@
+{
+	"code": "shipdeck",
+	"drawtype": "cube",
+	"blockmaterial": "Wood",
+	"creativeinventory": {
+		"general": [
+			"*"
+		],
+		"froststory": [
+			"*"
+		]
+	},
+	"textures": {
+		"all": {
+			"base": "block/generator/shipdeck"
+		}
+	},
+	"sidesolid": {
+		"all": true
+	},
+	"sideopaque": {
+		"all": true
+	},
+	"replaceable": 90,
+	"resistance": 3,
+	"drops": [
+		{
+			"type": "item",
+			"code": "game:plank-aged",
+			"quantity": {
+				"avg": 2,
+				"var": 0.5
+			}
+		}
+	],
+	"combustibleProps": {
+		"burnTemperature": 600,
+		"burnDuration": 20
+	},
+	"sounds": {
+		"place": "game:block/planks",
+		"break": "game:block/planks",
+		"hit": "game:block/planks",
+		"walk": "game:walk/wood"
+	}
+}

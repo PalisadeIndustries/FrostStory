@@ -1,0 +1,113 @@
+{
+	"code": "shipfill",
+	"class": "FrostStorySteamMainFill",
+	"variantgroups": [
+		{
+			"code": "offset",
+			"states": [
+				"o001",
+				"o002",
+				"o100",
+				"o101",
+				"o102",
+				"o200",
+				"o201",
+				"o202",
+				"o010",
+				"o011",
+				"o012",
+				"o110",
+				"o111",
+				"o112",
+				"o210",
+				"o211",
+				"o212",
+				"o020",
+				"o021",
+				"o022",
+				"o120",
+				"o121",
+				"o122",
+				"o220",
+				"o221",
+				"o222",
+				"o030",
+				"o031",
+				"o032",
+				"o130",
+				"o131",
+				"o132",
+				"o230",
+				"o231",
+				"o232",
+				"o040",
+				"o041",
+				"o042",
+				"o140",
+				"o141",
+				"o142",
+				"o240",
+				"o241",
+				"o242",
+				"o050",
+				"o051",
+				"o052",
+				"o150",
+				"o151",
+				"o152",
+				"o250",
+				"o251",
+				"o252",
+				"o060",
+				"o061",
+				"o062",
+				"o160",
+				"o161",
+				"o162",
+				"o260",
+				"o261",
+				"o262",
+				"o070",
+				"o071",
+				"o072",
+				"o170",
+				"o171",
+				"o172",
+				"o270",
+				"o271",
+				"o272"
+			]
+		}
+	],
+	"attributes": {
+		"handbook": {
+			"exclude": true
+		}
+	},
+	"shape": {
+		"base": "game:block/basic/nothing"
+	},
+	"drops": [],
+	"drawtype": "json",
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 8,
+	"requiredMiningTier": 3,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

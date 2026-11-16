@@ -357,5 +357,21 @@
 			"code": "froststory:bucketconveyor-ud",
 			"quantity": 8
 		}
+	},
+	{
+		"ingredientPattern": "B",
+		"ingredients": {
+			"B": {
+				"type": "item",
+				"code": "froststory:boilersection"
+			}
+		},
+		"width": 1,
+		"height": 1,
+		"output": {
+			"type": "item",
+			"code": "game:metalplate-iron",
+			"quantity": 3
+		}
 	}
 ]

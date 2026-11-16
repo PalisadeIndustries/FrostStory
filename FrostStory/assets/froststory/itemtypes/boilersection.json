@@ -1,0 +1,39 @@
+{
+	"code": "boilersection",
+	"maxstacksize": 1,
+	"shape": {
+		"base": "block/generator/boilersection"
+	},
+	"textures": {
+		"shiphull": {
+			"base": "block/generator/shiphull"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
+		}
+	},
+	"creativeinventory": {
+		"general": [
+			"*"
+		],
+		"froststory": [
+			"*"
+		]
+	},
+	"guiTransform": {
+		"rotation": {
+			"x": -25,
+			"y": 35,
+			"z": 0
+		},
+		"origin": {
+			"x": 0.5,
+			"y": 0.2,
+			"z": 0.5
+		},
+		"scale": 1.6
+	},
+	"groundTransform": {
+		"scale": 3
+	}
+}

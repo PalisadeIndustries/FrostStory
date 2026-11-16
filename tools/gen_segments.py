@@ -45,6 +45,9 @@ TEXTURES = {
     "pole": ("block/generator/pole", 16, 16),
     "canvas": ("block/generator/canvas", 16, 16),
     "coal": ("block/generator/coal", 16, 16),
+    "shiphull": ("block/generator/shiphull", 16, 16),
+    "shipdeck": ("block/generator/shipdeck", 16, 16),
+    "crate": ("block/generator/crate", 16, 16),
 }
 
 ALL = ("north", "east", "south", "west", "up", "down")
@@ -1586,6 +1589,87 @@ def bucketconveyor():
     return m
 
 
+def shippart(kind):
+    """The big fittings of the wrecked freighter, each one model broken down whole. Its cell is the
+    minimum corner of what it fills; the ship's bow is to the east (+X).
+
+    'boiler' is a Scotch boiler lying fore and aft, three blocks long: a riveted drum on two cradles,
+    furnace doors in its after end, a steam dome on top. 'engine' is the triple-expansion engine: a bed
+    plate, three cylinders on columns, the crankshaft under them. 'funnel' is the stack, raked a little,
+    with a band and a cowl at the top. 'mast' is a pole mast with a crosstree, a derrick boom and a
+    crow's nest; it stands far taller than the block that holds it."""
+    m = Model("shippart-" + kind, (0, 1, 0))
+    if kind == "boiler":
+        z = 0.5
+        m.hprism((-0.4, 1.0, z), (2.4, 1.0, z), 0.95, "shiphull", caps=(True, True), captex="shiphull", chunk=1.0)
+        for x in (-0.3, 1.0, 2.3):
+            m.hprism((x - 0.05, 1.0, z), (x + 0.05, 1.0, z), 1.0, "band")
+        for x in (0.1, 1.9):
+            m.box((x, 0.14, z), (0.3, 0.28, 1.7), "girder")                               # cradles
+        for dz in (-0.4, 0.4):                                                            # furnace doors, facing aft
+            m.hprism((-0.46, 0.6, z + dz), (-0.4, 0.6, z + dz), 0.26, "band", caps=(True, True), captex="black")
+        m.vprism(1.0, z, 1.9, 2.0, 0.3, "brass", caps=(False, True), captex="brass")      # steam dome
+        m.vprism(1.9, z, 1.9, 2.0, 0.12, "pipe", caps=(False, True), captex="black")
+        return m
+    if kind == "engine":
+        m.box((1.0, 0.15, 1.0), (2.9, 0.3, 2.2), "girder")                                # bed plate
+        m.hprism((-0.4, 0.55, 1.0), (2.4, 0.55, 1.0), 0.12, "steel")                      # crankshaft
+        for x, a in ((0.0, 0.36), (1.0, 0.46), (2.0, 0.56)):                              # high, intermediate and low pressure
+            for dz in (-0.55, 0.55):
+                m.member((x - 0.25, 0.3, 1.0 + dz), (x - 0.1, 1.8, 1.0 + dz * 0.5), 0.12, 0.12, "band", chunk=2.0)
+                m.member((x + 0.25, 0.3, 1.0 + dz), (x + 0.1, 1.8, 1.0 + dz * 0.5), 0.12, 0.12, "band", chunk=2.0)
+            m.vprism(x, 1.0, 1.8, 2.8, a, "green", caps=(True, True), captex="band")      # cylinder
+            m.vprism(x, 1.0, 2.8, 2.9, a * 0.6, "brass", caps=(False, True), captex="brass")
+            m.vprism(x, 1.0, 0.7, 1.8, 0.05, "steel")                                     # piston rod
+            m.box((x, 0.55, 1.0), (0.14, 0.5, 0.5), "band")                               # crank web
+        m.wheel((-0.42, 0.55, 1.0), 0.5, 0.12, 0.1, "girder", axis="x")                   # turning wheel
+        return m
+    if kind == "funnel":
+        c = 0.5
+        m.vprism(c, c, 0.0, 0.3, 0.95, "band", caps=(False, True), captex="band")         # casing at the deck
+        for i in range(7):                                                                # the stack, raked aft a little
+            m.vprism(c - i * 0.045, c, 0.3 + i * 0.9, 1.25 + i * 0.9, 0.72, "shiphull", chunk=1.0)
+        top = c - 6 * 0.045
+        m.vprism(top, c, 4.6, 5.3, 0.74, "red")                                           # the company's band
+        m.vprism(top, c, 6.5, 6.7, 0.8, "band", caps=(True, True), captex="black")        # cowl
+        for dz in (-0.9, 0.9):
+            m.member((c, 0.1, c + dz * 1.4), (top, 5.0, c + dz * 0.72), 0.04, 0.04, "steel", chunk=6.0)   # stays
+        return m
+    m.vprism(0, 0, 0.0, 13.0, 0.16, "pole", chunk=1.0)                                    # mast
+    m.vprism(0, 0, 0.0, 0.5, 0.26, "band", caps=(False, True), captex="band")
+    m.vprism(0, 0, 13.0, 13.3, 0.08, "brass", caps=(False, True), captex="brass")         # truck
+    m.box((0, 9.2, 0), (0.14, 0.14, 4.4), "pole")                                         # crosstree, athwartships
+    m.vprism(0, 0, 9.6, 10.3, 0.5, "shipdeck", caps=(True, False), captex="shipdeck")     # crow's nest
+    m.member((0.2, 1.2, 0), (4.6, 3.6, 0), 0.14, 0.14, "pole", chunk=2.0)                 # derrick boom, topped up over the hatch
+    m.member((4.6, 3.6, 0), (0.1, 8.8, 0), 0.03, 0.03, "steel", chunk=8.0)                # its topping lift
+    for dz in (-2.1, 2.1):
+        m.member((0, 9.2, dz), (0, 0.4, dz * 2.3), 0.03, 0.03, "steel", chunk=10.0)       # shrouds
+    return m
+
+
+def shipcrate():
+    """A packing case from the freighter's hold."""
+    m = Model("shipcrate", (0, 1, 0))
+    m.box((0, 0.47, 0), (0.94, 0.94, 0.94), "crate")
+    for x in (-0.45, 0.45):
+        for z in (-0.45, 0.45):
+            m.box((x, 0.48, z), (0.08, 0.96, 0.08), "shipdeck")
+    for y in (0.04, 0.92):
+        m.box((0, y, 0), (1.0, 0.08, 1.0), "shipdeck", faces=["north", "south", "east", "west"])
+    return m
+
+
+def boilersection():
+    """A section cut from one of the freighter's boilers: a curved slab of riveted plate, as it is carried."""
+    m = Model("boilersection", (0, 1, 0))
+    m.box((0, 0.1, 0), (0.9, 0.12, 0.7), "shiphull")
+    m.box((-0.3, 0.2, 0), (0.3, 0.12, 0.7), "shiphull", (0, 0, 25))
+    m.box((0.3, 0.2, 0), (0.3, 0.12, 0.7), "shiphull", (0, 0, -25))
+    for z in (-0.3, 0.3):
+        m.box((0, 0.17, z), (0.92, 0.04, 0.05), "band")
+    return m
+
+
 def wallpass(axis):
     """A wall passthrough: a solid block of plate that stands in for one block of a wall, with a pipe
     mount (a collar round an open bore) on each of two opposite sides. The collars stand a little proud
@@ -1704,6 +1788,7 @@ def main():
     parts += [wallpass(a) for a in ("ud", "ns", "we")]
     parts += [radiator(b) for b in RADIATOR_SIDES]
     parts += [steamhub(), hubframe("leg"), hubframe("head"), floorgrate(), tentstove("cold"), tentstove("lit"), stoveflue(), stoveflue("cap"), stoveflue("elbow"), stoveflue("upturn"), pipe()]
+    parts += [shippart(k) for k in ("boiler", "engine", "funnel", "mast")] + [shipcrate(), boilersection()]
     parts += [crossover("run"), crossover("stair"), borer(), bucketconveyor()] + [coalheap(n) for n in range(1, 9)]
     parts += [steamvalve(), valvepointer(), steamgauge()] + [gaugepart(k) for k in ("needle", "plain", "green", "red")]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]

@@ -78,6 +78,12 @@ public class BlockSteamConduit : Block, IHeatSource
     /// </summary>
     private int legLevels;
 
+    /// <summary>
+    /// True for the big fittings of the wrecked freighter (boilers, engine, funnel, masts). They carry no
+    /// steam: they only borrow the way a large conduit fills several cells from one block.
+    /// </summary>
+    public bool IsShipPart { get; private set; }
+
     /// <summary>True for steam borers: they take a pipe on any side and draw steam to raise coal.</summary>
     public bool IsBorer { get; private set; }
 
@@ -132,6 +138,17 @@ public class BlockSteamConduit : Block, IHeatSource
 
         switch (kind)
         {
+            case "shippart":
+                IsBig = managesFill = IsStructural = IsShipPart = true;
+                Size = Variant["type"] switch
+                {
+                    "boiler" => new Vec3i(3, 2, 2),
+                    "engine" => new Vec3i(3, 3, 3),
+                    "funnel" => new Vec3i(2, 7, 2),
+                    _ => new Vec3i(1, 8, 1)       // a mast
+                };
+                break;
+
             case "borer":
                 IsBig = managesFill = IsBorer = true;      // no openings of its own: mains never join it
                 Size = new Vec3i(2, 3, 2);
@@ -267,7 +284,8 @@ public class BlockSteamConduit : Block, IHeatSource
     /// four quarters of its outlet side to small runs.
     /// </summary>
     private AssetLocation FillCode(int x, int y, int z) =>
-        IsRadiator ? new AssetLocation("froststory", $"radiatorfill-o{x}{y}{z}")
+        IsShipPart ? new AssetLocation("froststory", $"shipfill-o{x}{y}{z}")
+        : IsRadiator ? new AssetLocation("froststory", $"radiatorfill-o{x}{y}{z}")
         : IsHub || IsBorer || legLevels > 0 ? new AssetLocation("froststory", y < 0 ? $"hubfill-d{x}{-y}{z}" : $"hubfill-o{x}{y}{z}")
         : BlockSteamMainFill.CodeFor(x, y, z);
 
