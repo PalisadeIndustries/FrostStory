@@ -319,12 +319,12 @@ def gauge_quads(parts, cell, side, available, demand, ratio):
     for i in range(marks):
         at = (i + 0.5) / marks
         value = at * full
-        place(parts["red"] if value > green_top else parts["green"] if value >= demand > 0 else parts["plain"], at, 0.088, 0.29, -0.315)
-        place(parts["plain"], at, 0.088, 0.0, -0.315)
-        place(parts["red"] if at < 0.5 else parts["green"] if at > 0.9 else parts["plain"], at, 0.088, -0.29, -0.315)
-    place(parts["needle"], needle / full, 0, 0.29, -0.325)
-    place(parts["needle"], demand / full, 0, 0.0, -0.325)
-    place(parts["needle"], ratio if available > 0 else 0, 0, -0.29, -0.325)
+        place(parts["red"] if value > green_top else parts["green"] if value >= demand > 0 else parts["plain"], at, 0.086, 0.29, -0.325)
+        place(parts["plain"], at, 0.086, 0.0, -0.325)
+        place(parts["red"] if at < 0.5 else parts["green"] if at > 0.9 else parts["plain"], at, 0.086, -0.29, -0.325)
+    place(parts["needle"], needle / full, 0, 0.29, -0.352)
+    place(parts["needle"], demand / full, 0, 0.0, -0.352)
+    place(parts["needle"], ratio if available > 0 else 0, 0, -0.29, -0.352)
     return quads
 
 

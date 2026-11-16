@@ -1473,7 +1473,7 @@ def steamgauge():
     for x in GAUGE_DIALS:
         m.hprism((x, GAUGE_Y, GAUGE_Z), (x, GAUGE_Y, -0.25), 0.135, "brass", caps=(True, True), captex="brass")              # case
         m.hprism((x, GAUGE_Y, GAUGE_Z - 0.01), (x, GAUGE_Y, GAUGE_Z), 0.115, "canvas", caps=(True, True), captex="canvas")  # face
-        m.hprism((x, GAUGE_Y, GAUGE_Z - 0.04), (x, GAUGE_Y, GAUGE_Z - 0.01), 0.018, "black", caps=(True, True), captex="black")
+        m.hprism((x, GAUGE_Y, GAUGE_Z - 0.06), (x, GAUGE_Y, GAUGE_Z - 0.01), 0.018, "black", caps=(True, True), captex="black")
     return m
 
 
@@ -1482,9 +1482,10 @@ def gaugepart(kind):
     (plain, green or red) and the needle. The game sets them out on the dials."""
     m = Model("gaugeneedle" if kind == "needle" else "gaugemark-" + kind, (0, 1, 0))
     if kind == "needle":
-        m.box((0, 0.54, 0), (0.014, 0.1, 0.01), "black")
+        m.box((0, 0.54, 0), (0.016, 0.1, 0.014), "black")
     else:
-        m.box((0, 0.5, 0), (0.02, 0.034, 0.01), {"plain": "steel", "green": "green", "red": "red"}[kind])
+        # a raised stud, standing well proud of the dial face; the plain ones are dark so they show on it
+        m.box((0, 0.5, 0), (0.026, 0.044, 0.03), {"plain": "black", "green": "green", "red": "red"}[kind])
     return m
 
 

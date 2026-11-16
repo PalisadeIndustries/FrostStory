@@ -20,7 +20,7 @@ public class BlockEntitySteamGauge : BlockEntity
 
     // the three dials, as offsets from the block centre on a station whose panel faces north
     public const float SupplyX = 0.29f, DrawX = 0f, FedX = -0.29f;
-    public const float DialY = 0.2f, MarkRadius = 0.088f, MarkDepth = -0.315f, NeedleDepth = -0.325f;
+    public const float DialY = 0.2f, MarkRadius = 0.086f, MarkDepth = -0.325f, NeedleDepth = -0.352f;
     private const float Sweep = 240f * GameMath.DEG2RAD;
 
     private static readonly Vec3f BlockCentre = new(0.5f, 0.5f, 0.5f);
