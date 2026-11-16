@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Vintagestory.API.Common;
@@ -77,6 +78,21 @@ public class BlockSteamConduit : Block, IHeatSource
     /// </summary>
     private int legLevels;
 
+    /// <summary>True for stop valves: a length of pipe that can be shut, or part shut to hold steam back.</summary>
+    public bool IsValve { get; private set; }
+
+    /// <summary>True for gauge stations: they read the steam reaching them against what is drawn beyond.</summary>
+    public bool IsGauge { get; private set; }
+
+    /// <summary>The side a gauge's dial faces.</summary>
+    public BlockFacing Dial { get; private set; } = BlockFacing.NORTH;
+
+    public const float PipeDraw = 0.25f;
+    public const float MainDraw = 0.5f;
+
+    /// <summary>Steam this conduit draws from its run.</summary>
+    public float Draw { get; private set; }
+
     /// <summary>True for the posts of a main stand: they carry a fitting but no steam.</summary>
     public bool IsStructural { get; private set; }
 
@@ -99,8 +115,30 @@ public class BlockSteamConduit : Block, IHeatSource
             MainSegment = Vintagestory.API.Common.Shape.TryGet(api, new AssetLocation("froststory", "shapes/block/generator/mainseg.json"));
         }
 
+        Draw = kind switch
+        {
+            "steampipe" => PipeDraw,
+            "steammain" => MainDraw,
+            "heatpipe" => 1f,
+            "floorgrate" => 3f,
+            "radiator" => 6f,
+            "steamhub" => 30f,
+            _ => 0f
+        };
+
         switch (kind)
         {
+            case "steamvalve":
+                IsValve = true;
+                OpenAlong(Variant["axis"]);
+                break;
+
+            case "steamgauge":
+                IsGauge = true;
+                Dial = BlockFacing.FromCode(Variant["side"]) ?? BlockFacing.NORTH;
+                foreach (var face in BlockFacing.ALLFACES) connects[face.Index] = face != BlockFacing.UP && face != Dial;
+                break;
+
             case "steampipe":
             case "wallpass":      // a solid block of wall with a mount on each of two opposite sides
                 OpenAlong(Variant["axis"]);
@@ -308,16 +346,20 @@ public class BlockSteamConduit : Block, IHeatSource
 
     // ------------------------------------------------------------------ heat and info
 
-    private bool IsWarm(IWorldAccessor world, BlockPos pos)
+    private bool IsWarm(IWorldAccessor world, BlockPos pos) => Fed(world, pos) > 0f;
+
+    /// <summary>How well this conduit is fed with steam, from 0 (cold) to 1.</summary>
+    private float Fed(IWorldAccessor world, BlockPos pos)
     {
-        var network = mod?.SteamFor(world);
-        return network != null && (IsLiveSource || network.IsLive(pos));
+        if (IsLiveSource) return 1f;
+        return mod?.SteamFor(world)?.Ratio(pos) ?? 0f;
     }
 
     public float GetHeatStrength(IWorldAccessor world, BlockPos heatSourcePos, BlockPos heatReceiverPos)
     {
-        if (!IsWarm(world, heatSourcePos)) return 0f;
-        return mod!.Config.PipeHeatStrength * (IsRadiator || IsHub ? 5f : IsBig || IsFloorGrate ? 3f : IsHeatPipe ? 2f : 1f);
+        float fed = Fed(world, heatSourcePos);
+        if (fed <= 0f) return 0f;
+        return fed * mod!.Config.PipeHeatStrength * (IsRadiator || IsHub ? 5f : IsBig || IsFloorGrate ? 3f : IsHeatPipe ? 2f : 1f);
     }
 
     public string SteamInfo(IWorldAccessor world, BlockPos pos)
@@ -325,7 +367,19 @@ public class BlockSteamConduit : Block, IHeatSource
         string key = IsPort
             ? (IsLiveSource ? "froststory:steam-port-live" : "froststory:steam-port-cold")
             : (IsWarm(world, pos) ? "froststory:steam-pipe-live" : "froststory:steam-pipe-cold");
-        return Lang.Get(key);
+        var text = new StringBuilder(Lang.Get(key));
+
+        float fed = Fed(world, pos);
+        if (!IsPort && fed > 0f && fed < 0.995f) text.Append(' ').Append(Lang.Get("froststory:steam-short", (int)Math.Round(fed * 100)));
+        if (IsValve && world.BlockAccessor.GetBlockEntity(pos) is BlockEntitySteamValve valve)
+            text.Append('\n').Append(valve.Describe());
+        if (IsGauge)
+        {
+            var (available, demand, _) = mod!.SteamFor(world).Reading(pos);
+            text.Append('\n').Append(Lang.Get("froststory:gauge-reading", Math.Round(available, 1), Math.Round(demand, 1)));
+        }
+
+        return text.ToString();
     }
 
     public override string GetPlacedBlockInfo(IWorldAccessor world, BlockPos pos, IPlayer forPlayer)
@@ -345,6 +399,14 @@ public class BlockSteamConduit : Block, IHeatSource
     /// </summary>
     public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
     {
+        if (IsValve)
+        {
+            // each click opens it a step; sneak to close it a step
+            if (world.Side == EnumAppSide.Server && world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntitySteamValve valve)
+                valve.Turn(byPlayer.Entity.Controls.ShiftKey ? -1 : 1);
+            return true;
+        }
+
         string? held = byPlayer.InventoryManager.ActiveHotbarSlot?.Itemstack?.Block?.FirstCodePart();
         if (!IsNode || (held != "steampipe" && held != "steammain"))
             return base.OnBlockInteractStart(world, byPlayer, blockSel);
@@ -365,6 +427,13 @@ public class BlockSteamConduit : Block, IHeatSource
             string through = look[1] != null ? "ud" : look[0].Axis == EnumAxis.Z ? "ns" : "we";
             var turned = world.GetBlock(CodeWithVariant("axis", through)) ?? this;
             return turned.CanPlaceBlock(world, byPlayer, blockSel, ref failureCode) && turned.DoPlaceBlock(world, byPlayer, blockSel, itemstack);
+        }
+
+        if (IsGauge && byPlayer != null)
+        {
+            // the dial faces whoever sets it down
+            var facing = world.GetBlock(CodeWithVariant("side", SuggestedHVOrientation(byPlayer, blockSel)[0].Code)) ?? this;
+            return facing.CanPlaceBlock(world, byPlayer, blockSel, ref failureCode) && facing.DoPlaceBlock(world, byPlayer, blockSel, itemstack);
         }
 
         if (!managesFill) return base.TryPlaceBlock(world, byPlayer, itemstack, blockSel, ref failureCode);

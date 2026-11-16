@@ -409,7 +409,7 @@ def pipework_example(codes, atlas):
     # standing along the far side with one of its hookups on the other mount. The wall stays whole.
     gate, wall_x = (7, 1, -3), 10
     wall_cells = cells(
-        (gate[0] + 1, 1, gate[2], "steampipe-we"), (gate[0] + 2, 1, gate[2], "steampipe-we"),
+        (gate[0] + 1, 1, gate[2], "steamvalve-we"), (gate[0] + 2, 1, gate[2], "steamgauge-north"),
         (wall_x, 1, gate[2], "wallpass-we"), (wall_x + 1, 1, gate[2] - 1, "radiator-west"),
         *[(x, 0, z, "floorgrate") for x in (wall_x + 2, wall_x + 3) for z in (gate[2] - 1, gate[2], gate[2] + 1)],
         (wall_x + 1, 0, gate[2], "steampipe-we"), (wall_x + 1, 0, gate[2] - 1, "pipejunction"), 

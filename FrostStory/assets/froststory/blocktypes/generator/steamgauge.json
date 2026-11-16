@@ -1,0 +1,107 @@
+{
+	"code": "steamgauge",
+	"class": "FrostStorySteamConduit",
+	"entityClass": "FrostStorySteamGauge",
+	"variantgroups": [
+		{
+			"code": "side",
+			"states": [
+				"north",
+				"east",
+				"south",
+				"west"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-north"
+		],
+		"froststory": [
+			"*-north"
+		]
+	},
+	"shapeByType": {
+		"*-north": {
+			"base": "block/generator/steamgauge",
+			"rotateY": 0
+		},
+		"*-west": {
+			"base": "block/generator/steamgauge",
+			"rotateY": 90
+		},
+		"*-south": {
+			"base": "block/generator/steamgauge",
+			"rotateY": 180
+		},
+		"*-east": {
+			"base": "block/generator/steamgauge",
+			"rotateY": 270
+		}
+	},
+	"textures": {
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"brass": {
+			"base": "block/generator/segment/brass"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"red": {
+			"base": "block/generator/paint-red"
+		},
+		"black": {
+			"base": "block/generator/segment/black"
+		},
+		"darkplate": {
+			"base": "block/generator/segment/darkplate"
+		},
+		"canvas": {
+			"base": "block/generator/canvas"
+		},
+		"green": {
+			"base": "block/generator/segment/green"
+		}
+	},
+	"collisionSelectionBox": {
+		"x1": 0.1,
+		"y1": 0,
+		"z1": 0.1,
+		"x2": 0.9,
+		"y2": 0.95,
+		"z2": 0.9
+	},
+	"drops": [
+		{
+			"type": "block",
+			"code": "steamgauge-north"
+		}
+	],
+	"drawtype": "json",
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 5,
+	"requiredMiningTier": 2,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

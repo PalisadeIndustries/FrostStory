@@ -1426,6 +1426,61 @@ def hubframe(kind):
     return m
 
 
+def steamvalve():
+    """A stop valve: a length of pipe through a brass body, with a bonnet, a spindle and a handwheel
+    on top. Drawn on a north-south pipe; the game adds a pointer over the wheel to show its setting."""
+    m = Model("steamvalve", (0, 1, 0))
+    m.hprism((0, 0.5, -0.5), (0, 0.5, 0.5), PIPE_BORE, "pipe")
+    for z0, z1 in ((-0.5, -0.43), (0.43, 0.5)):
+        m.hprism((0, 0.5, z0), (0, 0.5, z1), PIPE_FLANGE, "band", caps=(True, True), captex="band")
+    m.box((0, 0.5, 0), (0.4, 0.4, 0.44), "brass")                                         # body
+    for z in (-0.24, 0.24):
+        m.box((0, 0.5, z), (0.46, 0.46, 0.05), "band")                                    # body flanges
+    m.vprism(0, 0, 0.7, 0.78, 0.15, "band", caps=(True, True), captex="band")             # bonnet
+    m.vprism(0, 0, 0.78, 0.96, 0.035, "steel", caps=(False, True), captex="steel")        # spindle
+    m.handwheel(0, 0.9, 0, a=0.22)
+    return m
+
+
+def valvepointer():
+    """The pointer over a stop valve's wheel, at the block centre lying north-south; the game turns it."""
+    m = Model("valvepointer", (0, 1, 0))
+    m.box((0, 0.5, 0), (0.05, 0.03, 0.4), "brass")
+    m.box((0, 0.5, -0.18), (0.11, 0.03, 0.06), "brass")
+    return m
+
+
+def steamgauge():
+    """A gauge station: a cast pedestal with pipe mounts east, west, south and underneath, and a big
+    brass-cased dial facing north. The game draws the marks and the needle on the dial."""
+    m = Model("steamgauge", (0, 1, 0))
+    m.box((0, 0.03, 0.04), (0.7, 0.06, 0.6), "band")                                      # foot
+    m.box((0, 0.36, 0.06), (0.5, 0.62, 0.46), "darkplate")                                # pedestal
+    m.hprism((-0.5, 0.5, 0.06), (0.5, 0.5, 0.06), PIPE_BORE, "pipe")                      # the line through it
+    m.hprism((0, 0.5, 0.06), (0, 0.5, 0.5), PIPE_BORE, "pipe")
+    m.vprism(0, 0.06, 0.0, 0.2, PIPE_BORE, "pipe")
+    for a, b in ((-0.5, -0.43), (0.43, 0.5)):
+        m.hprism((a, 0.5, 0.06), (b, 0.5, 0.06), PIPE_FLANGE, "band", caps=(True, True), captex="band")
+    m.hprism((0, 0.5, 0.43), (0, 0.5, 0.5), PIPE_FLANGE, "band", caps=(True, True), captex="band")
+    m.vprism(0, 0.06, 0.66, 0.74, 0.1, "brass")                                           # neck up to the dial
+    m.hprism((0, 0.62, -0.42), (0, 0.62, -0.2), 0.31, "brass", caps=(True, True), captex="brass")   # dial case
+    m.hprism((0, 0.62, -0.435), (0, 0.62, -0.42), 0.27, "canvas", caps=(True, True), captex="canvas")  # dial face
+    m.hprism((0, 0.62, -0.47), (0, 0.62, -0.435), 0.03, "black", caps=(True, True), captex="black")    # needle boss
+    return m
+
+
+def gaugepart(kind):
+    """The moving parts of a gauge dial, each at the block centre pointing up: a mark for the ring
+    (plain, green or red) and the needle. The game sets them out on the dial."""
+    m = Model("gaugeneedle" if kind == "needle" else "gaugemark-" + kind, (0, 1, 0))
+    if kind == "needle":
+        m.box((0, 0.59, 0), (0.022, 0.2, 0.012), "black")
+        m.box((0, 0.48, 0), (0.04, 0.06, 0.012), "black")
+    else:
+        m.box((0, 0.5, 0), (0.036, 0.07, 0.012), {"plain": "steel", "green": "green", "red": "red"}[kind])
+    return m
+
+
 def wallpass(axis):
     """A wall passthrough: a solid block of plate that stands in for one block of a wall, with a pipe
     mount (a collar round an open bore) on each of two opposite sides. The collars stand a little proud
@@ -1544,6 +1599,7 @@ def main():
     parts += [wallpass(a) for a in ("ud", "ns", "we")]
     parts += [radiator(b) for b in RADIATOR_SIDES]
     parts += [steamhub(), hubframe("leg"), hubframe("head"), floorgrate(), tentstove("cold"), tentstove("lit"), stoveflue(), stoveflue("cap"), stoveflue("elbow"), stoveflue("upturn"), pipe()]
+    parts += [steamvalve(), valvepointer(), steamgauge()] + [gaugepart(k) for k in ("needle", "plain", "green", "red")]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:
         part.save(os.path.join(SHAPE_DIR, ".."))

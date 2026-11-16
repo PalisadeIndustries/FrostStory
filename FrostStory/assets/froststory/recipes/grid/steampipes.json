@@ -236,5 +236,47 @@
 			"type": "block",
 			"code": "froststory:hubstand"
 		}
+	},
+	{
+		"ingredientPattern": "_P_,SPS",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"S": {
+				"type": "block",
+				"code": "froststory:steampipe-ud"
+			}
+		},
+		"width": 3,
+		"height": 2,
+		"output": {
+			"type": "block",
+			"code": "froststory:steamvalve-ns"
+		}
+	},
+	{
+		"ingredientPattern": "_G_,SPS",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"S": {
+				"type": "block",
+				"code": "froststory:steampipe-ud"
+			},
+			"G": {
+				"type": "block",
+				"code": "game:glass-plain"
+			}
+		},
+		"width": 3,
+		"height": 2,
+		"output": {
+			"type": "block",
+			"code": "froststory:steamgauge-north"
+		}
 	}
 ]

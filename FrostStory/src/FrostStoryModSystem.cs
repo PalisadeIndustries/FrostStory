@@ -47,6 +47,8 @@ public class FrostStoryModSystem : ModSystem
         api.RegisterBlockEntityClass("FrostStorySteamNode", typeof(BlockEntitySteamNode));
         api.RegisterBlockClass("FrostStoryTentCloth", typeof(BlockTentCloth));
         api.RegisterBlockClass("FrostStoryTentFill", typeof(BlockTentFill));
+        api.RegisterBlockEntityClass("FrostStorySteamValve", typeof(BlockEntitySteamValve));
+        api.RegisterBlockEntityClass("FrostStorySteamGauge", typeof(BlockEntitySteamGauge));
         api.RegisterBlockEntityClass("FrostStoryTentRod", typeof(BlockEntityTentRod));
         api.RegisterBlockClass("FrostStoryTentStove", typeof(BlockTentStove));
         api.RegisterBlockClass("FrostStoryStoveFlue", typeof(BlockStoveFlue));
@@ -146,6 +148,12 @@ public class FrostStoryConfig
 
     /// <summary>Warmth given off by each pipe, fitting or port carrying steam. A firepit is 10.</summary>
     public float PipeHeatStrength = 2f;
+
+    /// <summary>Steam a live port on the generator's base supplies. A radiator draws 6, a pipe 0.25 a block.</summary>
+    public float PortSupply = 40f;
+
+    /// <summary>Steam a live large port supplies. A steam hub draws 30.</summary>
+    public float MainPortSupply = 250f;
 
     /// <summary>Warmth of the air close to a steam hub; it falls to 40% at the edge of its reach.</summary>
     public float HubHeatStrength = 8f;

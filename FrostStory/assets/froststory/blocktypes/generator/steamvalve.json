@@ -1,0 +1,97 @@
+{
+	"code": "steamvalve",
+	"class": "FrostStorySteamConduit",
+	"entityClass": "FrostStorySteamValve",
+	"behaviors": [
+		{
+			"name": "Pillar",
+			"properties": {
+				"rotationVariantCode": "axis"
+			}
+		}
+	],
+	"variantgroups": [
+		{
+			"code": "axis",
+			"states": [
+				"ud",
+				"ns",
+				"we"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-ns"
+		],
+		"froststory": [
+			"*-ns"
+		]
+	},
+	"shapeByType": {
+		"*-ns": {
+			"base": "block/generator/steamvalve"
+		},
+		"*-we": {
+			"base": "block/generator/steamvalve",
+			"rotateY": 90
+		},
+		"*-ud": {
+			"base": "block/generator/steamvalve",
+			"rotateX": 90
+		}
+	},
+	"textures": {
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"brass": {
+			"base": "block/generator/segment/brass"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"red": {
+			"base": "block/generator/paint-red"
+		}
+	},
+	"collisionSelectionBox": {
+		"x1": 0.2,
+		"y1": 0.2,
+		"z1": 0.2,
+		"x2": 0.8,
+		"y2": 0.9,
+		"z2": 0.8
+	},
+	"drops": [
+		{
+			"type": "block",
+			"code": "steamvalve-ns"
+		}
+	],
+	"drawtype": "json",
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 5,
+	"requiredMiningTier": 2,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

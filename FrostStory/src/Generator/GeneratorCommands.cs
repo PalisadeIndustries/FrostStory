@@ -128,6 +128,18 @@ public static class GeneratorCommands
                 })
             .EndSubCommand()
 
+            .BeginSubCommand("valve")
+                .WithDescription("Set a stop valve: 0 is shut, 8 fully open.")
+                .WithArgs(parsers.WorldPosition("position"), parsers.IntRange("setting", 0, 8))
+                .HandleWith(args =>
+                {
+                    if (api.World.BlockAccessor.GetBlockEntity(((Vec3d)args[0]).AsBlockPos) is not FrostStory.Steam.BlockEntitySteamValve valve)
+                        return TextCommandResult.Error("There is no stop valve there.");
+                    valve.Set((int)args[1]);
+                    return TextCommandResult.Success(valve.Describe());
+                })
+            .EndSubCommand()
+
             .BeginSubCommand("stove")
                 .WithDescription("Report on a tent stove; with a number, add that many seconds of fuel and light it.")
                 .WithArgs(parsers.WorldPosition("position"), parsers.OptionalFloat("fuelSeconds"))
@@ -247,8 +259,14 @@ public static class GeneratorCommands
         if (pos == null || !FrostStory.Steam.SteamNetwork.Resolve(api.World.BlockAccessor, pos, out var conduit, out _))
             return TextCommandResult.Error("Look at a steam pipe, main, fitting or port, or give its position.");
 
-        bool live = conduit.IsLiveSource || mod.SteamFor(api.World).IsLive(pos);
-        return TextCommandResult.Success(live ? "Carrying steam." : "Cold: no live steam port on this run.");
+        var steam = mod.SteamFor(api.World);
+        bool live = conduit.IsLiveSource || steam.IsLive(pos);
+        if (!live) return TextCommandResult.Success("Cold: no live steam port on this run.");
+
+        var (available, demand, ratio) = steam.Reading(pos);
+        string fed = conduit.IsLiveSource || ratio > 0.995f ? "" : $" Starved: fed {ratio * 100:0}%.";
+        string gauge = conduit.IsGauge ? $" Gauge: {available:0.#} available, {demand:0.#} drawn beyond." : "";
+        return TextCommandResult.Success("Carrying steam." + fed + gauge);
     }
 
     private static TextCommandResult PlaceConsole(ICoreServerAPI api, TextCommandCallingArgs args)

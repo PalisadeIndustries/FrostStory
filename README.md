@@ -133,6 +133,27 @@ arrive with the Steam Core stage and go live when the generator is fired.
   three times the warmth of a pipe, and is solid for closing a room. Nothing joins on top.
 - Look at a pipe to see whether it is carrying steam.
 
+**Supply, draw, valves and gauges.** Steam comes in quantities. A live base port supplies 40
+and a large port 250 (`PortSupply`, `MainPortSupply` in the config). Everything on a line draws
+some: a pipe 0.25 a block, a main 0.5, a heating pipe 1, an underfloor grate 3, a radiator 6, a
+steam hub 30; strung runs draw by their length. A line that asks for more than reaches it is
+starved, and everything on the starved part gives proportionally less heat. Look at a pipe to
+see if it is.
+
+- A **stop valve** is a length of pipe that can be shut. Each click opens it a step and each
+  sneak-click closes it a step, shut to fully open in eight. Part open it is a restrictor: each
+  step lets 5 more through, so 3 of 8 passes 15 however much is drawn beyond it. A pointer over
+  the handwheel lies along the pipe when open and across it when shut.
+- A **steam gauge station** goes in a line of pipe (pipes join on three sides and underneath;
+  the dial faces you). Its needle shows the steam that can reach that point, on a scale of 60.
+  The green zone starts at what everything further along the line draws and runs a quarter
+  above it, so it moves as you build; above that is red, more than is needed. With the needle
+  below the green, the line beyond is starved. Close a valve upstream until the needle sits in
+  the green and that branch takes no more than it needs.
+- The sums assume lines branch out from their ports. A ring is followed one way round.
+- Red costs nothing yet: there is no fuel or wear behind the steam. Large ports and mains have
+  no valve or gauge of their own yet; a gauge on a pipe tapped off a main reads off the scale.
+
 **Large ports and steam mains.** Four large ports, one to a side, come out of the hull through the
 frames with their mouths over the first gallery, 2 m above its deck. Each has a valve whose spindle
 drops to a handwheel at chest height on the gallery (the wheel is not operable yet). They arrive with the Thermal
@@ -172,7 +193,7 @@ Hull stage and go live with the rest.
 
 Recipes: two iron plates make four pipes; four iron plates make four fittings; eight iron plates
 in a ring make four mains; four mains make two main fittings; a main fitting over four iron
-ingots makes a stand; a pipe with an iron plate on each of its four sides makes two wall passthroughs; three iron plates over pipe, plate, pipe make a radiator; two gratings over two pipes over two iron plates make two underfloor grates; six iron plates over a main fitting make a steam hub; a steam hub over two columns of two iron ingots makes a hub tower; a main with four pipes makes a distributor (main and two pipes over two
+ingots makes a stand; a pipe with an iron plate on each of its four sides makes two wall passthroughs; three iron plates over pipe, plate, pipe make a radiator; two gratings over two pipes over two iron plates make two underfloor grates; six iron plates over a main fitting make a steam hub; a steam hub over two columns of two iron ingots makes a hub tower; an iron plate over pipe, plate, pipe makes a stop valve, and a glass block over the same makes a gauge station; a main with four pipes makes a distributor (main and two pipes over two
 pipes) or a drop distributor (main over two rows of two pipes).
 
 A pipe is traced back to its port on demand, so the route has to be in loaded chunks. A run that
@@ -230,6 +251,7 @@ pipes reach it.
 | `/frostgen fire [pos] [on]` | Fires or banks a finished generator |
 | `/frostgen status [pos]` | Reports a console's state |
 | `/frostgen steam [pos]` | Says whether a pipe, fitting or port is carrying steam |
+| `/frostgen valve <pos> <0-8>` | Sets a stop valve |
 | `/frostgen stove <pos> [seconds]` | Reports on a tent stove; with a number, adds that much fuel and lights it |
 | `/frostgen stand [pos] [hub]` | Raises a steam main stand with its post starting there; `true` raises a steam hub tower |
 | `/frostgen run <from> <to> [main]` | Strings a pipe run between two fittings or ports, or takes it down |
@@ -314,12 +336,12 @@ higher and lower ground. Both distributors carry steam from a main to a pipe on 
 outlets and to four pipe runs (a fifth is refused), and stay shut to pipes and mains on every other side. A wall passthrough carries steam between its two mounts by pipe or by run,
 stays shut on its other four sides, and counts as a solid, heat-keeping block. A radiator takes steam at the two hookups on its back and from
 underneath, by pipe or by run, passes it on, and stays shut on its front, ends and top. A tent stove lights with fuel and a flue to open sky (straight up with a cap, round an elbow and out sideways, or on round an upturn to a cap outside), refuses without a flue or with the flue top under
-cover, burns its fuel down and goes out, and goes out when its flue is removed. A hub tower comes up with its legs, tapered head, fitting, drop main and hub in place, the hub three blocks off the ground and live. A steam hub takes a main on top, refuses pipes, lays warm air over uneven ground out to its radius that is warm
+cover, burns its fuel down and goes out, and goes out when its flue is removed. A stop valve shuts a line, and part open passes only its share so that what is beyond is fed in proportion; a gauge reads the supply reaching it and the draw beyond it, and both follow a valve being turned and things being added. An overloaded port starves its whole line. A hub tower comes up with its legs, tapered head, fitting, drop main and hub in place, the hub three blocks off the ground and live. A steam hub takes a main on top, refuses pipes, lays warm air over uneven ground out to its radius that is warm
 only while the hub has steam and weaker further out, and takes it up again when broken. Underfloor grates take steam from underneath or the side, pass it
 along a row, take one run underneath, and stay shut on top. Every shape file loads cleanly through the game's own
 shape class.
 
-Not yet checked in a game client: fuelling and lighting the tent stove by hand, its smoke and glow; whether tent cloth draws and moves in the wind (it uses the same
+Not yet checked in a game client: turning a stop valve by hand, its pointer, and the gauge's needle and coloured marks (drawn into the chunk mesh; if they are wrong the reading is still in the hover text); fuelling and lighting the tent stove by hand, its smoke and glow; whether tent cloth draws and moves in the wind (it uses the same
 chunk-mesh approach as pipe runs, with the engine's wind flags on the cloth), whether a closed tent
 really registers as a room, how the heating pipe's arms line up, and whether pipe runs draw at all, and correctly (they are built into
 the chunk mesh from short straight pieces using the game's tesselator, which I could only check
