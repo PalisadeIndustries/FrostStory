@@ -539,11 +539,40 @@ SEGMENT_TEXTURES = [
 ]
 
 
+def tex_pole():
+    t = Tex("pole", (118, 88, 58), grain=6, blotch=10)
+    t.streaks(9)
+    t.round_shade(26)
+    for y in (0, 31):
+        t.rect_shade(0, y, 32, y + 1, -26)
+    return t
+
+
+def tex_canvas():
+    """Tent canvas: an off-white weave with a seam along one edge. Tiles."""
+    t = Tex("canvas", (196, 186, 162), grain=5, blotch=9)
+    for y in range(32):
+        for x in range(32):
+            if (x + y) % 2 == 0:
+                t.shade(x, y, -7)
+            if x % 4 == 0:
+                t.shade(x, y, -4)
+    for x in range(32):
+        t.shade(x, 1, -24)
+        if x % 4 < 2:
+            t.shade(x, 2, 18)
+    for _ in range(10):
+        x, y = t.rng.randrange(32), t.rng.randrange(32)
+        for i in range(t.rng.randrange(3, 9)):
+            t.tint(x, y + i, (150, 138, 112), 0.25)
+    return t
+
+
 TEXTURES = [
     tex_steel, tex_hull_plain, tex_hull_riveted, tex_hull_vent, tex_foundation,
     lambda: tex_lining("shaftlining-plain", False), lambda: tex_lining("shaftlining-ribbed", True), tex_lining_top,
     tex_pipe, tex_pipe_end, tex_junction, tex_paint_red,
-    tex_grating, tex_girder, tex_girder_node, tex_console_front, tex_console_side, tex_console_top,
+    tex_grating, tex_pole, tex_canvas, tex_girder, tex_girder_node, tex_console_front, tex_console_side, tex_console_top,
 ]
 
 

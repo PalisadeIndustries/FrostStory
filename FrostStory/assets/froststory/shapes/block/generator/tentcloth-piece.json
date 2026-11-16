@@ -1,0 +1,1 @@
+{"editor":{"allAngles":true},"textureWidth":16,"textureHeight":16,"textures":{"canvas":"froststory:block/generator/canvas"},"textureSizes":{"canvas":[16,16]},"elements":[{"name":"e0","from":[0.0,0.0,7.84],"to":[16.0,16.0,8.16],"faces":{"north":{"texture":"#canvas","uv":[0,0,16,16]},"south":{"texture":"#canvas","uv":[0,0,16,16]}}}]}

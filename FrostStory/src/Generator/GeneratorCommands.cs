@@ -111,6 +111,21 @@ public static class GeneratorCommands
                 })
             .EndSubCommand()
 
+            .BeginSubCommand("cloth")
+                .WithDescription("Stretch a tent cloth panel from one tent rod to another, or take down the one that is there.")
+                .WithArgs(parsers.WorldPosition("rod"), parsers.WorldPosition("otherRod"))
+                .HandleWith(args =>
+                {
+                    var rod = ((Vec3d)args[0]).AsBlockPos;
+                    var other = ((Vec3d)args[1]).AsBlockPos;
+                    if (api.World.BlockAccessor.GetBlock(other).FirstCodePart() != "tentrod") return TextCommandResult.Error("The second position is not a tent rod.");
+                    var edge = FrostStory.Tent.TentPanels.RodEdge(api.World.BlockAccessor, other);
+                    string key = FrostStory.Tent.TentPanels.Toggle(api.World, rod, other, edge, int.MaxValue, out int cost, out bool built);
+                    string text = Vintagestory.API.Config.Lang.Get(key, System.Math.Abs(cost));
+                    return built || cost < 0 ? TextCommandResult.Success(text) : TextCommandResult.Error(text);
+                })
+            .EndSubCommand()
+
             .BeginSubCommand("stand")
                 .WithDescription("Raise a steam main stand with its post starting at a position (or where you stand).")
                 .WithArgs(parsers.OptionalWorldPosition("position"))

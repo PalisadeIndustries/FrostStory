@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FrostStory.Generator;
 using FrostStory.Steam;
+using FrostStory.Tent;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
@@ -40,6 +41,9 @@ public class FrostStoryModSystem : ModSystem
         api.RegisterBlockClass("FrostStorySteamMainStand", typeof(BlockSteamMainStand));
         api.RegisterBlockClass("FrostStoryPipeWarmth", typeof(BlockPipeWarmth));
         api.RegisterBlockEntityClass("FrostStorySteamNode", typeof(BlockEntitySteamNode));
+        api.RegisterBlockClass("FrostStoryTentCloth", typeof(BlockTentCloth));
+        api.RegisterBlockClass("FrostStoryTentFill", typeof(BlockTentFill));
+        api.RegisterBlockEntityClass("FrostStoryTentRod", typeof(BlockEntityTentRod));
         api.RegisterBlockEntityClass("FrostStoryGeneratorConsole", typeof(BlockEntityGeneratorConsole));
     }
 

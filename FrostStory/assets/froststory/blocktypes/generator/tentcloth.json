@@ -1,0 +1,44 @@
+{
+	"code": "tentcloth",
+	"class": "FrostStoryTentCloth",
+	"creativeinventory": {
+		"general": [
+			"*"
+		],
+		"froststory": [
+			"*"
+		]
+	},
+	"drawtype": "json",
+	"shape": {
+		"base": "block/generator/tentcloth-bundle"
+	},
+	"textures": {
+		"pole": {
+			"base": "block/generator/pole"
+		},
+		"canvas": {
+			"base": "block/generator/canvas"
+		}
+	},
+	"blockmaterial": "Cloth",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 0.5,
+	"sounds": {
+		"place": "game:block/cloth",
+		"break": "game:block/cloth",
+		"hit": "game:block/cloth",
+		"walk": "game:walk/cloth"
+	}
+}

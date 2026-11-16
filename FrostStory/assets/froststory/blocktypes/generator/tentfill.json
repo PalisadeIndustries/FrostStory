@@ -1,0 +1,29 @@
+{
+	"code": "tentfill",
+	"class": "FrostStoryTentFill",
+	"attributes": {
+		"handbook": {
+			"exclude": true
+		}
+	},
+	"drawtype": "json",
+	"shape": {
+		"base": "game:block/basic/nothing"
+	},
+	"blockmaterial": "Cloth",
+	"collisionbox": null,
+	"selectionbox": null,
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"lightAbsorption": 0,
+	"replaceable": 9999,
+	"resistance": 0,
+	"drops": []
+}

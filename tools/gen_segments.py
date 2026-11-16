@@ -42,6 +42,8 @@ TEXTURES = {
     "black": ("block/generator/segment/black", 16, 16),
     "red": ("block/generator/paint-red", 16, 16),
     "steel": ("block/generator/steel", 16, 16),
+    "pole": ("block/generator/pole", 16, 16),
+    "canvas": ("block/generator/canvas", 16, 16),
 }
 
 ALL = ("north", "east", "south", "west", "up", "down")
@@ -1139,6 +1141,44 @@ def runpiece(big):
     return m
 
 
+def heatpipe(part):
+    """A heating pipe lies on the ground and joins whatever pipe is beside it. It is drawn as a hub with
+    an arm towards each neighbour: this is the hub, or the arm that reaches north."""
+    m = Model("heatpipe-" + part, (0, 1, 0))
+    y = 0.27
+    if part == "hub":
+        m.box((0, 0.03, 0), (0.72, 0.06, 0.72), "steel")
+        m.vprism(0, 0, 0.06, 0.5, 0.3, "band", caps=(False, True), captex="band")
+    else:
+        m.hprism((0, y, -0.5), (0, y, -0.26), 0.2, "pipe")
+        m.hprism((0, y, -0.5), (0, y, -0.43), 0.27, "band", caps=(True, True), captex="band")
+        m.box((0, 0.04, -0.38), (0.5, 0.08, 0.1), "steel")
+    return m
+
+
+def tentrod():
+    """A tent rod: a pole one block long, standing upright. Rods join end to end into poles and ridges."""
+    m = Model("tentrod", (0, 1, 0))
+    m.vprism(0, 0, 0.0, 1.0, 0.07, "pole", chunk=1.0)
+    for y0, y1 in ((0.0, 0.06), (0.94, 1.0)):
+        m.vprism(0, 0, y0, y1, 0.1, "steel", caps=(True, True), captex="steel")
+    return m
+
+
+def tentcloth(part):
+    """'bundle' is tent cloth as it is carried. 'piece' is one flat square of it, facing north and south:
+    the game pulls its corners to fit each cell of a stretched panel."""
+    m = Model("tentcloth-" + part, (0, 1, 0))
+    if part == "bundle":
+        m.box((0, 0.14, 0), (0.7, 0.28, 0.5), "canvas")
+        m.box((0, 0.3, 0), (0.6, 0.06, 0.4), "canvas")
+        for x in (-0.2, 0.2):
+            m.box((x, 0.16, 0), (0.05, 0.34, 0.54), "pole")
+    else:
+        m.box((0, 0.5, 0), (1.0, 1.0, 0.02), "canvas", faces=["north", "south"])
+    return m
+
+
 MAIN_PORT_ANCHORS = {"east": (7, 15, 0), "south": (-1, 15, 7), "west": (-7, 15, -1), "north": (0, 15, -7)}
 
 
@@ -1231,7 +1271,8 @@ def main():
         total += n
         print(f"  {m.name:16s} {n:4d} elements")
     write_blocktype(models)
-    parts = [steamport(), mainjunction(), mainpost(), mainstand(), runpiece(False), runpiece(True)] + [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
+    parts = [steamport(), mainjunction(), mainpost(), mainstand(), runpiece(False), runpiece(True),
+             heatpipe("hub"), heatpipe("arm"), tentrod(), tentcloth("bundle"), tentcloth("piece")] + [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:
         part.save(os.path.join(SHAPE_DIR, ".."))
     print(f"Wrote {len(parts)} steam fitting shapes")

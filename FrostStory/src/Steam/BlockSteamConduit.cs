@@ -38,6 +38,9 @@ public class BlockSteamConduit : Block, IHeatSource
     public Vintagestory.API.Common.Shape? PipeSegment { get; private set; }
     public Vintagestory.API.Common.Shape? MainSegment { get; private set; }
 
+    /// <summary>True for heating pipes: they lie on the ground, join whatever pipe is beside them, and radiate more.</summary>
+    public bool IsHeatPipe { get; private set; }
+
     /// <summary>True for the posts of a main stand: they carry a fitting but no steam.</summary>
     public bool IsStructural { get; private set; }
 
@@ -75,6 +78,16 @@ public class BlockSteamConduit : Block, IHeatSource
                     "ns" => new Vec3i(2, 2, 1),
                     _ => new Vec3i(1, 2, 2)
                 };
+                break;
+
+            case "heatpipe":
+                IsHeatPipe = true;
+                string joined = Variant["conn"] ?? "none";
+                if (joined != "none")
+                {
+                    foreach (char side in joined) connects[BlockFacing.FromFirstLetter(side).Index] = true;
+                }
+
                 break;
 
             case "mainpost":
@@ -145,7 +158,7 @@ public class BlockSteamConduit : Block, IHeatSource
     public float GetHeatStrength(IWorldAccessor world, BlockPos heatSourcePos, BlockPos heatReceiverPos)
     {
         if (!IsWarm(world, heatSourcePos)) return 0f;
-        return mod!.Config.PipeHeatStrength * (IsBig ? 3f : 1f);
+        return mod!.Config.PipeHeatStrength * (IsBig ? 3f : IsHeatPipe ? 2f : 1f);
     }
 
     public string SteamInfo(IWorldAccessor world, BlockPos pos)
@@ -245,9 +258,59 @@ public class BlockSteamConduit : Block, IHeatSource
 
     private static int Along(Vec3i size, EnumAxis axis) => axis switch { EnumAxis.X => size.X, EnumAxis.Y => size.Y, _ => size.Z };
 
+    // ------------------------------------------------------------------ heating pipes join their neighbours
+
+    /// <summary>
+    /// Works out which sides a heating pipe at this position should be open on (wherever there is another
+    /// heating pipe, or a pipe, fitting or port that opens towards it) and swaps in the matching variant.
+    /// </summary>
+    private void RefreshHeatPipe(IWorldAccessor world, BlockPos pos, BlockPos? gone = null)
+    {
+        var ba = world.BlockAccessor;
+        string joined = "";
+        foreach (var face in BlockFacing.HORIZONTALS)
+        {
+            var next = pos.AddCopy(face);
+            if (gone != null && next.Equals(gone)) continue;
+            if (!SteamNetwork.Resolve(ba, next, out var neighbour, out _)) continue;
+
+            bool opens = neighbour.IsHeatPipe || (neighbour.IsBig ? neighbour.AcceptsTapOn(face.Opposite) : neighbour.ConnectsOn(face.Opposite));
+            if (opens) joined += face.Code[0];
+        }
+
+        var wanted = world.GetBlock(CodeWithVariant("conn", joined.Length == 0 ? "none" : joined));
+        if (wanted == null || wanted.Id == ba.GetBlock(pos).Id) return;
+
+        ba.ExchangeBlock(wanted.Id, pos);
+        ba.MarkBlockDirty(pos);
+        mod?.SteamFor(world)?.Invalidate();
+    }
+
+    /// <summary>Lets the heating pipes beside a position take account of what has just changed there.</summary>
+    private static void RefreshHeatPipesAround(IWorldAccessor world, BlockPos pos, bool gone)
+    {
+        foreach (var face in BlockFacing.HORIZONTALS)
+        {
+            var next = pos.AddCopy(face);
+            if (world.BlockAccessor.GetBlock(next) is BlockSteamConduit { IsHeatPipe: true } pipe) pipe.RefreshHeatPipe(world, next, gone ? pos : null);
+        }
+    }
+
+    public override void OnNeighbourBlockChange(IWorldAccessor world, BlockPos pos, BlockPos neibpos)
+    {
+        base.OnNeighbourBlockChange(world, pos, neibpos);
+        if (IsHeatPipe && world.Side == EnumAppSide.Server) RefreshHeatPipe(world, pos);
+    }
+
     public override void OnBlockPlaced(IWorldAccessor world, BlockPos blockPos, ItemStack? byItemStack = null)
     {
         base.OnBlockPlaced(world, blockPos, byItemStack);
+
+        if (world.Side == EnumAppSide.Server)
+        {
+            if (IsHeatPipe) RefreshHeatPipe(world, blockPos);
+            RefreshHeatPipesAround(world, blockPos, false);
+        }
 
         if (managesFill && world.Side == EnumAppSide.Server)
         {
@@ -267,6 +330,7 @@ public class BlockSteamConduit : Block, IHeatSource
     public override void OnBlockRemoved(IWorldAccessor world, BlockPos pos)
     {
         base.OnBlockRemoved(world, pos);
+        if (world.Side == EnumAppSide.Server) RefreshHeatPipesAround(world, pos, true);
 
         if (managesFill && world.Side == EnumAppSide.Server)
         {

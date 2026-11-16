@@ -82,6 +82,9 @@
 		"brass": {
 			"base": "block/generator/segment/brass"
 		},
+		"canvas": {
+			"base": "block/generator/canvas"
+		},
 		"checker": {
 			"base": "block/generator/segment/checker"
 		},
@@ -108,6 +111,9 @@
 		},
 		"plating": {
 			"base": "block/generator/segment/plating"
+		},
+		"pole": {
+			"base": "block/generator/pole"
 		},
 		"red": {
 			"base": "block/generator/paint-red"

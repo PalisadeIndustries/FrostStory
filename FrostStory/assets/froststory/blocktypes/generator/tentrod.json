@@ -1,0 +1,101 @@
+{
+	"code": "tentrod",
+	"entityClass": "FrostStoryTentRod",
+	"variantgroups": [
+		{
+			"code": "axis",
+			"states": [
+				"ud",
+				"ns",
+				"we"
+			]
+		}
+	],
+	"behaviors": [
+		{
+			"name": "Pillar",
+			"properties": {
+				"rotationVariantCode": "axis"
+			}
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-ud"
+		],
+		"froststory": [
+			"*-ud"
+		]
+	},
+	"drawtype": "json",
+	"shapeByType": {
+		"*-ud": {
+			"base": "block/generator/tentrod"
+		},
+		"*-ns": {
+			"base": "block/generator/tentrod",
+			"rotateX": 90
+		},
+		"*-we": {
+			"base": "block/generator/tentrod",
+			"rotateZ": 90
+		}
+	},
+	"textures": {
+		"pole": {
+			"base": "block/generator/pole"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"canvas": {
+			"base": "block/generator/canvas"
+		}
+	},
+	"blockmaterial": "Wood",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"collisionSelectionBoxByType": {
+		"*-ud": {
+			"x1": 0.38,
+			"y1": 0,
+			"z1": 0.38,
+			"x2": 0.62,
+			"y2": 1,
+			"z2": 0.62
+		},
+		"*-ns": {
+			"x1": 0.38,
+			"y1": 0.38,
+			"z1": 0,
+			"x2": 0.62,
+			"y2": 0.62,
+			"z2": 1
+		},
+		"*-we": {
+			"x1": 0,
+			"y1": 0.38,
+			"z1": 0.38,
+			"x2": 1,
+			"y2": 0.62,
+			"z2": 0.62
+		}
+	},
+	"resistance": 1.5,
+	"sounds": {
+		"place": "game:block/planks",
+		"break": "game:block/planks",
+		"hit": "game:block/planks",
+		"walk": "game:walk/wood"
+	}
+}

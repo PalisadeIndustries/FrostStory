@@ -176,15 +176,22 @@ def resolve_block(bt, code, variant, atlas):
             quads.append(quad(full[face], uvs, i, flip=face == "down"))
         return {"o": 1, "q": quads}
 
-    ref = by_type(bt, "shape", code)
-    base = fill(ref["base"], variant)
-    if base.startswith("game:"):
+    main_ref = by_type(bt, "shape", code)
+    if fill(main_ref["base"], variant).startswith("game:"):
         return {"o": 0, "q": []}          # invisible filler
 
-    shape = load(os.path.join(ASSETS, "shapes", base + ".json"))
-    sizes = shape.get("textureSizes", {})
-    default_size = (shape.get("textureWidth", 16), shape.get("textureHeight", 16))
     centre = (8, 8, 8)
+    quads = []
+    # a block's shape can carry overlays: further shapes drawn with it, each with its own rotation
+    for ref in [main_ref] + main_ref.get("overlays", []):
+        shape = load(os.path.join(ASSETS, "shapes", fill(ref["base"], variant) + ".json"))
+        sizes = shape.get("textureSizes", {})
+        default_size = (shape.get("textureWidth", 16), shape.get("textureHeight", 16))
+        quads += shape_quads(shape, ref, sizes, default_size, centre, path, atlas)
+    return {"o": 0, "q": quads}
+
+
+def shape_quads(shape, ref, sizes, default_size, centre, path, atlas):
     quads = []
     for el in shape["elements"]:
         origin = el.get("rotationOrigin", (0, 0, 0))
@@ -204,7 +211,7 @@ def resolve_block(bt, code, variant, atlas):
             u1, v1, u2, v2 = spec["uv"]
             uvs = [atlas.uv(path(tex), u / tw, v / th) for u, v in ((u1, v1), (u2, v1), (u2, v2), (u1, v2))]
             quads.append(quad(pts, uvs, -1, spec.get("glow", 0), flip=face == "down"))
-    return {"o": 0, "q": quads}
+    return quads
 
 
 def resolve_all(codes, atlas):
@@ -326,12 +333,49 @@ def pipework_example(codes, atlas):
         + run(a, FITTING, "down", tap, SMALL, "up", False)           # an ordinary pipe tapping the fitting
     )
 
-    base, e, f = (7, 1, 3), (12, 1, 6), (14, 5, 10)
-    small_cells = cells((*e, "pipejunction"), (*f, "pipejunction"))
+    base, e, f = (7, 1, 3), (12, 1, 6), (9, 4, 9)
     small_runs = (
         run(base, SMALL, "east", e, SMALL, "west", False)            # from a base port along the ground
-        + run(e, SMALL, "south", f, SMALL, "down", False)            # and up to a fitting overhead
+        + run(e, SMALL, "up", f, SMALL, "east", False)               # and up to a fitting overhead
     )
+
+    # Heating pipes lie on the ground and pick their own shape from what is beside them.
+    heat = [(12, z) for z in range(7, 14)] + [(13, 12)]
+    joins = set(heat) | {(e[0], e[2])}
+    def heat_code(x, z):
+        sides = "".join(s for s, (dx, dz) in (("n", (0, -1)), ("e", (1, 0)), ("s", (0, 1)), ("w", (-1, 0))) if (x + dx, z + dz) in joins)
+        return "heatpipe-" + (sides or "none")
+
+    # A tent over them: a ridge pole on two uprights, a rail along the ground each side, cloth between.
+    z0, z1, ridge, rails = 10, 14, (14, 4), (11, 17)
+    rods = (
+        [(ridge[0], ridge[1], z, "tentrod-ns") for z in range(z0, z1 + 1)]
+        + [(x, 1, z, "tentrod-ns") for x in rails for z in range(z0, z1 + 1)]
+        + [(ridge[0], y, z, "tentrod-ud") for z in (z0, z1) for y in range(1, ridge[1])]
+    )
+    small_cells = cells((*e, "pipejunction"), (*f, "pipejunction"), *[(x, 1, z, heat_code(x, z)) for x, z in heat], *rods)
+
+    canvas = [atlas.uv("block/generator/canvas", u, v) for u, v in ((0, 0), (1, 0), (1, 1), (0, 1))]
+    def panel(a0, a1, b0, b1):
+        """Mirrors TentPanel.At and BlockEntityTentRod: a sagging sheet in cells of about 1 x 0.8."""
+        def at(u, v):
+            a = [a0[i] + (a1[i] - a0[i]) * u for i in range(3)]
+            b = [b0[i] + (b1[i] - b0[i]) * u for i in range(3)]
+            sag = 0.05 * math.dist(a, b) * math.sin(math.pi * v)
+            return (a[0] + (b[0] - a[0]) * v, a[1] + (b[1] - a[1]) * v - sag, a[2] + (b[2] - a[2]) * v)
+        edge = (math.dist(a0, a1) + math.dist(b0, b1)) / 2
+        span = (math.dist(a0, b0) + math.dist(a1, b1)) / 2
+        along, across = max(1, min(16, math.ceil(edge))), max(2, min(16, math.ceil(span / 0.8)))
+        quads = []
+        for i in range(along):
+            for j in range(across):
+                corners = [at(i / along, j / across), at((i + 1) / along, j / across), at((i + 1) / along, (j + 1) / across), at(i / along, (j + 1) / across)]
+                quads.append(quad([tuple(c * 16 for c in p) for p in corners], canvas, -1))
+        return quads
+
+    ridge0, ridge1 = (ridge[0] + 0.5, ridge[1] + 0.5, z0), (ridge[0] + 0.5, ridge[1] + 0.5, z1 + 1)
+    for x in rails:
+        small_runs += panel(ridge0, ridge1, (x + 0.5, 1.5, z0), (x + 0.5, 1.5, z1 + 1))
 
     return [
         {"at": list(port), "port": "mainport", "cells": large_cells, "quads": large_runs},

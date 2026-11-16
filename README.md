@@ -99,6 +99,14 @@ arrive with the Steam Core stage and go live when the generator is fired.
   across a room heats it.
 - Sneak while clicking to set a pipe block against the fitting instead.
 
+**Heating pipes.** A heating pipe is a low pipe, one block wide, that lies on the ground:
+
+- It joins whatever is beside it (another heating pipe, a pipe, a fitting or a port's outlet) and
+  takes the shape to suit: straight, corner, tee or cross. No fittings needed.
+- It is low enough to step over.
+- Carrying steam it gives off twice the warmth of an ordinary pipe.
+- Three iron plates in a row make six.
+
 **Pipe blocks.** Rigid pipes still work and join the same network:
 
 - Run **steam pipes** from a port. A pipe lies along the face you place it against and joins end to
@@ -134,6 +142,23 @@ ingots makes a stand.
 A pipe is traced back to its port on demand, so the route has to be in loaded chunks. A run that
 leaves the loaded world keeps the state it last had until the server restarts.
 
+### Tents
+
+Tent rods and tent cloth make simple shelters.
+
+- A **tent rod** is a pole one block long that lies along the face you set it against. Rods end to
+  end make uprights, ridge poles and ground rails.
+- With **tent cloth** in hand, click a rod, then another rod or the edge of any block. A panel is
+  stretched between them, as wide as the whole pole the rod is part of. It sags a little and stirs
+  in the wind; the two edges it hangs from stay still.
+- A panel can span 12 blocks and be 16 wide, and takes one cloth per block of area. The same two
+  clicks take it down and hand the cloth back; breaking a rod at either end does too.
+- Cloth has no collision, but it keeps rain out and counts as a wall when the game decides whether
+  a space is an enclosed room, so a closed tent holds warmth. A heating pipe through it does the rest.
+- The first click has to be on a rod. A block edge is one block long, so for a wide wall down to
+  the ground, lay a rail of rods along it.
+- Two sticks make two rods; two linen make four cloth.
+
 ### Admin commands (`controlserver` privilege)
 
 | Command | Does |
@@ -151,6 +176,7 @@ leaves the loaded world keeps the state it last had until the server restarts.
 | `/frostgen steam [pos]` | Says whether a pipe, fitting or port is carrying steam |
 | `/frostgen stand [pos]` | Raises a steam main stand with its post starting there |
 | `/frostgen run <from> <to> [main]` | Strings a pipe run between two fittings or ports, or takes it down |
+| `/frostgen cloth <rod> <rod>` | Stretches a tent cloth panel between two rods, or takes it down |
 
 Console commands take the console's position, or the one you are looking at.
 
@@ -186,6 +212,7 @@ FrostStory/
   src/Generator/BlockEntityGeneratorConsole.cs   deliveries, timed construction, firing
   src/Generator/GeneratorCommands.cs    /frostgen
   src/Steam/                            pipe runs, pipes, mains, fittings and ports; tracing back to a live port
+  src/Tent/                             tent rods and stretched cloth panels
   assets/froststory/                    blocktypes, shapes, textures, lang, recipes, stage config
 tools/
   gen_segments.py                       the geometry of the modelled segments; writes their shapes
@@ -224,11 +251,14 @@ result matches the blueprint cell for cell. Pipes and mains laid from the ports 
 the generator is fired, taps off a main work, a misaligned main stays cold, and everything goes cold
 downstream of a cut. Pipe runs can be strung and taken down between fittings and ports, carry steam,
 warm the air they cross, keep through banking, firing and a restart, and respect the length and
-size limits. Main stands come up level and in line with a port or another fitting, on
+size limits. Heating pipes take the right shape as they are laid, branched and cut, and carry
+steam. Tent panels go up between rods, come down, and follow a rod that is removed. Main stands come up level and in line with a port or another fitting, on
 higher and lower ground. Every shape file loads cleanly through the game's own
 shape class.
 
-Not yet checked in a game client: whether pipe runs draw at all, and correctly (they are built into
+Not yet checked in a game client: whether tent cloth draws and moves in the wind (it uses the same
+chunk-mesh approach as pipe runs, with the engine's wind flags on the cloth), whether a closed tent
+really registers as a room, how the heating pipe's arms line up, and whether pipe runs draw at all, and correctly (they are built into
 the chunk mesh from short straight pieces using the game's tesselator, which I could only check
 against the engine's code and in the preview), and the two-click way of stringing them. Also: how the large segment models render and light in-engine, walking
 and climbing on the invisible collision cells, placing pipes and mains by hand (including a main
