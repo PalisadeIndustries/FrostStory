@@ -113,7 +113,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
 
   <div class="work">
     <div class="viewport">
-      <canvas id="view" tabindex="0" aria-label="3D model of the generator. Drag or use arrow keys to turn; right-drag, shift-drag or W A S D to move, Q and E to go down and up; scroll or plus and minus to zoom."></canvas>
+      <canvas id="view" tabindex="0" aria-label="3D model of the generator. Drag or use arrow keys to turn; hold W A S D to move, Q and E to go down and up, Shift to go faster; right-drag also moves; scroll or plus and minus to zoom."></canvas>
       <div class="bar top">
         <div class="seg" role="group" aria-label="View">
           <button type="button" id="view-exterior" aria-pressed="true">Exterior</button>
@@ -129,7 +129,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
         </div>
       </div>
       <div class="bar bottom">
-        <p class="hint">Drag: turn &middot; right-drag or two fingers: move &middot; scroll: zoom</p>
+        <p class="hint">W A S D: move &middot; Q E: down, up &middot; drag: turn &middot; scroll: zoom</p>
         <div class="seg" role="group" aria-label="Zoom">
           <button type="button" id="zoom-out" aria-label="Zoom out">&minus;</button>
           <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
@@ -547,17 +547,43 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
     else if (e.key === "ArrowRight") cam.theta += 0.12;
     else if (e.key === "ArrowUp") cam.phi -= 0.08;
     else if (e.key === "ArrowDown") cam.phi += 0.08;
-    else if (e.key === "w" || e.key === "W") pan(0, cam.r * 0.06, 0);
-    else if (e.key === "s" || e.key === "S") pan(0, -cam.r * 0.06, 0);
-    else if (e.key === "a" || e.key === "A") pan(-cam.r * 0.06, 0, 0);
-    else if (e.key === "d" || e.key === "D") pan(cam.r * 0.06, 0, 0);
-    else if (e.key === "e" || e.key === "E") pan(0, 0, cam.r * 0.05);
-    else if (e.key === "q" || e.key === "Q") pan(0, 0, -cam.r * 0.05);
     else if (e.key === "+" || e.key === "=") cam.r *= 0.85;
     else if (e.key === "-") cam.r *= 1.18;
     else used = false;
     if (used) { e.preventDefault(); autoTurn = false; applyCamera(); }
   });
+
+  // W A S D fly the view across the ground for as long as they are held, Q and E (or Ctrl and Space)
+  // take it down and up, Shift goes faster. They work anywhere on the page except while typing.
+  var held = {};
+  var MOVE = { w: 1, a: 1, s: 1, d: 1, q: 1, e: 1, " ": 1, control: 1 };
+  function typing(e) {
+    var t = e.target;
+    return t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) && t.type !== "range");
+  }
+  window.addEventListener("keydown", function (e) {
+    var k = e.key.toLowerCase();
+    if (!MOVE[k] || typing(e) || e.metaKey || e.altKey) return;
+    held[k] = true;
+    autoTurn = false;
+    if (k === " ") e.preventDefault();      // do not scroll the page
+  });
+  window.addEventListener("keyup", function (e) { delete held[e.key.toLowerCase()]; });
+  window.addEventListener("blur", function () { held = {}; });
+
+  function fly(dt, fast) {
+    var right = (held.d ? 1 : 0) - (held.a ? 1 : 0);
+    var forward = (held.w ? 1 : 0) - (held.s ? 1 : 0);
+    var up = (held.e || held[" "] ? 1 : 0) - (held.q || held.control ? 1 : 0);
+    if (!right && !forward && !up) return;
+    var speed = Math.max(5, cam.r * 0.6) * (fast ? 2.5 : 1) * dt;      // blocks a second: quicker from further out
+    var len = Math.hypot(right, forward) || 1;
+    pan(right / len * speed, forward / len * speed, up * speed * 0.7);
+    applyCamera();
+  }
+  var shiftDown = false;
+  window.addEventListener("keydown", function (e) { if (e.key === "Shift") shiftDown = true; });
+  window.addEventListener("keyup", function (e) { if (e.key === "Shift") shiftDown = false; });
 
   function resize() {
     var w = canvas.clientWidth, h = canvas.clientHeight;
@@ -575,6 +601,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
     var dt = Math.min(0.1, (now - last) / 1000);
     last = now;
     if (autoTurn) { cam.theta += dt * 0.12; applyCamera(); }
+    fly(dt, shiftDown);
     if (steam.visible && !reduceMotion) {
       for (var i = 0; i < STEAM; i++) placeSteam(i, (steamAge[i] + dt * 0.11) % 1);
       steamGeo.attributes.position.needsUpdate = true;
