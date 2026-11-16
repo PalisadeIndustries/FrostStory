@@ -578,6 +578,17 @@ def colour(x, y):
     return "shiphull"
 
 
+def lean_plate(m, x, k, sign, breadth_at, tex):
+    """One plate of a leaning course: from the bottom of course k to its top at station x."""
+    xa, xb = x - 0.5, x + 0.5
+    low = (breadth_at(xa, k) + breadth_at(xb, k)) / 2
+    high = (breadth_at(xa, k + 1) + breadth_at(xb, k + 1)) / 2
+    run = ((breadth_at(xb, k) + breadth_at(xb, k + 1)) - (breadth_at(xa, k) + breadth_at(xa, k + 1))) / 2     # how far it swings in or out over the station
+    lean = math.degrees(math.atan2(sign * (high - low), 1.0))
+    swing = -math.degrees(math.atan(sign * run))
+    m.box((x, k + 0.5, sign * (low + high) / 2), (math.hypot(1.0, run) + 0.02, math.hypot(1.0, high - low) + 0.02, 0.14), tex, (lean, swing, 0))
+
+
 for x in range(X0, X1 + 1):
     m = sec(x)
     top = skin_top(x)
@@ -601,14 +612,27 @@ for x in range(X0, X1 + 1):
             return e_at[k] if upright(k) else e_at[k - 1]
         return (e_at[k - 1] + e_at[k]) / 2
 
+    def breadth_at(xq, k):
+        """breadth(), but taken at any point along the ship, with this station's courses."""
+        def e(j):
+            return edge(xq, j)
+        if k > top:
+            return e(top)
+        if k == k0:
+            return e(k0)
+        if upright(k) or upright(k - 1):
+            return e(k) if upright(k) else e(k - 1)
+        return (e(k - 1) + e(k)) / 2
+
     for sign in (-1, 1):
         runs = []
         for k in ks:
             if sign < 0 and (x, k) in BREACH:
                 continue
             if not upright(k):
-                # the turn of the bilge, the forefoot and the counter: a plate leaning from one course to the next
-                m.member((x, k, sign * breadth(k)), (x, k + 1, sign * breadth(k + 1)), 0.14, 1.0, colour(x, k), chunk=2.0)
+                # The turn of the bilge, the forefoot and the counter: a plate leaning from one course to
+                # the next, and swung to follow the hull's lines from the last station to the next one.
+                lean_plate(m, x, k, sign, breadth_at, colour(x, k))
                 continue
             key = (round(edge(xa, k), 3), round(edge(xb, k), 3), colour(x, k))
             if runs and runs[-1][1] == k - 1 and runs[-1][2] == key:
@@ -617,6 +641,13 @@ for x in range(X0, X1 + 1):
                 runs.append((k, k, key))
         for ya, yb, (ea, eb, tex) in runs:
             m.member((xa, (ya + yb + 1) / 2, sign * ea), (xb, (ya + yb + 1) / 2, sign * eb), yb - ya + 1, 0.14, tex, chunk=2.0)
+
+        # the margin plank: a raised board round the edge of the deck, following her lines in to the
+        # stem and round the stern, over the ends of the deck planks
+        deck = UPPER if island(x) else MAIN
+        inner_a, inner_b = edge(xa, top) - 0.42, edge(xb, top) - 0.42
+        if inner_a > -0.3 or inner_b > -0.3:
+            m.member((xa, deck + 0.17, sign * max(inner_a, 0.0)), (xb, deck + 0.17, sign * max(inner_b, 0.0)), 0.1, 0.6, "pole", chunk=2.0)
 
         e = edge(x, top)
         if x % 3 == 0 and e > 1.0 and abs(edge(x, WATER + 1) - e) < 1e-6:                                                         # a frame showing through the plating
@@ -654,6 +685,7 @@ for k in range(first, skin_top(X1) + 1):                                        
     bow.box((X1 + 0.5 - 0.07, k + 0.5, 0), (0.14, 1.0, 2 * edge(X1, k) + 0.1), colour(X1, k))
 bow.box((X1 + 0.56, (first + skin_top(X1) + 1) / 2, 0), (0.3, skin_top(X1) + 1 - first, 0.5), "band")
 stern.box((X0 - 0.5, (6 + skin_top(X0) + 1) / 2, 0), (0.14, skin_top(X0) - 5, 2 * edge(X0 - 0.5, 9)), "shiphull")
+stern.box((X0 - 0.2, UPPER + 0.17, 0), (0.6, 0.1, 2 * edge(X0 - 0.5, skin_top(X0)) - 0.5), "pole")    # the margin plank, across the stern
 stern.box((X0 + 1.0, 2.5, 0), (0.3, 5.0, 0.16), "band")                                    # rudder post
 stern.box((X0 + 0.2, 2.6, 0), (1.6, 4.2, 0.12), "shiphull")                                # rudder
 stern.wheel((X0 + 2.6, 2.4, 0), 1.9, 0.5, 0.3, "brass", axis="x")                          # the screw
@@ -676,6 +708,14 @@ for (x, Y, tex), zs in by_row.items():
         # the shell is drawn on the outside of its cells: carry the deck out through them to the plating
         lo = start - 0.5 - (0.9 if is_shell((x, Y, start - 1)) else 0)
         hi = prev + 0.5 + (0.9 if is_shell((x, Y, prev + 1)) else 0)
+        # ... and no further: where the hull fines away the plating is inside the cells' square corners
+        inside = min(edge(x - 0.5, Y), edge(x + 0.5, Y), edge(x, Y)) - 0.06
+        if Y <= UPPER:
+            lo, hi = max(lo, -inside), min(hi, inside)
+        if hi - lo < 0.05:
+            if z is not None:
+                start = prev = z
+            continue
         sec(x).box((x, Y + 0.06, (lo + hi) / 2), (1.0, 0.12, hi - lo), tex)
         if z is not None:
             start = prev = z
