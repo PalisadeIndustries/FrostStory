@@ -1179,6 +1179,46 @@ def tentcloth(part):
     return m
 
 
+DISTRIBUTOR_SIDES = ("west", "north", "east", "south")     # where the inlet faces, by quarter turn
+
+
+def distributor(kind, side):
+    """A distributor splits a steam main into four small pipes.
+
+    'straight' takes the main in one end and gives the four outlets at the other: two cells across, two
+    high, one deep. 'drop' takes the main in a side and gives the four outlets underneath, so the small
+    pipes can go down and away: a 2 x 2 x 2 block. Drawn with the inlet facing west and turned; the
+    block lives in the minimum-corner cell of whatever it covers once turned."""
+    turn = DISTRIBUTOR_SIDES.index(side)
+    cells = [(0, 0), (0, 1)] if kind == "straight" else [(0, 0), (0, 1), (1, 0), (1, 1)]
+    turned = []
+    for x, z in cells:
+        for _ in range(turn):
+            x, z = -z, x
+        turned.append((x, z))
+    m = Model(f"distributor-{kind}-{side}", (min(x for x, _ in turned), 1, min(z for _, z in turned)), turn=turn)
+
+    y, z = 1.0, 0.5      # the bore's centre line
+    m.hprism((-0.5, y, z), (-0.38, y, z), MAIN_FLANGE, "band", caps=(True, True), captex="band")      # inlet flange
+    if kind == "straight":
+        m.hprism((-0.38, y, z), (0.0, y, z), MAIN_BORE, "pipe")
+        m.box((0.12, y, z), (0.36, 1.9, 1.9), "band")                                                 # header plate
+        for oy in (0.5, 1.5):
+            for oz in (0.0, 1.0):
+                m.hprism((0.3, oy, oz), (0.5, oy, oz), 0.3, "pipe")
+                m.hprism((0.42, oy, oz), (0.5, oy, oz), 0.4, "band", caps=(True, True), captex="band")
+        m.vprism(0.12, z, y + 0.95, y + 1.0, 0.2, "steel", caps=(False, True), captex="steel")       # lifting boss
+    else:
+        m.hprism((-0.38, y, z), (0.1, y, z), MAIN_BORE, "pipe")
+        m.vprism(0.5, z, 0.3, 1.95, 0.98, "band", caps=(True, True), captex="band")                   # header drum
+        m.vprism(0.5, z, 1.95, 2.0, 0.4, "steel", caps=(False, True), captex="steel")
+        for ox in (0.0, 1.0):
+            for oz in (0.0, 1.0):
+                m.vprism(ox, oz, 0.0, 0.3, 0.3, "pipe")
+                m.vprism(ox, oz, 0.0, 0.08, 0.4, "band", caps=(True, True), captex="band")
+    return m
+
+
 MAIN_PORT_ANCHORS = {"east": (7, 15, 0), "south": (-1, 15, 7), "west": (-7, 15, -1), "north": (0, 15, -7)}
 
 
@@ -1272,7 +1312,9 @@ def main():
         print(f"  {m.name:16s} {n:4d} elements")
     write_blocktype(models)
     parts = [steamport(), mainjunction(), mainpost(), mainstand(), runpiece(False), runpiece(True),
-             heatpipe("hub"), heatpipe("arm"), tentrod(), tentcloth("bundle"), tentcloth("piece")] + [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
+             heatpipe("hub"), heatpipe("arm"), tentrod(), tentcloth("bundle"), tentcloth("piece")]
+    parts += [distributor(k, s) for k in ("straight", "drop") for s in DISTRIBUTOR_SIDES]
+    parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:
         part.save(os.path.join(SHAPE_DIR, ".."))
     print(f"Wrote {len(parts)} steam fitting shapes")

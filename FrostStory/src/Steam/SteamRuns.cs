@@ -85,26 +85,30 @@ public static class SteamRuns
         return world.BlockAccessor.GetBlockEntity(anchor) as BlockEntitySteamNode;
     }
 
-    /// <summary>The free side of a fitting that faces a point best; ports have only their outlet.</summary>
-    private static BlockFacing? BestFace(BlockSteamConduit conduit, BlockPos anchor, BlockEntitySteamNode node, Vec3d towards)
+    /// <summary>
+    /// The free place on a fitting that faces a point best, for a run of the given bore. Ports have only
+    /// their outlet; a distributor has its four outlets (small) and its inlet (main).
+    /// </summary>
+    private static (BlockFacing Face, Vec3d Point)? BestPoint(BlockSteamConduit conduit, BlockPos anchor, BlockEntitySteamNode node, Vec3d towards, bool big)
     {
-        BlockFacing? best = null;
+        (BlockFacing, Vec3d)? best = null;
         double bestDot = -0.25;      // never leave by a side that faces away
-        foreach (var face in BlockFacing.ALLFACES)
+        foreach (var (face, point) in conduit.RunPoints(anchor, big))
         {
-            if (!conduit.ConnectsOn(face)) continue;
-
             bool taken = false;
-            foreach (var run in node.Runs) taken |= run.Face == face;
+            foreach (var run in node.Runs)
+            {
+                taken |= Math.Abs(run.Start.X - (point.X - anchor.X)) < 0.05 && Math.Abs(run.Start.Y - (point.Y - anchor.Y)) < 0.05 && Math.Abs(run.Start.Z - (point.Z - anchor.Z)) < 0.05;
+            }
+
             if (taken) continue;
 
-            var from = AttachPoint(conduit, anchor, face);
-            var dir = towards.SubCopy(from).Normalize();
+            var dir = towards.SubCopy(point).Normalize();
             double dot = dir.X * face.Normali.X + dir.Y * face.Normali.Y + dir.Z * face.Normali.Z;
             if (dot > bestDot)
             {
                 bestDot = dot;
-                best = face;
+                best = (face, point);
             }
         }
 
@@ -138,12 +142,12 @@ public static class SteamRuns
 
         var aMid = aPos.ToVec3d().Add(aConduit.Size.X / 2.0, aConduit.Size.Y / 2.0, aConduit.Size.Z / 2.0);
         var bMid = bPos.ToVec3d().Add(bConduit.Size.X / 2.0, bConduit.Size.Y / 2.0, bConduit.Size.Z / 2.0);
-        var aFace = BestFace(aConduit, aPos, a, bMid);
-        var bFace = BestFace(bConduit, bPos, b, aMid);
-        if (aFace == null || bFace == null) return "froststory:run-noside";
+        var aBest = BestPoint(aConduit, aPos, a, bMid, big);
+        var bBest = BestPoint(bConduit, bPos, b, aMid, big);
+        if (aBest == null || bBest == null) return "froststory:run-noside";
 
-        var aPoint = AttachPoint(aConduit, aPos, aFace);
-        var bPoint = AttachPoint(bConduit, bPos, bFace);
+        var (aFace, aPoint) = aBest.Value;
+        var (bFace, bPoint) = bBest.Value;
 
         // each end keeps the run in its own block's coordinates
         Vec3f Local(Vec3d p, BlockPos origin) => new((float)(p.X - origin.X), (float)(p.Y - origin.Y), (float)(p.Z - origin.Z));

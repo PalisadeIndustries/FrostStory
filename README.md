@@ -128,6 +128,13 @@ Hull stage and go live with the rest.
 - An ordinary steam pipe can tap a main or a main fitting anywhere, or butt against the mouth of a
   large port, so a main can feed many small runs.
 - A main gives three times the warmth of a pipe.
+- A **steam distributor** splits a main into four ordinary pipes. The main goes in one end and
+  four outlets come out of the other, one to each block of that end; set it against the end of a
+  main or a fitting and the inlet lines up. Each outlet takes a pipe laid against it or one pipe
+  run. Nothing joins on its other sides.
+- A **steam drop distributor** is the same thing with the four outlets underneath: the main comes
+  in at one side and the pipes leave downwards, so they can go down and away from a main carried
+  overhead.
 - A **steam main stand** carries a main fitting on a lattice post. Set it on the ground in line
   with a large port or the end of a main (within 48 blocks along the compass, on either of the
   two columns the main covers) and the fitting comes up at that pipe's height and lined up with
@@ -137,7 +144,8 @@ Hull stage and go live with the rest.
 
 Recipes: two iron plates make four pipes; four iron plates make four fittings; eight iron plates
 in a ring make four mains; four mains make two main fittings; a main fitting over four iron
-ingots makes a stand.
+ingots makes a stand; a main with four pipes makes a distributor (main and two pipes over two
+pipes) or a drop distributor (main over two rows of two pipes).
 
 A pipe is traced back to its port on demand, so the route has to be in loaded chunks. A run that
 leaves the loaded world keeps the state it last had until the server restarts.
@@ -257,7 +265,8 @@ downstream of a cut. Pipe runs can be strung and taken down between fittings and
 warm the air they cross, keep through banking, firing and a restart, and respect the length and
 size limits. Heating pipes take the right shape as they are laid, branched and cut, and carry
 steam. Tent panels go up between rods, come down, and follow a rod that is removed. Main stands come up level and in line with a port or another fitting, on
-higher and lower ground. Every shape file loads cleanly through the game's own
+higher and lower ground. Both distributors carry steam from a main to a pipe on each of their four
+outlets and to four pipe runs (a fifth is refused), and stay shut to pipes and mains on every other side. Every shape file loads cleanly through the game's own
 shape class.
 
 Not yet checked in a game client: whether tent cloth draws and moves in the wind (it uses the same
@@ -266,7 +275,7 @@ really registers as a room, how the heating pipe's arms line up, and whether pip
 the chunk mesh from short straight pieces using the game's tesselator, which I could only check
 against the engine's code and in the preview), and the two-click way of stringing them. Also: how the large segment models render and light in-engine, walking
 and climbing on the invisible collision cells, placing pipes and mains by hand (including a main
-lining itself up with a port, and setting down a stand), how the two-block mains, the stand and
+lining itself up with a port, a distributor turning its inlet to what it is set against, and setting down a stand), how the two-block mains, the stand and
 its post look in the game and the inventory, how much a pipe run actually
 warms a player, the footprint highlight, the console's hover text and the stack's steam particles. The preview page mirrors the engine's rotation and texture
 mapping rules, but it is not the engine.

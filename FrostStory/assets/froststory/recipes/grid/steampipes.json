@@ -97,5 +97,43 @@
 			"code": "froststory:heatpipe-none",
 			"quantity": 6
 		}
+	},
+	{
+		"ingredientPattern": "MPP,_PP",
+		"ingredients": {
+			"M": {
+				"type": "block",
+				"code": "froststory:steammain-we"
+			},
+			"P": {
+				"type": "block",
+				"code": "froststory:steampipe-ud"
+			}
+		},
+		"width": 3,
+		"height": 2,
+		"output": {
+			"type": "block",
+			"code": "froststory:distributor-straight-west"
+		}
+	},
+	{
+		"ingredientPattern": "M_,PP,PP",
+		"ingredients": {
+			"M": {
+				"type": "block",
+				"code": "froststory:steammain-we"
+			},
+			"P": {
+				"type": "block",
+				"code": "froststory:steampipe-ud"
+			}
+		},
+		"width": 2,
+		"height": 3,
+		"output": {
+			"type": "block",
+			"code": "froststory:distributor-drop-west"
+		}
 	}
 ]

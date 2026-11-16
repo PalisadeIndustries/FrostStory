@@ -333,6 +333,20 @@ def pipework_example(codes, atlas):
         + run(a, FITTING, "down", tap, SMALL, "up", False)           # an ordinary pipe tapping the fitting
     )
 
+    # A distributor on the branch stand: the main goes in one end and four rigid pipes carry on from the other.
+    straight = (c[0], c[1], c[2] - 1)
+    large_cells += cells((*straight, "distributor-straight-south"),
+                         *[(c[0] + dx, c[1] + dy, c[2] - 1 - k, "steampipe-ns") for dx in (0, 1) for dy in (0, 1) for k in (1, 2, 3)])
+
+    # A drop distributor on the lower stand: four runs leave underneath and spread to fittings on the ground.
+    drop = (b[0] + 2, b[1], b[2])
+    feet = {(0, 0): (22, 1, 0), (1, 0): (27, 1, 2), (0, 1): (22, 1, 9), (1, 1): (27, 1, 7)}
+    large_cells += cells((*drop, "distributor-drop-west"), *[(*foot, "pipejunction") for foot in feet.values()])
+    for (dx, dz), foot in feet.items():
+        outlet = (drop[0] + 0.5 + dx, drop[1], drop[2] + 0.5 + dz)
+        quads, _ = run_quads(pieces[False], outlet, "down", attach_point(foot, SMALL, "up"), "up", False)
+        large_runs += quads
+
     base, e, f = (7, 1, 3), (12, 1, 6), (9, 4, 9)
     small_runs = (
         run(base, SMALL, "east", e, SMALL, "west", False)            # from a base port along the ground

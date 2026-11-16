@@ -1,0 +1,84 @@
+{
+	"code": "distributor",
+	"class": "FrostStorySteamConduit",
+	"entityClass": "FrostStorySteamNode",
+	"variantgroups": [
+		{
+			"code": "type",
+			"states": [
+				"straight",
+				"drop"
+			]
+		},
+		{
+			"code": "side",
+			"states": [
+				"north",
+				"east",
+				"south",
+				"west"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-west"
+		],
+		"froststory": [
+			"*-west"
+		]
+	},
+	"drawtype": "json",
+	"shape": {
+		"base": "block/generator/distributor-{type}-{side}"
+	},
+	"textures": {
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"black": {
+			"base": "block/generator/segment/black"
+		}
+	},
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 6,
+	"requiredMiningTier": 3,
+	"dropsByType": {
+		"*-straight-*": [
+			{
+				"type": "block",
+				"code": "distributor-straight-west"
+			}
+		],
+		"*-drop-*": [
+			{
+				"type": "block",
+				"code": "distributor-drop-west"
+			}
+		]
+	},
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

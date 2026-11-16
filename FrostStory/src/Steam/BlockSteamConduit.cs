@@ -41,6 +41,14 @@ public class BlockSteamConduit : Block, IHeatSource
     /// <summary>True for heating pipes: they lie on the ground, join whatever pipe is beside them, and radiate more.</summary>
     public bool IsHeatPipe { get; private set; }
 
+    /// <summary>
+    /// True for distributors: a steam main comes in at <see cref="Inlet"/> and four small pipes leave at
+    /// <see cref="Outlet"/>, one from each quarter of that side.
+    /// </summary>
+    public bool IsDistributor { get; private set; }
+    public BlockFacing Inlet { get; private set; } = BlockFacing.WEST;
+    public BlockFacing Outlet { get; private set; } = BlockFacing.EAST;
+
     /// <summary>True for the posts of a main stand: they carry a fitting but no steam.</summary>
     public bool IsStructural { get; private set; }
 
@@ -56,7 +64,7 @@ public class BlockSteamConduit : Block, IHeatSource
         mod = api.ModLoader.GetModSystem<FrostStoryModSystem>();
 
         string kind = FirstCodePart();
-        IsNode = kind is "pipejunction" or "mainjunction" or "steamport" or "mainport";
+        IsNode = kind is "pipejunction" or "mainjunction" or "steamport" or "mainport" or "distributor";
         if (IsNode && api.Side == EnumAppSide.Client)
         {
             PipeSegment = Vintagestory.API.Common.Shape.TryGet(api, new AssetLocation("froststory", "shapes/block/generator/pipeseg.json"));
@@ -88,6 +96,15 @@ public class BlockSteamConduit : Block, IHeatSource
                     foreach (char side in joined) connects[BlockFacing.FromFirstLetter(side).Index] = true;
                 }
 
+                break;
+
+            case "distributor":
+                IsBig = managesFill = IsDistributor = true;
+                Inlet = BlockFacing.FromCode(Variant["side"]) ?? BlockFacing.WEST;
+                bool drop = Variant["type"] == "drop";
+                Outlet = drop ? BlockFacing.DOWN : Inlet.Opposite;
+                Size = drop ? new Vec3i(2, 2, 2) : Inlet.Axis == EnumAxis.X ? new Vec3i(1, 2, 2) : new Vec3i(2, 2, 1);
+                connects[Inlet.Index] = true;      // only the inlet takes a main
                 break;
 
             case "mainpost":
@@ -137,7 +154,46 @@ public class BlockSteamConduit : Block, IHeatSource
     public bool ConnectsOn(BlockFacing face) => connects[face.Index];
 
     /// <summary>Whether a small pipe may join on this face: anywhere on a main, only at the mouth of a port.</summary>
-    public bool AcceptsTapOn(BlockFacing face) => IsBig && !IsStructural && (!IsPort || connects[face.Index]);
+    public bool AcceptsTapOn(BlockFacing face)
+    {
+        if (IsDistributor) return face == Outlet;
+        return IsBig && !IsStructural && (!IsPort || connects[face.Index]);
+    }
+
+    /// <summary>
+    /// The places a pipe run of the given bore can be strung from on this fitting, in world coordinates.
+    /// Most fittings offer the middle of each open side. A distributor offers its inlet to a main, and the
+    /// four quarters of its outlet side to small runs.
+    /// </summary>
+    public IEnumerable<(BlockFacing Face, Vec3d Point)> RunPoints(BlockPos anchor, bool big)
+    {
+        if (!IsDistributor)
+        {
+            foreach (var face in BlockFacing.ALLFACES)
+            {
+                if (connects[face.Index]) yield return (face, SteamRuns.AttachPoint(this, anchor, face));
+            }
+
+            yield break;
+        }
+
+        if (big)
+        {
+            yield return (Inlet, SteamRuns.AttachPoint(this, anchor, Inlet));
+            yield break;
+        }
+
+        // one outlet in the middle of each of the four cells on the outlet side
+        var mid = SteamRuns.AttachPoint(this, anchor, Outlet);
+        var n = Outlet.Normali;
+        for (int i = -1; i <= 1; i += 2)
+        {
+            for (int j = -1; j <= 1; j += 2)
+            {
+                yield return (Outlet, n.Y != 0 ? mid.AddCopy(i * 0.5, 0, j * 0.5) : n.X != 0 ? mid.AddCopy(0, i * 0.5, j * 0.5) : mid.AddCopy(j * 0.5, i * 0.5, 0));
+            }
+        }
+    }
 
     public IEnumerable<BlockPos> Cells(BlockPos anchor)
     {
@@ -207,6 +263,12 @@ public class BlockSteamConduit : Block, IHeatSource
         {
             string axis = blockSel.Face.Axis switch { EnumAxis.Y => "ud", EnumAxis.Z => "ns", _ => "we" };
             block = world.GetBlock(CodeWithParts(axis)) as BlockSteamConduit ?? this;
+        }
+        else if (IsDistributor)
+        {
+            // A distributor's inlet faces what it is set against; set on a floor or ceiling, it faces the player.
+            var inlet = blockSel.Face.IsHorizontal ? blockSel.Face.Opposite : SuggestedHVOrientation(byPlayer, blockSel)[0];
+            block = world.GetBlock(CodeWithVariant("side", inlet.Code)) as BlockSteamConduit ?? this;
         }
 
         var anchor = block.AnchorFor(world, blockSel);
