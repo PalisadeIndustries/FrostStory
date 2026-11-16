@@ -69,6 +69,8 @@ public static class ExpeditionKit
                 int n = Math.Min(left, Math.Max(1, thing.MaxStackSize));
                 left -= n;
                 var stack = new ItemStack(thing, n);
+                // Unset, the game rolls new clothing at 0-40% condition (and so 0-80% warmth).
+                if (entry.Wear) stack.Attributes.SetFloat("condition", 1f);
                 given++;
                 if (entry.Wear && TryWear(player, stack)) continue;
                 player.InventoryManager.TryGiveItemstack(stack, true);

@@ -264,9 +264,9 @@ public class ExpeditionSystem : ModSystem
         string uid = player.PlayerUID;
         foreach (var (seconds, key, needsWreck) in Hints)
         {
-            if (needsWreck && State != WreckState.Placed) continue;
             sapi.Event.RegisterCallback(_ =>
             {
+                if (needsWreck && State != WreckState.Placed) return;
                 if (sapi.World.PlayerByUid(uid) is not IServerPlayer p || p.ConnectionState != EnumClientState.Playing) return;
                 p.SendMessage(GlobalConstants.GeneralChatGroup, Lang.GetL(p.LanguageCode, "froststory:" + key), EnumChatType.Notification);
             }, seconds * 1000);

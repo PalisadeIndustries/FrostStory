@@ -208,6 +208,10 @@ public class FrostClimateSystem : ModSystem
         tree.SetFloat("windAngle", windAngle);
         tree.SetFloat("cold", cold);
         tree.SetFloat("wind", windAdd);
+        // The client never reads ModConfig, so the server's look settings travel with the state.
+        tree.SetFloat("fogDensity", Config.WhiteoutFogDensity);
+        tree.SetFloat("fogUnderRoof", Config.WhiteoutUnderRoof);
+        tree.SetFloat("snow", Config.StormSnow);
         entity.WatchedAttributes.MarkPathDirty(SyncTree);
     }
 
@@ -262,6 +266,9 @@ public class FrostClimateSystem : ModSystem
             windAngle = tree.GetFloat("windAngle");
             cold = tree.GetFloat("cold", ColdOffset);
             windAdd = tree.GetFloat("wind");
+            Config.WhiteoutFogDensity = tree.GetFloat("fogDensity", Config.WhiteoutFogDensity);
+            Config.WhiteoutUnderRoof = tree.GetFloat("fogUnderRoof", Config.WhiteoutUnderRoof);
+            Config.StormSnow = tree.GetFloat("snow", Config.StormSnow);
         }
         whiteout?.Tick(dt);
     }

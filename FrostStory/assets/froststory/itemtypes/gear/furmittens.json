@@ -14,7 +14,7 @@
 		"clothescategory": "hand",
 		"wearableAttachment": true,
 		"warmth": 2,
-		"froststoryWindproof": 0.1
+		"froststoryWindproof": 0.06
 	},
 	"creativeinventory": { "general": [ "*" ], "items": [ "*" ], "clothing": [ "*" ], "froststory": [ "*" ] },
 	"renderAlphaTest": 0.25,

@@ -37,8 +37,8 @@ Pick the **The Long Winter** playstyle when you create a world. It turns the opt
 
 | Setting | Value |
 |---|---|
-| Starting climate | Icy |
-| Global temperature | Very cold |
+| Starting climate | Cool |
+| Global temperature | Normal (the Long Winter cold does the rest) |
 | Seasons | Always winter |
 | Precipitation | Humid (more snow) |
 | Temporal storms | Very rare |
@@ -86,7 +86,8 @@ open in a full storm. You are sheltered, and lose nothing extra, when you are:
 - near enough heat: a lit tent stove, a live steam pipe or two, a fire.
 
 Under a roof but not in a closed room (a lean-to, a doorway) you lose half as much. Windproof
-gear cuts the loss: each worn piece's windproof value adds up, to a total of 1 (no loss at all).
+gear cuts the loss: each worn piece's windproof value adds up (to at most 1, no loss at all); the
+full fur set is 60%, so a storm still bites a well-dressed survivor.
 Storm goggles thin the whiteout fog the same way.
 
 Below 35 °C body temperature you are **hypothermic**: you are told so, a red warning shows, and
@@ -142,7 +143,8 @@ A character class offered in Long Winter worlds:
 
 Every player gets it once, the first time they join a Long Winter world
 (after choosing their character), whatever their class. Clothing goes on where its slot is free,
-and furs the class already put on are not given twice.
+and furs the class already put on are not given twice. Starting furs are new, at full warmth.
+Changing class later strips worn clothing (the game does that); `/frostexp kit` gives the kit again.
 
 | | |
 |---|---|
@@ -203,17 +205,17 @@ wears out like any other clothes. Two extra numbers, shown in the tooltip, matte
 storm:
 
 - **Windproof**: each piece's share is added up over everything worn (capped at 100%) and cuts the
-  wind chill of a storm. The full outfit is exactly 100%.
+  wind chill of a storm. The full outfit comes to 60%: furs buy time in a storm, not immunity.
 - **Storm vision**: cuts how thick the whiteout fog is.
 
 | Item | Code | Slot | Warmth (°C) | Windproof | Storm vision | Walk speed |
 |---|---|---|---|---|---|---|
-| Fur hood | `froststory:furhood` | head | 3 | 15% | | |
-| Fur parka | `froststory:furparka` | upper body, over | 5 | 35% | | |
-| Fur trousers | `froststory:furtrousers` | lower body | 4.5 | 20% | | -2% |
-| Fur mittens | `froststory:furmittens` | hands | 2 | 10% | | |
-| Fur boots | `froststory:furboots` | feet | 4.5 | 10% | | -2% |
-| Snow goggles | `froststory:snowgoggles` | face | 0.5 | 10% | 60% | |
+| Fur hood | `froststory:furhood` | head | 3 | 10% | | |
+| Fur parka | `froststory:furparka` | upper body, over | 5 | 20% | | |
+| Fur trousers | `froststory:furtrousers` | lower body | 4.5 | 12% | | -2% |
+| Fur mittens | `froststory:furmittens` | hands | 2 | 6% | | |
+| Fur boots | `froststory:furboots` | feet | 4.5 | 6% | | -2% |
+| Snow goggles | `froststory:snowgoggles` | face | 0.5 | 6% | 60% | |
 
 The parka goes in the outer upper-body slot, so a shirt can be worn under it. The goggles also
 protect the eyes the way vanilla eye-protective gear does.
@@ -706,3 +708,13 @@ Next up:
 - fuel or upkeep for a running generator, and output levels
 - proper intermediate parts instead of raw vanilla materials
 - hand-painted textures to replace the procedural ones
+
+The Long Winter is checked on a 1.22.7 dedicated server, without a player: a world made with the
+playstyle loads the options, starts the storm cycle (storms started, strengthened and stopped by
+command, the cold deepening with days), resolves the whole starting kit, loads the survivor class,
+and sets the wreck down near spawn with the spawn moved beside her breach. Balance was worked out
+from the game's own body-temperature rules and measured spawn temperatures: about -28 °C by day
+and -40 °C by night on day 0, so a survivor in the full furs has roughly 5 to 15 minutes in the
+calm before the cold starts to hurt, much less in a storm, and needs the tent and stove the first
+night. Not yet seen in a game client: the whiteout fog and snow, the fur models and icons, the
+hypothermia slow, the ice saw, the hints and the handbook page.

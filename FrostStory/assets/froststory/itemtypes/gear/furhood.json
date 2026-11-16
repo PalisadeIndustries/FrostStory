@@ -14,7 +14,7 @@
 		"clothescategory": "head",
 		"wearableAttachment": true,
 		"warmth": 3,
-		"froststoryWindproof": 0.15,
+		"froststoryWindproof": 0.1,
 		"disableElements": [ "ponytailhigh", "ponytaillow", "hair-uncovered", "sidehigh", "sidelow", "bangs", "hoodshoulder", "hoodupperover" ],
 		"keepElements": [ "hair-covered", "hoodtight" ]
 	},

@@ -14,7 +14,7 @@
 		"clothescategory": "lowerbody",
 		"wearableAttachment": true,
 		"warmth": 4.5,
-		"froststoryWindproof": 0.2,
+		"froststoryWindproof": 0.12,
 		"statModifiers": { "walkSpeed": -0.02 }
 	},
 	"creativeinventory": { "general": [ "*" ], "items": [ "*" ], "clothing": [ "*" ], "froststory": [ "*" ] },

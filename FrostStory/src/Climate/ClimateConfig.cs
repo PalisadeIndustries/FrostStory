@@ -53,7 +53,7 @@ public class ClimateConfig
     /// <summary>A player near heat sources adding up to at least this strength is sheltered (a lit tent stove is 10, a steam pipe 2).</summary>
     public float ShelteringHeat = 1.5f;
     /// <summary>Lowest body temperature the storm alone can drive a player to.</summary>
-    public float StormBodyTempFloor = 25f;
+    public float StormBodyTempFloor = 31f;
     /// <summary>Below this body temperature a player is hypothermic and slowed.</summary>
     public float HypothermiaBelow = 35f;
     /// <summary>Walk speed lost while hypothermic (0.3 = 30% slower), growing to double that 4 °C further down.</summary>

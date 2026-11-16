@@ -14,7 +14,7 @@
 		"clothescategory": "foot",
 		"wearableAttachment": true,
 		"warmth": 4.5,
-		"froststoryWindproof": 0.1,
+		"froststoryWindproof": 0.06,
 		"statModifiers": { "walkSpeed": -0.02 }
 	},
 	"creativeinventory": { "general": [ "*" ], "items": [ "*" ], "clothing": [ "*" ], "froststory": [ "*" ] },

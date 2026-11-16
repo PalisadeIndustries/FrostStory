@@ -14,7 +14,7 @@
 		"clothescategory": "upperbodyover",
 		"wearableAttachment": true,
 		"warmth": 5,
-		"froststoryWindproof": 0.35,
+		"froststoryWindproof": 0.2,
 		"disableElements": [ "glovefrill-r", "glovefrill-l" ]
 	},
 	"creativeinventory": { "general": [ "*" ], "items": [ "*" ], "clothing": [ "*" ], "froststory": [ "*" ] },

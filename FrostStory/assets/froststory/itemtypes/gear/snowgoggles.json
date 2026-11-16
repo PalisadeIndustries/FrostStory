@@ -15,7 +15,7 @@
 		"wearableAttachment": true,
 		"warmth": 0.5,
 		"eyeprotective": true,
-		"froststoryWindproof": 0.1,
+		"froststoryWindproof": 0.06,
 		"froststoryStormVision": 0.6
 	},
 	"creativeinventory": { "general": [ "*" ], "items": [ "*" ], "clothing": [ "*" ], "froststory": [ "*" ] },

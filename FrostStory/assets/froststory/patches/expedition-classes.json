@@ -20,13 +20,13 @@
 			"code": "expeditionsurvivor",
 			"traits": [ "coldseasoned", "hardy", "ravenous" ],
 			"gear": [
-				{ "type": "item", "code": "game:clothes-upperbody-commoner-shirt" },
-				{ "type": "item", "code": "froststory:furhood" },
-				{ "type": "item", "code": "froststory:furparka" },
-				{ "type": "item", "code": "froststory:furtrousers" },
-				{ "type": "item", "code": "froststory:furmittens" },
-				{ "type": "item", "code": "froststory:furboots" },
-				{ "type": "item", "code": "froststory:snowgoggles" }
+				{ "type": "item", "code": "game:clothes-upperbody-commoner-shirt", "attributes": { "condition": 1 } },
+				{ "type": "item", "code": "froststory:furhood", "attributes": { "condition": 1 } },
+				{ "type": "item", "code": "froststory:furparka", "attributes": { "condition": 1 } },
+				{ "type": "item", "code": "froststory:furtrousers", "attributes": { "condition": 1 } },
+				{ "type": "item", "code": "froststory:furmittens", "attributes": { "condition": 1 } },
+				{ "type": "item", "code": "froststory:furboots", "attributes": { "condition": 1 } },
+				{ "type": "item", "code": "froststory:snowgoggles", "attributes": { "condition": 1 } }
 			]
 		}
 	}
