@@ -1,0 +1,715 @@
+{
+	"textureWidth": 64,
+	"textureHeight": 32,
+	"textureSizes": {
+		"fsboots": [
+			64,
+			32
+		]
+	},
+	"textures": {
+		"fsboots": "item/gear/furboots"
+	},
+	"elements": [
+		{
+			"name": "bootL",
+			"stepParentName": "LowerFootL",
+			"from": [
+				-0.35,
+				0.2,
+				-0.35
+			],
+			"to": [
+				4.35,
+				6.0,
+				3.35
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsboots",
+					"uv": [
+						0.5,
+						0.5,
+						5.2,
+						6.3
+					]
+				},
+				"east": {
+					"texture": "#fsboots",
+					"uv": [
+						6.25,
+						0.5,
+						9.95,
+						6.3
+					]
+				},
+				"south": {
+					"texture": "#fsboots",
+					"uv": [
+						11.0,
+						0.5,
+						15.7,
+						6.3
+					]
+				},
+				"west": {
+					"texture": "#fsboots",
+					"uv": [
+						16.75,
+						0.5,
+						20.45,
+						6.3
+					]
+				},
+				"up": {
+					"texture": "#fsboots",
+					"uv": [
+						31.75,
+						7.5,
+						36.45,
+						11.2
+					]
+				},
+				"down": {
+					"texture": "#fsboots",
+					"uv": [
+						37.5,
+						7.5,
+						42.2,
+						11.2
+					]
+				}
+			}
+		},
+		{
+			"name": "toeL",
+			"stepParentName": "LowerFootL",
+			"from": [
+				-0.6,
+				0.2,
+				-0.25
+			],
+			"to": [
+				0.0,
+				2.0,
+				3.25
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsboots",
+					"uv": [
+						12.25,
+						12.75,
+						12.85,
+						14.55
+					]
+				},
+				"east": {
+					"texture": "#fsboots",
+					"uv": [
+						14.0,
+						12.75,
+						17.5,
+						14.55
+					]
+				},
+				"south": {
+					"texture": "#fsboots",
+					"uv": [
+						18.5,
+						12.75,
+						19.1,
+						14.55
+					]
+				},
+				"west": {
+					"texture": "#fsboots",
+					"uv": [
+						20.25,
+						12.75,
+						23.75,
+						14.55
+					]
+				},
+				"up": {
+					"texture": "#fsboots",
+					"uv": [
+						54.75,
+						7.5,
+						55.35,
+						11.0
+					]
+				},
+				"down": {
+					"texture": "#fsboots",
+					"uv": [
+						56.5,
+						7.5,
+						57.1,
+						11.0
+					]
+				}
+			}
+		},
+		{
+			"name": "soleL",
+			"stepParentName": "LowerFootL",
+			"from": [
+				-0.7,
+				-0.35,
+				-0.45
+			],
+			"to": [
+				4.45,
+				0.3,
+				3.45
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsboots",
+					"uv": [
+						28.5,
+						17.0,
+						33.65,
+						17.65
+					]
+				},
+				"east": {
+					"texture": "#fsboots",
+					"uv": [
+						34.75,
+						17.0,
+						38.65,
+						17.65
+					]
+				},
+				"south": {
+					"texture": "#fsboots",
+					"uv": [
+						39.75,
+						17.0,
+						44.9,
+						17.65
+					]
+				},
+				"west": {
+					"texture": "#fsboots",
+					"uv": [
+						46.0,
+						17.0,
+						49.9,
+						17.65
+					]
+				},
+				"up": {
+					"texture": "#fsboots",
+					"uv": [
+						6.75,
+						7.5,
+						11.9,
+						11.4
+					]
+				},
+				"down": {
+					"texture": "#fsboots",
+					"uv": [
+						13.0,
+						7.5,
+						18.15,
+						11.4
+					]
+				}
+			}
+		},
+		{
+			"name": "bootcuffL",
+			"stepParentName": "LowerFootL",
+			"from": [
+				-0.6,
+				5.6,
+				-0.6
+			],
+			"to": [
+				4.6,
+				7.2,
+				3.6
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsboots",
+					"uv": [
+						37.25,
+						12.75,
+						42.45,
+						14.35
+					]
+				},
+				"east": {
+					"texture": "#fsboots",
+					"uv": [
+						43.5,
+						12.75,
+						47.7,
+						14.35
+					]
+				},
+				"south": {
+					"texture": "#fsboots",
+					"uv": [
+						48.75,
+						12.75,
+						53.95,
+						14.35
+					]
+				},
+				"west": {
+					"texture": "#fsboots",
+					"uv": [
+						55.0,
+						12.75,
+						59.2,
+						14.35
+					]
+				},
+				"up": {
+					"texture": "#fsboots",
+					"uv": [
+						42.5,
+						0.5,
+						47.7,
+						4.7
+					]
+				},
+				"down": {
+					"texture": "#fsboots",
+					"uv": [
+						48.75,
+						0.5,
+						53.95,
+						4.7
+					]
+				}
+			}
+		},
+		{
+			"name": "lacingL",
+			"stepParentName": "LowerFootL",
+			"from": [
+				-0.45,
+				2.4,
+				1.1
+			],
+			"to": [
+				-0.3,
+				5.6,
+				1.9
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsboots",
+					"uv": [
+						61.75,
+						7.5,
+						61.9,
+						10.7
+					]
+				},
+				"east": {
+					"texture": "#fsboots",
+					"uv": [
+						0.5,
+						12.75,
+						1.3,
+						15.95
+					]
+				},
+				"south": {
+					"texture": "#fsboots",
+					"uv": [
+						2.5,
+						12.75,
+						2.65,
+						15.95
+					]
+				},
+				"west": {
+					"texture": "#fsboots",
+					"uv": [
+						3.75,
+						12.75,
+						4.55,
+						15.95
+					]
+				},
+				"up": {
+					"texture": "#fsboots",
+					"uv": [
+						23.5,
+						17.0,
+						23.65,
+						17.8
+					]
+				},
+				"down": {
+					"texture": "#fsboots",
+					"uv": [
+						24.75,
+						17.0,
+						24.9,
+						17.8
+					]
+				}
+			}
+		},
+		{
+			"name": "bootR",
+			"stepParentName": "LowerFootR",
+			"from": [
+				-0.35,
+				0.2,
+				-0.35
+			],
+			"to": [
+				4.35,
+				6.0,
+				3.35
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsboots",
+					"uv": [
+						21.5,
+						0.5,
+						26.2,
+						6.3
+					]
+				},
+				"east": {
+					"texture": "#fsboots",
+					"uv": [
+						27.25,
+						0.5,
+						30.95,
+						6.3
+					]
+				},
+				"south": {
+					"texture": "#fsboots",
+					"uv": [
+						32.0,
+						0.5,
+						36.7,
+						6.3
+					]
+				},
+				"west": {
+					"texture": "#fsboots",
+					"uv": [
+						37.75,
+						0.5,
+						41.45,
+						6.3
+					]
+				},
+				"up": {
+					"texture": "#fsboots",
+					"uv": [
+						43.25,
+						7.5,
+						47.95,
+						11.2
+					]
+				},
+				"down": {
+					"texture": "#fsboots",
+					"uv": [
+						49.0,
+						7.5,
+						53.7,
+						11.2
+					]
+				}
+			}
+		},
+		{
+			"name": "toeR",
+			"stepParentName": "LowerFootR",
+			"from": [
+				-0.6,
+				0.2,
+				-0.25
+			],
+			"to": [
+				0.0,
+				2.0,
+				3.25
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsboots",
+					"uv": [
+						24.75,
+						12.75,
+						25.35,
+						14.55
+					]
+				},
+				"east": {
+					"texture": "#fsboots",
+					"uv": [
+						26.5,
+						12.75,
+						30.0,
+						14.55
+					]
+				},
+				"south": {
+					"texture": "#fsboots",
+					"uv": [
+						31.0,
+						12.75,
+						31.6,
+						14.55
+					]
+				},
+				"west": {
+					"texture": "#fsboots",
+					"uv": [
+						32.75,
+						12.75,
+						36.25,
+						14.55
+					]
+				},
+				"up": {
+					"texture": "#fsboots",
+					"uv": [
+						58.25,
+						7.5,
+						58.85,
+						11.0
+					]
+				},
+				"down": {
+					"texture": "#fsboots",
+					"uv": [
+						60.0,
+						7.5,
+						60.6,
+						11.0
+					]
+				}
+			}
+		},
+		{
+			"name": "soleR",
+			"stepParentName": "LowerFootR",
+			"from": [
+				-0.7,
+				-0.35,
+				-0.45
+			],
+			"to": [
+				4.45,
+				0.3,
+				3.45
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsboots",
+					"uv": [
+						51.0,
+						17.0,
+						56.15,
+						17.65
+					]
+				},
+				"east": {
+					"texture": "#fsboots",
+					"uv": [
+						57.25,
+						17.0,
+						61.15,
+						17.65
+					]
+				},
+				"south": {
+					"texture": "#fsboots",
+					"uv": [
+						0.5,
+						19.75,
+						5.65,
+						20.4
+					]
+				},
+				"west": {
+					"texture": "#fsboots",
+					"uv": [
+						6.75,
+						19.75,
+						10.65,
+						20.4
+					]
+				},
+				"up": {
+					"texture": "#fsboots",
+					"uv": [
+						19.25,
+						7.5,
+						24.4,
+						11.4
+					]
+				},
+				"down": {
+					"texture": "#fsboots",
+					"uv": [
+						25.5,
+						7.5,
+						30.65,
+						11.4
+					]
+				}
+			}
+		},
+		{
+			"name": "bootcuffR",
+			"stepParentName": "LowerFootR",
+			"from": [
+				-0.6,
+				5.6,
+				-0.6
+			],
+			"to": [
+				4.6,
+				7.2,
+				3.6
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsboots",
+					"uv": [
+						0.5,
+						17.0,
+						5.7,
+						18.6
+					]
+				},
+				"east": {
+					"texture": "#fsboots",
+					"uv": [
+						6.75,
+						17.0,
+						10.95,
+						18.6
+					]
+				},
+				"south": {
+					"texture": "#fsboots",
+					"uv": [
+						12.0,
+						17.0,
+						17.2,
+						18.6
+					]
+				},
+				"west": {
+					"texture": "#fsboots",
+					"uv": [
+						18.25,
+						17.0,
+						22.45,
+						18.6
+					]
+				},
+				"up": {
+					"texture": "#fsboots",
+					"uv": [
+						55.0,
+						0.5,
+						60.2,
+						4.7
+					]
+				},
+				"down": {
+					"texture": "#fsboots",
+					"uv": [
+						0.5,
+						7.5,
+						5.7,
+						11.7
+					]
+				}
+			}
+		},
+		{
+			"name": "lacingR",
+			"stepParentName": "LowerFootR",
+			"from": [
+				-0.45,
+				2.4,
+				1.1
+			],
+			"to": [
+				-0.3,
+				5.6,
+				1.9
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsboots",
+					"uv": [
+						5.75,
+						12.75,
+						5.9,
+						15.95
+					]
+				},
+				"east": {
+					"texture": "#fsboots",
+					"uv": [
+						7.0,
+						12.75,
+						7.8,
+						15.95
+					]
+				},
+				"south": {
+					"texture": "#fsboots",
+					"uv": [
+						9.0,
+						12.75,
+						9.15,
+						15.95
+					]
+				},
+				"west": {
+					"texture": "#fsboots",
+					"uv": [
+						10.25,
+						12.75,
+						11.05,
+						15.95
+					]
+				},
+				"up": {
+					"texture": "#fsboots",
+					"uv": [
+						26.0,
+						17.0,
+						26.15,
+						17.8
+					]
+				},
+				"down": {
+					"texture": "#fsboots",
+					"uv": [
+						27.25,
+						17.0,
+						27.4,
+						17.8
+					]
+				}
+			}
+		}
+	]
+}

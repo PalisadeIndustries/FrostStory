@@ -1,0 +1,95 @@
+[
+	{
+		"ingredientPattern": "PKP,_T_",
+		"ingredients": {
+			"P": { "type": "item", "code": "game:hide-pelt-*" },
+			"K": { "type": "item", "isTool": true, "tags": [ "tool-trimming" ] },
+			"T": { "type": "item", "code": "game:flaxtwine" }
+		},
+		"width": 3,
+		"height": 2,
+		"output": { "type": "item", "code": "froststory:furhood" }
+	},
+	{
+		"ingredientPattern": "PKP,PLP,PTP",
+		"ingredients": {
+			"P": { "type": "item", "code": "game:hide-pelt-*" },
+			"K": { "type": "item", "isTool": true, "tags": [ "tool-trimming" ] },
+			"L": { "type": "item", "code": "game:leather-normal-plain" },
+			"T": { "type": "item", "code": "game:flaxtwine" }
+		},
+		"width": 3,
+		"height": 3,
+		"output": { "type": "item", "code": "froststory:furparka" }
+	},
+	{
+		"ingredientPattern": "PKP,PTP,L_L",
+		"ingredients": {
+			"P": { "type": "item", "code": "game:hide-pelt-*" },
+			"K": { "type": "item", "isTool": true, "tags": [ "tool-trimming" ] },
+			"L": { "type": "item", "code": "game:leather-normal-plain" },
+			"T": { "type": "item", "code": "game:flaxtwine" }
+		},
+		"width": 3,
+		"height": 3,
+		"output": { "type": "item", "code": "froststory:furtrousers" }
+	},
+	{
+		"ingredientPattern": "PKP,T_T",
+		"ingredients": {
+			"P": { "type": "item", "code": "game:hide-pelt-*" },
+			"K": { "type": "item", "isTool": true, "tags": [ "tool-trimming" ] },
+			"T": { "type": "item", "code": "game:flaxtwine" }
+		},
+		"width": 3,
+		"height": 2,
+		"output": { "type": "item", "code": "froststory:furmittens" }
+	},
+	{
+		"ingredientPattern": "PKP,L_L,N_N",
+		"ingredients": {
+			"P": { "type": "item", "code": "game:hide-pelt-*" },
+			"K": { "type": "item", "isTool": true, "tags": [ "tool-trimming" ] },
+			"L": { "type": "item", "code": "game:leather-normal-plain" },
+			"N": { "type": "item", "code": "game:metalnailsandstrips-iron" }
+		},
+		"width": 3,
+		"height": 3,
+		"output": { "type": "item", "code": "froststory:furboots" }
+	},
+	{
+		"ingredientPattern": "LGL,TMT",
+		"ingredients": {
+			"L": { "type": "item", "code": "game:leather-normal-plain" },
+			"G": { "type": "block", "code": "game:glass-plain" },
+			"T": { "type": "item", "code": "game:flaxtwine" },
+			"M": { "type": "item", "code": "game:metalbit-iron" }
+		},
+		"width": 3,
+		"height": 2,
+		"output": { "type": "item", "code": "froststory:snowgoggles" }
+	},
+	{
+		"ingredientPattern": "III,_S_,_L_",
+		"ingredients": {
+			"I": { "type": "item", "code": "game:ingot-iron" },
+			"S": { "type": "item", "code": "game:stick" },
+			"L": { "type": "item", "code": "game:leather-normal-plain" }
+		},
+		"width": 3,
+		"height": 3,
+		"output": { "type": "item", "code": "froststory:icepick-iron" }
+	},
+	{
+		"ingredientPattern": "LII,SNI",
+		"ingredients": {
+			"L": { "type": "item", "code": "game:leather-normal-plain" },
+			"I": { "type": "item", "code": "game:ingot-iron" },
+			"S": { "type": "item", "code": "game:stick" },
+			"N": { "type": "item", "code": "game:metalnailsandstrips-iron" }
+		},
+		"width": 3,
+		"height": 2,
+		"output": { "type": "item", "code": "froststory:icesaw-iron" }
+	}
+]

@@ -216,5 +216,25 @@
 
 	"blockhelp-console-deliver": "Deliver materials",
 	"blockhelp-console-fire": "Fire the generator",
-	"blockhelp-console-bank": "Shut the generator down"
+	"blockhelp-console-bank": "Shut the generator down",
+
+	"//gear": "-----",
+	"item-furhood": "Fur hood",
+	"itemdesc-furhood": "A smoked-hide hood with a deep ruff of pale fur round the face and a drape over the shoulders. The ruff breaks the wind before it reaches the skin.",
+	"item-furparka": "Fur parka",
+	"itemdesc-furparka": "A heavy hide parka worn over a shirt, belted, with fur at the collar, the cuffs and the hem. The warmest and most windproof piece of an expedition outfit.",
+	"item-furtrousers": "Fur trousers",
+	"itemdesc-furtrousers": "Thick wolf-grey fur trousers with hide knee patches. Bulky enough to slow the walk a little.",
+	"item-furmittens": "Fur mittens",
+	"itemdesc-furmittens": "Fur mittens with leather palms and a long cuff that goes over the sleeve. Fingers kept together stay warm longer.",
+	"item-furboots": "Fur boots",
+	"itemdesc-furboots": "Hide boots lined with fur, with hobnailed soles for the ice and a fur cuff at the top. Heavy on the feet.",
+	"item-snowgoggles": "Snow goggles",
+	"itemdesc-snowgoggles": "Iron cups with smoked glass on a leather strap. They keep the snow out of your eyes and cut the glare, so you can still find your way in a whiteout.",
+	"item-icepick-iron": "Iron ice pick",
+	"itemdesc-icepick-iron": "A long spike on one side and an adze blade on the other. Breaks ice and packed snow quickly and makes a poor but usable weapon. Too soft for rock.",
+	"item-icesaw-iron": "Iron ice saw",
+	"itemdesc-icesaw-iron": "A long coarse-toothed blade on a T handle. Cuts lake ice, glacier ice and snow blocks out whole, so they drop as blocks to build with. Sawn lake ice leaves its water behind.",
+	"gear-windproof": "Windproof: {0}%",
+	"gear-stormvision": "Storm vision: {0}%"
 }

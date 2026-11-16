@@ -1,0 +1,715 @@
+{
+	"textureWidth": 64,
+	"textureHeight": 16,
+	"textureSizes": {
+		"fsgoggles": [
+			64,
+			16
+		]
+	},
+	"textures": {
+		"fsgoggles": "item/gear/snowgoggles"
+	},
+	"elements": [
+		{
+			"name": "strap-front-l",
+			"stepParentName": "Head",
+			"from": [
+				-0.35,
+				2.0,
+				-0.35
+			],
+			"to": [
+				0.0,
+				2.9,
+				0.6
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsgoggles",
+					"uv": [
+						39.0,
+						0.5,
+						39.35,
+						1.4
+					]
+				},
+				"east": {
+					"texture": "#fsgoggles",
+					"uv": [
+						40.5,
+						0.5,
+						41.45,
+						1.4
+					]
+				},
+				"south": {
+					"texture": "#fsgoggles",
+					"uv": [
+						42.5,
+						0.5,
+						42.85,
+						1.4
+					]
+				},
+				"west": {
+					"texture": "#fsgoggles",
+					"uv": [
+						44.0,
+						0.5,
+						44.95,
+						1.4
+					]
+				},
+				"up": {
+					"texture": "#fsgoggles",
+					"uv": [
+						46.0,
+						0.5,
+						46.35,
+						1.45
+					]
+				},
+				"down": {
+					"texture": "#fsgoggles",
+					"uv": [
+						47.5,
+						0.5,
+						47.85,
+						1.45
+					]
+				}
+			}
+		},
+		{
+			"name": "strap-front-r",
+			"stepParentName": "Head",
+			"from": [
+				-0.35,
+				2.0,
+				4.4
+			],
+			"to": [
+				0.0,
+				2.9,
+				5.35
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsgoggles",
+					"uv": [
+						49.0,
+						0.5,
+						49.35,
+						1.4
+					]
+				},
+				"east": {
+					"texture": "#fsgoggles",
+					"uv": [
+						50.5,
+						0.5,
+						51.45,
+						1.4
+					]
+				},
+				"south": {
+					"texture": "#fsgoggles",
+					"uv": [
+						52.5,
+						0.5,
+						52.85,
+						1.4
+					]
+				},
+				"west": {
+					"texture": "#fsgoggles",
+					"uv": [
+						54.0,
+						0.5,
+						54.95,
+						1.4
+					]
+				},
+				"up": {
+					"texture": "#fsgoggles",
+					"uv": [
+						56.0,
+						0.5,
+						56.35,
+						1.45
+					]
+				},
+				"down": {
+					"texture": "#fsgoggles",
+					"uv": [
+						57.5,
+						0.5,
+						57.85,
+						1.45
+					]
+				}
+			}
+		},
+		{
+			"name": "strap-l",
+			"stepParentName": "Head",
+			"from": [
+				-0.35,
+				2.0,
+				-0.35
+			],
+			"to": [
+				5.85,
+				2.9,
+				0.0
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsgoggles",
+					"uv": [
+						0.5,
+						7.25,
+						6.7,
+						8.15
+					]
+				},
+				"east": {
+					"texture": "#fsgoggles",
+					"uv": [
+						7.75,
+						7.25,
+						8.1,
+						8.15
+					]
+				},
+				"south": {
+					"texture": "#fsgoggles",
+					"uv": [
+						9.25,
+						7.25,
+						15.45,
+						8.15
+					]
+				},
+				"west": {
+					"texture": "#fsgoggles",
+					"uv": [
+						16.5,
+						7.25,
+						16.85,
+						8.15
+					]
+				},
+				"up": {
+					"texture": "#fsgoggles",
+					"uv": [
+						52.0,
+						7.25,
+						58.2,
+						7.6
+					]
+				},
+				"down": {
+					"texture": "#fsgoggles",
+					"uv": [
+						0.5,
+						9.25,
+						6.7,
+						9.6
+					]
+				}
+			}
+		},
+		{
+			"name": "strap-r",
+			"stepParentName": "Head",
+			"from": [
+				-0.35,
+				2.0,
+				5.0
+			],
+			"to": [
+				5.85,
+				2.9,
+				5.35
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsgoggles",
+					"uv": [
+						18.0,
+						7.25,
+						24.2,
+						8.15
+					]
+				},
+				"east": {
+					"texture": "#fsgoggles",
+					"uv": [
+						25.25,
+						7.25,
+						25.6,
+						8.15
+					]
+				},
+				"south": {
+					"texture": "#fsgoggles",
+					"uv": [
+						26.75,
+						7.25,
+						32.95,
+						8.15
+					]
+				},
+				"west": {
+					"texture": "#fsgoggles",
+					"uv": [
+						34.0,
+						7.25,
+						34.35,
+						8.15
+					]
+				},
+				"up": {
+					"texture": "#fsgoggles",
+					"uv": [
+						7.75,
+						9.25,
+						13.95,
+						9.6
+					]
+				},
+				"down": {
+					"texture": "#fsgoggles",
+					"uv": [
+						15.0,
+						9.25,
+						21.2,
+						9.6
+					]
+				}
+			}
+		},
+		{
+			"name": "strap-back",
+			"stepParentName": "Head",
+			"from": [
+				5.5,
+				2.0,
+				-0.35
+			],
+			"to": [
+				5.85,
+				2.9,
+				5.35
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsgoggles",
+					"uv": [
+						35.5,
+						7.25,
+						35.85,
+						8.15
+					]
+				},
+				"east": {
+					"texture": "#fsgoggles",
+					"uv": [
+						37.0,
+						7.25,
+						42.7,
+						8.15
+					]
+				},
+				"south": {
+					"texture": "#fsgoggles",
+					"uv": [
+						43.75,
+						7.25,
+						44.1,
+						8.15
+					]
+				},
+				"west": {
+					"texture": "#fsgoggles",
+					"uv": [
+						45.25,
+						7.25,
+						50.95,
+						8.15
+					]
+				},
+				"up": {
+					"texture": "#fsgoggles",
+					"uv": [
+						0.5,
+						0.5,
+						0.85,
+						6.2
+					]
+				},
+				"down": {
+					"texture": "#fsgoggles",
+					"uv": [
+						2.0,
+						0.5,
+						2.35,
+						6.2
+					]
+				}
+			}
+		},
+		{
+			"name": "cup-l",
+			"stepParentName": "Head",
+			"from": [
+				-0.85,
+				1.55,
+				0.6
+			],
+			"to": [
+				-0.05,
+				3.25,
+				2.35
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsgoggles",
+					"uv": [
+						15.5,
+						0.5,
+						16.3,
+						2.2
+					]
+				},
+				"east": {
+					"texture": "#fsgoggles",
+					"uv": [
+						17.5,
+						0.5,
+						19.25,
+						2.2
+					]
+				},
+				"south": {
+					"texture": "#fsgoggles",
+					"uv": [
+						20.25,
+						0.5,
+						21.05,
+						2.2
+					]
+				},
+				"west": {
+					"texture": "#fsgoggles",
+					"uv": [
+						22.25,
+						0.5,
+						24.0,
+						2.2
+					]
+				},
+				"up": {
+					"texture": "#fsgoggles",
+					"uv": [
+						25.0,
+						0.5,
+						25.8,
+						2.25
+					]
+				},
+				"down": {
+					"texture": "#fsgoggles",
+					"uv": [
+						27.0,
+						0.5,
+						27.8,
+						2.25
+					]
+				}
+			}
+		},
+		{
+			"name": "cup-r",
+			"stepParentName": "Head",
+			"from": [
+				-0.85,
+				1.55,
+				2.65
+			],
+			"to": [
+				-0.05,
+				3.25,
+				4.4
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsgoggles",
+					"uv": [
+						29.0,
+						0.5,
+						29.8,
+						2.2
+					]
+				},
+				"east": {
+					"texture": "#fsgoggles",
+					"uv": [
+						31.0,
+						0.5,
+						32.75,
+						2.2
+					]
+				},
+				"south": {
+					"texture": "#fsgoggles",
+					"uv": [
+						34.0,
+						0.5,
+						34.8,
+						2.2
+					]
+				},
+				"west": {
+					"texture": "#fsgoggles",
+					"uv": [
+						36.0,
+						0.5,
+						37.75,
+						2.2
+					]
+				},
+				"up": {
+					"texture": "#fsgoggles",
+					"uv": [
+						3.5,
+						0.5,
+						4.3,
+						2.25
+					]
+				},
+				"down": {
+					"texture": "#fsgoggles",
+					"uv": [
+						5.5,
+						0.5,
+						6.3,
+						2.25
+					]
+				}
+			}
+		},
+		{
+			"name": "rim-l",
+			"stepParentName": "Head",
+			"from": [
+				-0.95,
+				3.1,
+				0.5
+			],
+			"to": [
+				-0.05,
+				3.4,
+				2.45
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsgoggles",
+					"uv": [
+						22.25,
+						9.25,
+						23.15,
+						9.55
+					]
+				},
+				"east": {
+					"texture": "#fsgoggles",
+					"uv": [
+						24.25,
+						9.25,
+						26.2,
+						9.55
+					]
+				},
+				"south": {
+					"texture": "#fsgoggles",
+					"uv": [
+						27.25,
+						9.25,
+						28.15,
+						9.55
+					]
+				},
+				"west": {
+					"texture": "#fsgoggles",
+					"uv": [
+						29.25,
+						9.25,
+						31.2,
+						9.55
+					]
+				},
+				"up": {
+					"texture": "#fsgoggles",
+					"uv": [
+						7.5,
+						0.5,
+						8.4,
+						2.45
+					]
+				},
+				"down": {
+					"texture": "#fsgoggles",
+					"uv": [
+						9.5,
+						0.5,
+						10.4,
+						2.45
+					]
+				}
+			}
+		},
+		{
+			"name": "rim-r",
+			"stepParentName": "Head",
+			"from": [
+				-0.95,
+				3.1,
+				2.55
+			],
+			"to": [
+				-0.05,
+				3.4,
+				4.5
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsgoggles",
+					"uv": [
+						32.25,
+						9.25,
+						33.15,
+						9.55
+					]
+				},
+				"east": {
+					"texture": "#fsgoggles",
+					"uv": [
+						34.25,
+						9.25,
+						36.2,
+						9.55
+					]
+				},
+				"south": {
+					"texture": "#fsgoggles",
+					"uv": [
+						37.25,
+						9.25,
+						38.15,
+						9.55
+					]
+				},
+				"west": {
+					"texture": "#fsgoggles",
+					"uv": [
+						39.25,
+						9.25,
+						41.2,
+						9.55
+					]
+				},
+				"up": {
+					"texture": "#fsgoggles",
+					"uv": [
+						11.5,
+						0.5,
+						12.4,
+						2.45
+					]
+				},
+				"down": {
+					"texture": "#fsgoggles",
+					"uv": [
+						13.5,
+						0.5,
+						14.4,
+						2.45
+					]
+				}
+			}
+		},
+		{
+			"name": "bridge",
+			"stepParentName": "Head",
+			"from": [
+				-0.7,
+				2.3,
+				2.35
+			],
+			"to": [
+				-0.15,
+				2.7,
+				2.65
+			],
+			"faces": {
+				"north": {
+					"texture": "#fsgoggles",
+					"uv": [
+						42.25,
+						9.25,
+						42.8,
+						9.65
+					]
+				},
+				"east": {
+					"texture": "#fsgoggles",
+					"uv": [
+						44.0,
+						9.25,
+						44.3,
+						9.65
+					]
+				},
+				"south": {
+					"texture": "#fsgoggles",
+					"uv": [
+						45.5,
+						9.25,
+						46.05,
+						9.65
+					]
+				},
+				"west": {
+					"texture": "#fsgoggles",
+					"uv": [
+						47.25,
+						9.25,
+						47.55,
+						9.65
+					]
+				},
+				"up": {
+					"texture": "#fsgoggles",
+					"uv": [
+						48.75,
+						9.25,
+						49.3,
+						9.55
+					]
+				},
+				"down": {
+					"texture": "#fsgoggles",
+					"uv": [
+						50.5,
+						9.25,
+						51.05,
+						9.55
+					]
+				}
+			}
+		}
+	]
+}
