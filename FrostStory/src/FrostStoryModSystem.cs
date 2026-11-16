@@ -23,6 +23,9 @@ public class FrostStoryModSystem : ModSystem
     /// <summary>Server side: which fitting each cell of warm air round a pipe run belongs to.</summary>
     public readonly Dictionary<Vintagestory.API.MathTools.BlockPos, (Vintagestory.API.MathTools.BlockPos Node, bool Big)> WarmthOwners = new();
 
+    /// <summary>Server side: which steam hub each cell of warm air round one belongs to, and how much of its warmth it gets.</summary>
+    public readonly Dictionary<Vintagestory.API.MathTools.BlockPos, (Vintagestory.API.MathTools.BlockPos Hub, float Share)> HubWarmth = new();
+
     private SteamNetwork? serverSteam;
     private SteamNetwork? clientSteam;
 
@@ -143,6 +146,12 @@ public class FrostStoryConfig
 
     /// <summary>Warmth given off by each pipe, fitting or port carrying steam. A firepit is 10.</summary>
     public float PipeHeatStrength = 2f;
+
+    /// <summary>Warmth of the air close to a steam hub; it falls to 40% at the edge of its reach.</summary>
+    public float HubHeatStrength = 8f;
+
+    /// <summary>How far a steam hub warms the ground round it, in blocks (4 to 32).</summary>
+    public int HubRadius = 12;
 
     /// <summary>Warmth given off by a lit tent stove. A firepit is 10.</summary>
     public float StoveHeatStrength = 10f;

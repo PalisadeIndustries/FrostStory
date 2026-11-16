@@ -39,7 +39,15 @@ public class BlockEntitySteamNode : BlockEntity
     public override void Initialize(ICoreAPI api)
     {
         base.Initialize(api);
-        if (api.Side == EnumAppSide.Server) SteamRuns.RegisterWarmth(api.World, this);
+        if (api.Side != EnumAppSide.Server) return;
+        SteamRuns.RegisterWarmth(api.World, this);
+
+        if (Block is BlockSteamConduit { IsHub: true })
+        {
+            // lay the hub's warm air once the block and its neighbours are in, then keep it following the ground
+            RegisterDelayedCallback(_ => SteamHub.Refresh(Api.World, Pos), 500);
+            RegisterGameTickListener(_ => SteamHub.Refresh(Api.World, Pos), 60000);
+        }
     }
 
     /// <summary>Each run is drawn, and has its warm air kept, by the end that sorts first.</summary>
@@ -68,7 +76,12 @@ public class BlockEntitySteamNode : BlockEntity
 
     public override void OnBlockRemoved()
     {
-        if (Api?.Side == EnumAppSide.Server) SteamRuns.TakeDownAll(Api.World, this);
+        if (Api?.Side == EnumAppSide.Server)
+        {
+            SteamRuns.TakeDownAll(Api.World, this);
+            if (Block is BlockSteamConduit { IsHub: true }) SteamHub.Clear(Api.World, Pos);
+        }
+
         base.OnBlockRemoved();
     }
 

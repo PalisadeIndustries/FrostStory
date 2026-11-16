@@ -198,5 +198,24 @@
 			"code": "froststory:floorgrate",
 			"quantity": 2
 		}
+	},
+	{
+		"ingredientPattern": "PPP,PPP,_J_",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"J": {
+				"type": "block",
+				"code": "froststory:mainjunction"
+			}
+		},
+		"width": 3,
+		"height": 3,
+		"output": {
+			"type": "block",
+			"code": "froststory:steamhub"
+		}
 	}
 ]

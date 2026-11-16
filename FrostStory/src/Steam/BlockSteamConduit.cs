@@ -62,6 +62,16 @@ public class BlockSteamConduit : Block, IHeatSource
     /// </summary>
     public bool IsFloorGrate { get; private set; }
 
+    /// <summary>
+    /// True for steam hubs: fed by a steam main at the foot, they warm the open ground round them
+    /// (see <see cref="SteamHub"/>). The foot joins mains like a main fitting; the column above it is
+    /// two blocks more of the same block.
+    /// </summary>
+    public bool IsHub { get; private set; }
+
+    /// <summary>Blocks a conduit stands above the part of it that steam flows through.</summary>
+    private int extraHeight;
+
     /// <summary>True for the posts of a main stand: they carry a fitting but no steam.</summary>
     public bool IsStructural { get; private set; }
 
@@ -77,7 +87,7 @@ public class BlockSteamConduit : Block, IHeatSource
         mod = api.ModLoader.GetModSystem<FrostStoryModSystem>();
 
         string kind = FirstCodePart();
-        IsNode = kind is "pipejunction" or "mainjunction" or "steamport" or "mainport" or "distributor" or "wallpass" or "radiator" or "floorgrate";
+        IsNode = kind is "pipejunction" or "mainjunction" or "steamport" or "mainport" or "distributor" or "wallpass" or "radiator" or "floorgrate" or "steamhub";
         if (IsNode && api.Side == EnumAppSide.Client)
         {
             PipeSegment = Vintagestory.API.Common.Shape.TryGet(api, new AssetLocation("froststory", "shapes/block/generator/pipeseg.json"));
@@ -123,6 +133,13 @@ public class BlockSteamConduit : Block, IHeatSource
 
             case "floorgrate":
                 IsFloorGrate = true;
+                foreach (var face in BlockFacing.ALLFACES) connects[face.Index] = face != BlockFacing.UP;
+                break;
+
+            case "steamhub":
+                IsBig = managesFill = IsHub = true;
+                Size = new Vec3i(2, 2, 2);
+                extraHeight = 2;
                 foreach (var face in BlockFacing.ALLFACES) connects[face.Index] = face != BlockFacing.UP;
                 break;
 
@@ -182,6 +199,7 @@ public class BlockSteamConduit : Block, IHeatSource
     public bool AcceptsTapOn(BlockFacing face)
     {
         if (IsDistributor) return face == Outlet;
+        if (IsHub) return false;      // a hub takes a main, nothing smaller
         if (IsRadiator) return face == BlockFacing.DOWN || face == Back;
         return IsBig && !IsStructural && (!IsPort || connects[face.Index]);
     }
@@ -192,10 +210,23 @@ public class BlockSteamConduit : Block, IHeatSource
     /// four quarters of its outlet side to small runs.
     /// </summary>
     private AssetLocation FillCode(int x, int y, int z) =>
-        IsRadiator ? new AssetLocation("froststory", $"radiatorfill-o{x}{y}{z}") : BlockSteamMainFill.CodeFor(x, y, z);
+        IsRadiator ? new AssetLocation("froststory", $"radiatorfill-o{x}{y}{z}")
+        : IsHub ? new AssetLocation("froststory", $"hubfill-o{x}{y}{z}")
+        : BlockSteamMainFill.CodeFor(x, y, z);
+
+    /// <summary>Every cell the conduit fills, including any column standing above the part steam flows through.</summary>
+    public IEnumerable<BlockPos> Bulk(BlockPos anchor)
+    {
+        for (int x = 0; x < Size.X; x++)
+            for (int y = 0; y < Size.Y + extraHeight; y++)
+                for (int z = 0; z < Size.Z; z++)
+                    yield return anchor.AddCopy(x, y, z);
+    }
 
     public IEnumerable<(BlockFacing Face, Vec3d Point)> RunPoints(BlockPos anchor, bool big)
     {
+        if (IsHub && !big) yield break;
+
         if (IsFloorGrate)
         {
             // one run, to the mount underneath
@@ -263,7 +294,7 @@ public class BlockSteamConduit : Block, IHeatSource
     public float GetHeatStrength(IWorldAccessor world, BlockPos heatSourcePos, BlockPos heatReceiverPos)
     {
         if (!IsWarm(world, heatSourcePos)) return 0f;
-        return mod!.Config.PipeHeatStrength * (IsRadiator ? 5f : IsBig || IsFloorGrate ? 3f : IsHeatPipe ? 2f : 1f);
+        return mod!.Config.PipeHeatStrength * (IsRadiator || IsHub ? 5f : IsBig || IsFloorGrate ? 3f : IsHeatPipe ? 2f : 1f);
     }
 
     public string SteamInfo(IWorldAccessor world, BlockPos pos)
@@ -336,7 +367,7 @@ public class BlockSteamConduit : Block, IHeatSource
         }
 
         var anchor = block.AnchorFor(world, blockSel);
-        foreach (var cell in block.Cells(anchor))
+        foreach (var cell in block.Bulk(anchor))
         {
             if (!world.BlockAccessor.IsValidPos(cell) || !world.BlockAccessor.GetBlock(cell).IsReplacableBy(block))
             {
@@ -441,7 +472,7 @@ public class BlockSteamConduit : Block, IHeatSource
         if (managesFill && world.Side == EnumAppSide.Server)
         {
             for (int x = 0; x < Size.X; x++)
-                for (int y = 0; y < Size.Y; y++)
+                for (int y = 0; y < Size.Y + extraHeight; y++)
                     for (int z = 0; z < Size.Z; z++)
                     {
                         if (x + y + z == 0) continue;
@@ -460,7 +491,7 @@ public class BlockSteamConduit : Block, IHeatSource
 
         if (managesFill && world.Side == EnumAppSide.Server)
         {
-            foreach (var cell in Cells(pos))
+            foreach (var cell in Bulk(pos))
             {
                 if (world.BlockAccessor.GetBlock(cell) is BlockSteamMainFill fill && cell.Equals(pos.AddCopy(fill.Offset.X, fill.Offset.Y, fill.Offset.Z)))
                     world.BlockAccessor.SetBlock(0, cell);

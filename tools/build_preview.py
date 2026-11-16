@@ -347,6 +347,11 @@ def pipework_example(codes, atlas):
         quads, _ = run_quads(pieces[False], outlet, "down", attach_point(foot, SMALL, "up"), "up", False)
         large_runs += quads
 
+    # A steam hub out in the open, fed by a main run down from the lower stand.
+    hub = (b[0] + 8, 1, b[2] - 8)
+    large_cells += cells((*hub, "steamhub"))
+    large_runs += run(b, FITTING, "north", hub, FITTING, "west", True)
+
     base, e, f = (7, 1, 3), (12, 1, 6), (9, 4, 9)
     small_runs = (
         run(base, SMALL, "east", e, SMALL, "west", False)            # from a base port along the ground

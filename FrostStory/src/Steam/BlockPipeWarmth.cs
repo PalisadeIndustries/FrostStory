@@ -20,6 +20,8 @@ public class BlockPipeWarmth : Block, IHeatSource
 
     public float GetHeatStrength(IWorldAccessor world, BlockPos heatSourcePos, BlockPos heatReceiverPos)
     {
+        if (mod != null && mod.HubWarmth.TryGetValue(heatSourcePos, out var hub))
+            return mod.SteamFor(world).IsLive(hub.Hub) ? mod.Config.HubHeatStrength * hub.Share : 0f;
         if (mod == null || !mod.WarmthOwners.TryGetValue(heatSourcePos, out var owner)) return 0f;
         if (!mod.SteamFor(world).IsLive(owner.Node)) return 0f;
         return mod.Config.PipeHeatStrength * (owner.Big ? 3f : 1f);

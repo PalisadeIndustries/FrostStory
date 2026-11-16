@@ -236,8 +236,8 @@ public static class GeneratorCommands
         if (pos != null && api.World.BlockAccessor.GetBlock(pos) is FrostStory.Steam.BlockPipeWarmth warmth)
         {
             return TextCommandResult.Success(warmth.GetHeatStrength(api.World, pos, pos) > 0
-                ? "Warm air round a pipe run that is carrying steam."
-                : "Air round a pipe run that is cold.");
+                ? "Warm air from a pipe run or steam hub that is carrying steam."
+                : "Air round a pipe run or steam hub that is cold.");
         }
 
         if (pos == null || !FrostStory.Steam.SteamNetwork.Resolve(api.World.BlockAccessor, pos, out var conduit, out _))

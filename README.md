@@ -151,6 +151,13 @@ Hull stage and go live with the rest.
 - A **steam drop distributor** is the same thing with the four outlets underneath: the main comes
   in at one side and the pipes leave downwards, so they can go down and away from a main carried
   overhead.
+- A **steam hub** is a street heater two blocks square and four high, for warming open ground
+  where there are no walls to hold heat. Bring a steam main to any side of its foot, or up from
+  underneath, as you would to a main fitting; mains can carry on out of its other sides. Nothing
+  smaller than a main feeds it. With steam in it, it warms the ground for 12 blocks round, most
+  strongly close by and falling to 40% at the edge; the warmth follows the lie of the ground and
+  catches up with digging and building within a minute. `HubHeatStrength` and `HubRadius` in
+  the config change it.
 - A **steam main stand** carries a main fitting on a lattice post. Set it on the ground in line
   with a large port or the end of a main (within 48 blocks along the compass, on either of the
   two columns the main covers) and the fitting comes up at that pipe's height and lined up with
@@ -160,7 +167,7 @@ Hull stage and go live with the rest.
 
 Recipes: two iron plates make four pipes; four iron plates make four fittings; eight iron plates
 in a ring make four mains; four mains make two main fittings; a main fitting over four iron
-ingots makes a stand; a pipe with an iron plate on each of its four sides makes two wall passthroughs; three iron plates over pipe, plate, pipe make a radiator; two gratings over two pipes over two iron plates make two underfloor grates; a main with four pipes makes a distributor (main and two pipes over two
+ingots makes a stand; a pipe with an iron plate on each of its four sides makes two wall passthroughs; three iron plates over pipe, plate, pipe make a radiator; two gratings over two pipes over two iron plates make two underfloor grates; six iron plates over a main fitting make a steam hub; a main with four pipes makes a distributor (main and two pipes over two
 pipes) or a drop distributor (main over two rows of two pipes).
 
 A pipe is traced back to its port on demand, so the route has to be in loaded chunks. A run that
@@ -300,7 +307,8 @@ higher and lower ground. Both distributors carry steam from a main to a pipe on 
 outlets and to four pipe runs (a fifth is refused), and stay shut to pipes and mains on every other side. A wall passthrough carries steam between its two mounts by pipe or by run,
 stays shut on its other four sides, and counts as a solid, heat-keeping block. A radiator takes steam at the two hookups on its back and from
 underneath, by pipe or by run, passes it on, and stays shut on its front, ends and top. A tent stove lights with fuel and a flue to open sky, refuses without a flue or with the flue top under
-cover, burns its fuel down and goes out, and goes out when its flue is removed. Underfloor grates take steam from underneath or the side, pass it
+cover, burns its fuel down and goes out, and goes out when its flue is removed. A steam hub joins mains at its foot, refuses pipes, lays warm air over uneven ground out to its radius that is warm
+only while the hub has steam and weaker further out, and takes it up again when broken. Underfloor grates take steam from underneath or the side, pass it
 along a row, take one run underneath, and stay shut on top. Every shape file loads cleanly through the game's own
 shape class.
 
