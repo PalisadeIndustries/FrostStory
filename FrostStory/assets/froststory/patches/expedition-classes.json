@@ -1,0 +1,33 @@
+[
+	{
+		"op": "add",
+		"path": "/-",
+		"file": "game:config/traits.json",
+		"condition": { "when": "froststoryLongWinter", "isValue": "true" },
+		"value": {
+			"code": "coldseasoned",
+			"type": "positive",
+			"attributes": {}
+		}
+	},
+	{
+		"op": "add",
+		"path": "/-",
+		"file": "game:config/characterclasses.json",
+		"condition": { "when": "froststoryLongWinter", "isValue": "true" },
+		"value": {
+			"enabled": true,
+			"code": "expeditionsurvivor",
+			"traits": [ "coldseasoned", "hardy", "ravenous" ],
+			"gear": [
+				{ "type": "item", "code": "game:clothes-upperbody-commoner-shirt" },
+				{ "type": "item", "code": "froststory:furhood" },
+				{ "type": "item", "code": "froststory:furparka" },
+				{ "type": "item", "code": "froststory:furtrousers" },
+				{ "type": "item", "code": "froststory:furmittens" },
+				{ "type": "item", "code": "froststory:furboots" },
+				{ "type": "item", "code": "froststory:snowgoggles" }
+			]
+		}
+	}
+]

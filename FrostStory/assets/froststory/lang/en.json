@@ -255,5 +255,20 @@
 	"climate-storm-over": "The storm has blown itself out. The air is still and very cold.",
 	"climate-hypothermia": "You are hypothermic: your hands are numb and your legs will not answer. Get out of the wind and next to heat.",
 	"climate-hypothermia-short": "Hypothermia: get to heat",
-	"climate-warmedup": "Feeling comes back into your hands. You are warm enough to move properly again."
+	"climate-warmedup": "Feeling comes back into your hands. You are warm enough to move properly again.",
+
+	"//expedition": "-----",
+	"game:characterclass-expeditionsurvivor": "Expedition survivor",
+	"game:characterdesc-expeditionsurvivor": "<font color=\"#99c9f9\"><i>The ship is fast in the ice and will not move again. The cold has already taken the others.</i></font><br><br>Expedition survivors walk off a wreck in heavy furs with iron tools, used to living in the cold. Cold work burns food quickly. Only in a Long Winter world.",
+	"game:trait-coldseasoned": "<font color=\"#84ff84\">• Cold-seasoned </font>",
+	"game:traitname-coldseasoned": "Cold-seasoned",
+	"game:traitdesc-coldseasoned": "Loses body heat to the cold about a third more slowly",
+	"expedition-kit-given": "You have your expedition kit: iron tools, furs, rations, a tent with its stove and some firewood.",
+	"expedition-hint-arrival": "The ship is gone, frozen fast in the ice behind you. Night comes early and it is bitterly cold: get under cover before dark.",
+	"expedition-hint-shelter": "Shelter first. Lay tent rods into a frame, then hold the tent cloth and click one rod and then another to stretch a panel between them. A closed tent keeps warmth in.",
+	"expedition-hint-stove": "Set the tent stove down inside, stand flue lengths on it up through the cloth and cap the top. Feed it firewood one piece a click and light it with the firestarter. It goes out if the flue ends under cover.",
+	"expedition-hint-salvage": "Her hull is your iron. The hole in her port side leads into No. 2 'tween deck. Cut through a section of hull with the pickaxe for iron plates, break open the packing cases, and take coal from her bunkers.",
+	"expedition-hint-generator": "Once you have iron to spare, make a generator control console (4 iron plates, 2 rusty gears) and raise the generator. Its steam heats a whole camp. The handbook's Long Winter guide has the rest.",
+	"handbook-longwinter-title": "The Long Winter",
+	"handbook-longwinter-text": "<strong>The Long Winter</strong><br><i>Surviving the first days beside the wreck</i><br><br>In a Long Winter world the cold never lifts. Snow falls instead of rain, and whiteout storms come more often and bite harder as the days go on. You start as an expedition survivor beside a freighter frozen into the ice, with iron tools, heavy furs, a few days of rations, a tent and a tent stove.<br><br><strong>1. The first nights</strong><br>Put up the tent: tent rods make the frame (they lie along the face you set them against), and tent cloth is stretched between two rods, or a rod and the edge of a block. A closed tent counts as a room and holds warmth. Set the tent stove inside with a flue standing on it that comes out under open sky, cap it, and burn wood in it. Keep firewood by the stove: it burns about half an hour on a full load.<br><br><strong>2. Salvage the wreck</strong><br>The hole stove in her port side opens into the No. 2 'tween deck. Cutting through any part of a section of hull with a pickaxe brings the whole section away as iron plates, iron bits and planks. Packing cases in the holds break open for iron ingots, nails, rope, coal and planks. Her bunkers hold about 22,000 coal: the fuel for everything that follows.<br><br><strong>3. Raise the generator</strong><br>Make a generator control console (4 iron plates, 2 rusty gears) and place it facing where the tower should stand. Deliver the materials stage by stage; when all eight stages are up, fire it and coal it from the bunker behind the console.<br><br><strong>4. Heat the camp</strong><br>Pipe steam from the ports on its pad to heating pipes, radiators and underfloor grates, or carry it further with steam mains and hubs. Keep the generator fed, and carry the heat further as the storms get worse.<br><br>Admins: /frostexp status reports the expedition start; /frostexp kit, /frostexp resetkit and /frostexp wreck hand out the kit and set the wreck down."
 }
