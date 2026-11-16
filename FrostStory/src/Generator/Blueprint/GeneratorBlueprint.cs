@@ -10,16 +10,63 @@ namespace FrostStory.Generator.Blueprint;
 /// </summary>
 public readonly record struct Placement(int X, int Y, int Z, string? Code);
 
-/// <summary>A construction stage: its id and the blocks it adds, in the order they should be built.</summary>
+/// <summary>
+/// One piece of a stage: the unit that goes up when its share of the stage's materials has been delivered.
+/// <see cref="Key"/> names it (lang key "step-" + Key); <see cref="Number"/> of <see cref="Of"/> counts
+/// repeated pieces such as shaft lifts. <see cref="Weight"/> is its share of the stage's cost.
+/// </summary>
+public sealed class StepBlueprint
+{
+    public string Key { get; }
+    public int Number { get; }
+    public int Of { get; }
+    public int Weight { get; }
+    public IReadOnlyList<Placement> Placements { get; }
+
+    public StepBlueprint(string key, int number, int of, int weight, IReadOnlyList<Placement> placements)
+    {
+        Key = key;
+        Number = number;
+        Of = of;
+        Weight = weight;
+        Placements = placements;
+    }
+}
+
+/// <summary>A construction stage: its id and its pieces, in the order they are built.</summary>
 public sealed class StageBlueprint
 {
     public string Id { get; }
+    public IReadOnlyList<StepBlueprint> Steps { get; }
+
+    /// <summary>Every placement of every piece, in build order.</summary>
     public IReadOnlyList<Placement> Placements { get; }
 
-    public StageBlueprint(string id, IReadOnlyList<Placement> placements)
+    public StageBlueprint(string id, IReadOnlyList<StepBlueprint> steps)
     {
         Id = id;
-        Placements = placements;
+        Steps = steps;
+        var all = new List<Placement>();
+        foreach (var step in steps) all.AddRange(step.Placements);
+        Placements = all;
+    }
+
+    /// <summary>
+    /// How much of a stage requirement must have been delivered before piece <paramref name="step"/> can go
+    /// up: its running share of the total, with the last piece taking whatever is left.
+    /// </summary>
+    public int Threshold(int step, int stageQuantity)
+    {
+        if (step >= Steps.Count - 1) return stageQuantity;
+
+        int total = 0, upTo = 0;
+        for (int i = 0; i < Steps.Count; i++)
+        {
+            total += Steps[i].Weight;
+            if (i <= step) upTo += Steps[i].Weight;
+        }
+
+        return (int)Math.Ceiling(stageQuantity * (double)upTo / total);
     }
 }
 
@@ -65,6 +112,9 @@ public static class GeneratorBlueprint
     private const int LadderX = 1;
     private const int LadderZ = -3;
     private const int Gallery = 21;
+
+    // The temporary headframe is anchored where the core's plinth will later stand, which replaces it.
+    private const int HeadframeX = -2;
 
     // Outside service galleries ring the hull beyond the frames; a ladder on the south frame reaches them.
     private static readonly int[] OuterGalleries = { 12, 24 };
@@ -262,14 +312,29 @@ public static class GeneratorBlueprint
         return (x, z);
     }
 
+    /// <summary>The shaft's fittings go in from the bottom, two lifts (16 m) to a piece.</summary>
+    private static List<(int Low, int High)> ShaftSections(int depth)
+    {
+        var sections = new List<(int, int)>();
+        for (int m = Modules(depth) - 1; m >= 0; m -= 2)
+        {
+            int top = Math.Max(0, m - 1);
+            sections.Add((-ShaftModule * m - (ShaftModule - 1), Math.Min(-1, -ShaftModule * top)));
+        }
+
+        return sections;
+    }
+
     // ---------------------------------------------------------------- stage 1
 
     private static StageBlueprint BuildShaft(int depth)
     {
         var b = new StageBuilder("shaft");
         var platforms = new HashSet<int>(PlatformLevels(depth));
+        int modules = Modules(depth);
 
-        // Clear the site from the top down so nothing is left hanging over the works.
+        // Clear the site from the top down so nothing is left hanging over the works, and lay the pad.
+        b.Step("site", weight: 2);
         for (int y = Height; y >= 1; y--)
         {
             int r = y > 12 ? ClearRadiusUpper : PadRadius;
@@ -278,40 +343,43 @@ public static class GeneratorBlueprint
                     if (InDisc(x, z, r)) b.Set(x, y, z, null);
         }
 
-        // Shaft, top down. Within a layer the lining goes in before the rock comes out.
-        for (int y = 0; y > -depth; y--)
+        for (int y = 0; y >= -3; y--)
         {
-            if (y >= -3)
-            {
-                for (int x = -PadRadius; x <= PadRadius; x++)
-                    for (int z = -PadRadius; z <= PadRadius; z++)
-                        if (InDisc(x, z, PadRadius) && !InDisc(x, z, HullRadius)) b.Set(x, y, z, Blocks.Foundation);
-            }
-
-            // the top course is part of the pad; below it the rock is lined
-            string ring = y == 0 ? Blocks.Foundation : Blocks.Lining;
-            ForDisc(HullRadius, (x, z) => { if (InShell(x, z, HullRadius)) b.Set(x, y, z, ring); });
-
-            ForDisc(HullRadius, (x, z) =>
-            {
-                if (!InInterior(x, z, HullRadius)) return;
-                if (x == LadderX && z == LadderZ) b.Set(x, y, z, Blocks.FillLadder);
-                else if (BehindLiner(x, z)) b.Set(x, y, z, Blocks.FillSolid);
-                else if (y == 0) b.Set(x, y, z, Blocks.FillDeck);
-                else if (platforms.Contains(y) && IsWalkway(x, z, true)) b.Set(x, y, z, Blocks.FillDeck);
-                else b.Set(x, y, z, null);
-            });
-
-            // The modelled liner follows the dig down, one lift at a time.
-            if (y == -1) b.Set(-1, y, 0, Blocks.Segment("collar"));
-            for (int m = 0; m < Modules(depth); m++)
-            {
-                if (y == ModuleAnchorY(m)) b.Set(-1, y, 0, Blocks.Segment(m % 2 == 1 ? "shaftplatform" : "shaftplain"));
-            }
+            for (int x = -PadRadius; x <= PadRadius; x++)
+                for (int z = -PadRadius; z <= PadRadius; z++)
+                    if (InDisc(x, z, PadRadius) && !InDisc(x, z, HullRadius)) b.Set(x, y, z, Blocks.Foundation);
         }
 
-        // Floor plug.
-        ForDisc(HullRadius, (x, z) => b.Set(x, -depth, z, Blocks.Foundation));
+        // A headframe stands over the dig until the core takes its place.
+        b.Set(HeadframeX, 2, 0, Blocks.Segment("headframe"));
+
+        // The shaft goes down one lift at a time. Within a layer the lining goes in before the rock comes out.
+        for (int m = 0; m < modules; m++)
+        {
+            b.Step("shaftlift", number: m + 1, of: modules);
+            for (int y = -ShaftModule * m; y > -ShaftModule * (m + 1); y--)
+            {
+                // the top course is part of the pad; below it the rock is lined
+                string ring = y == 0 ? Blocks.Foundation : Blocks.Lining;
+                ForDisc(HullRadius, (x, z) => { if (InShell(x, z, HullRadius)) b.Set(x, y, z, ring); });
+
+                ForDisc(HullRadius, (x, z) =>
+                {
+                    if (!InInterior(x, z, HullRadius)) return;
+                    if (x == LadderX && z == LadderZ) b.Set(x, y, z, Blocks.FillLadder);
+                    else if (BehindLiner(x, z)) b.Set(x, y, z, Blocks.FillSolid);
+                    else if (y == 0) b.Set(x, y, z, Blocks.FillDeck);
+                    else if (platforms.Contains(y) && IsWalkway(x, z, true)) b.Set(x, y, z, Blocks.FillDeck);
+                    else b.Set(x, y, z, null);
+                });
+
+                if (y == -1) b.Set(-1, y, 0, Blocks.Segment("collar"));
+                if (y == ModuleAnchorY(m)) b.Set(-1, y, 0, Blocks.Segment(m % 2 == 1 ? "shaftplatform" : "shaftplain"));
+            }
+
+            // Floor plug under the last lift.
+            if (m == modules - 1) ForDisc(HullRadius, (x, z) => b.Set(x, -depth, z, Blocks.Foundation));
+        }
 
         return b.Build();
     }
@@ -323,26 +391,31 @@ public static class GeneratorBlueprint
         var b = new StageBuilder("valves");
         var stations = new HashSet<int>(ValveLevels(depth));
         int modules = Modules(depth);
+        var sections = ShaftSections(depth);
 
         // Main riser, bottom up, with a valve station wherever one is due.
-        for (int y = -depth + 1; y <= -1; y++)
+        for (int i = 0; i < sections.Count; i++)
         {
-            b.Set(0, y, 0, Blocks.FillSolid);
-
-            for (int m = 0; m < modules; m++)
+            b.Step("riser", number: i + 1, of: sections.Count);
+            for (int y = sections[i].Low; y <= sections[i].High; y++)
             {
-                if (y == ModuleAnchorY(m)) b.Set(0, y, 0, Blocks.Segment(m == modules - 1 ? "riserbase" : "riser"));
-            }
+                b.Set(0, y, 0, Blocks.FillSolid);
 
-            if (!stations.Contains(y)) continue;
-
-            b.Set(0, y, 0, Blocks.Segment("valvestation"));
-            for (int k = 0; k < 4; k++)
-            {
-                for (int dist = 1; dist <= 3; dist++)
+                for (int m = 0; m < modules; m++)
                 {
-                    var (x, z) = Rot(dist, 0, k);
-                    b.Set(x, y, z, Blocks.FillSolid);
+                    if (y == ModuleAnchorY(m)) b.Set(0, y, 0, Blocks.Segment(m == modules - 1 ? "riserbase" : "riser"));
+                }
+
+                if (!stations.Contains(y)) continue;
+
+                b.Set(0, y, 0, Blocks.Segment("valvestation"));
+                for (int k = 0; k < 4; k++)
+                {
+                    for (int dist = 1; dist <= 3; dist++)
+                    {
+                        var (x, z) = Rot(dist, 0, k);
+                        b.Set(x, y, z, Blocks.FillSolid);
+                    }
                 }
             }
         }
@@ -355,25 +428,35 @@ public static class GeneratorBlueprint
     private static StageBlueprint BuildPumps(int depth)
     {
         var b = new StageBuilder("pumps");
+        var sections = ShaftSections(depth);
 
-        // Injection lines down the shaft wall, one lift at a time from the bottom.
-        for (int y = -depth + 1; y <= -1; y++)
+        // Injection lines up the shaft wall from the bottom.
+        for (int i = 0; i < sections.Count; i++)
         {
-            for (int k = 0; k < 4; k++)
+            b.Step("injectors", number: i + 1, of: sections.Count);
+            for (int y = sections[i].Low; y <= sections[i].High; y++)
             {
-                var (x, z) = Rot(3, -1, k);
-                b.Set(x, y, z, Blocks.FillSolid);
-            }
+                for (int k = 0; k < 4; k++)
+                {
+                    var (x, z) = Rot(3, -1, k);
+                    b.Set(x, y, z, Blocks.FillSolid);
+                }
 
-            for (int m = 0; m < Modules(depth); m++)
-            {
-                if (y == ModuleAnchorY(m)) b.Set(1, y, 0, Blocks.Segment("injectors"));
+                for (int m = 0; m < Modules(depth); m++)
+                {
+                    if (y == ModuleAnchorY(m)) b.Set(1, y, 0, Blocks.Segment("injectors"));
+                }
             }
         }
 
-        // Pump towers on the diagonals.
+        // Feed-water ring main round the foot of the tower.
+        b.Step("ringmain", weight: 2);
+        b.Set(6, 1, 0, Blocks.Segment("ringmain"));
+
+        // Pump towers on the diagonals, one at a time.
         for (int k = 0; k < 4; k++)
         {
+            b.Step("pump", number: k + 1, of: 4, weight: 3);
             const int c = 5;
             for (int y = 1; y <= 10; y++)
             {
@@ -392,9 +475,6 @@ public static class GeneratorBlueprint
             b.Set(ax, 1, az, Blocks.Segment("pump", k));
         }
 
-        // Feed-water ring main round the foot of the tower.
-        b.Set(6, 1, 0, Blocks.Segment("ringmain"));
-
         return b.Build();
     }
 
@@ -406,6 +486,14 @@ public static class GeneratorBlueprint
 
         for (int y = 1; y <= 34; y++)
         {
+            switch (y)
+            {
+                case 1: b.Step("corelower", weight: 3); break;
+                case 9: b.Step("coreupper", weight: 3); break;
+                case 17: b.Step("manifold", weight: 2); break;
+                case 23: b.Step("exhaust"); break;
+            }
+
             if (y <= 16) ForDisc(2, (x, z) => b.Set(x, y, z, Blocks.FillSolid));
             else b.Set(0, y, 0, Blocks.FillSolid);
 
@@ -437,6 +525,8 @@ public static class GeneratorBlueprint
 
         for (int y = 1; y <= top; y++)
         {
+            if (y % 12 == 1) b.Step("framelift", number: y / 12 + 1, of: 3);
+
             foreach (int half in new[] { 0, 2 })
             {
                 int turn = quarterTurn + half;
@@ -484,6 +574,15 @@ public static class GeneratorBlueprint
 
         for (int y = 1; y <= Height; y++)
         {
+            switch (y)
+            {
+                case 1: b.Step("hulla", weight: 3); break;
+                case 11: b.Step("hullb", weight: 4); break;
+                case 20: b.Step("hullc", weight: 3); break;
+                case 30: b.Step("shoulder", weight: 2); break;
+                case 35: b.Step("stack"); break;
+            }
+
             if (y <= 29)
             {
                 ForDisc(HullRadius, (x, z) =>
@@ -527,13 +626,6 @@ public static class GeneratorBlueprint
                 ForDisc(1, (x, z) => { if (x != 0 || z != 0) b.Set(x, y, z, Blocks.FillSolid); });            // stack
             }
 
-            if (y >= JacketBottom && y <= JacketTop + 2)
-            {
-                for (int x = -9; x <= 9; x++)
-                    for (int z = -9; z <= 9; z++)
-                        if (InJacket(x, y, z)) b.Set(x, y, z, Blocks.FillSolid);
-            }
-
             string? part = y switch
             {
                 2 => "hulla",
@@ -544,6 +636,16 @@ public static class GeneratorBlueprint
                 _ => null
             };
             if (part != null) b.Set(1, y, 0, Blocks.Segment(part));
+        }
+
+        // Last, the insulating jacket is hung round the upper tower.
+        b.Step("jacket", weight: 4);
+        for (int y = JacketBottom; y <= JacketTop + 2; y++)
+        {
+            for (int x = -9; x <= 9; x++)
+                for (int z = -9; z <= 9; z++)
+                    if (InJacket(x, y, z)) b.Set(x, y, z, Blocks.FillSolid);
+
             if (y == 22) b.Set(8, y, 0, Blocks.Segment("jacket"));
         }
 
@@ -559,17 +661,35 @@ public static class GeneratorBlueprint
                 if (InDisc(x, z, r)) cell(x, z);
     }
 
-    /// <summary>Collects placements in build order; writing a cell twice keeps its first slot but the last code.</summary>
+    /// <summary>
+    /// Collects placements piece by piece, in build order. Within a piece, writing a cell twice keeps its
+    /// first slot but the last code; a later piece that rewrites a cell adds its own placement, so every
+    /// intermediate state is what the earlier pieces left.
+    /// </summary>
     private sealed class StageBuilder
     {
         private readonly string id;
-        private readonly List<Placement> list = new();
+        private readonly List<StepBlueprint> steps = new();
         private readonly Dictionary<(int, int, int), int> index = new();
+        private List<Placement> list = new();
+        private (string Key, int Number, int Of, int Weight) current;
+        private bool open;
 
         public StageBuilder(string id) => this.id = id;
 
+        public void Step(string key, int number = 0, int of = 0, int weight = 1)
+        {
+            Close();
+            current = (key, number, of, weight);
+            list = new List<Placement>();
+            index.Clear();
+            open = true;
+        }
+
         public void Set(int x, int y, int z, string? code)
         {
+            if (!open) throw new InvalidOperationException("Begin a step before placing blocks.");
+
             var key = (x, y, z);
             if (index.TryGetValue(key, out int i)) list[i] = new Placement(x, y, z, code);
             else
@@ -579,7 +699,17 @@ public static class GeneratorBlueprint
             }
         }
 
-        public StageBlueprint Build() => new(id, list);
+        private void Close()
+        {
+            if (open) steps.Add(new StepBlueprint(current.Key, current.Number, current.Of, current.Weight, list));
+            open = false;
+        }
+
+        public StageBlueprint Build()
+        {
+            Close();
+            return new StageBlueprint(id, steps);
+        }
     }
 }
 

@@ -22,13 +22,22 @@ public class BlockEntityGeneratorConsole : BlockEntity
 
     // Synced state
     private int stage;                       // number of finished stages
+    private int step;                        // pieces of the current stage that are finished
     private int depth;                       // shaft depth chosen when the project was founded
-    private bool building;
-    private int cursor;                      // next placement of the stage being built
-    private int total;                       // placements in the stage being built
+    private bool building;                   // a piece is going up
+    private int cursor;                      // next placement of the piece being built
+    private int total;                       // placements in the piece being built
     private bool lit;
-    private int[] delivered = Array.Empty<int>();
-    private int[] required = Array.Empty<int>();
+    private bool released;                   // someone has told a stage that needs no materials to go ahead
+    private int[] delivered = Array.Empty<int>();    // towards the whole stage
+    private int[] required = Array.Empty<int>();     // for the whole stage
+    private int[] pieceNeed = Array.Empty<int>();    // what must have been delivered before the next piece goes up
+
+    // Synced description of the next piece, for the client's hover text
+    private int stepCount;
+    private string stepKey = "";
+    private int stepNumber;
+    private int stepOf;
 
     // Server only
     private IReadOnlyList<StageBlueprint>? stages;
@@ -67,6 +76,7 @@ public class BlockEntityGeneratorConsole : BlockEntity
         {
             if (depth == 0) depth = GeneratorBlueprint.ClampDepth(MaxDepthAt(Center));
             SyncRequirements();
+            SyncPiece();
             RegisterGameTickListener(OnServerTick, TickMs);
         }
         else
@@ -104,30 +114,26 @@ public class BlockEntityGeneratorConsole : BlockEntity
             return true;
         }
 
-        if (building)
-        {
-            Tell(player, Lang.Get("froststory:console-building", StageName(CurrentStageId!), Percent()));
-            return true;
-        }
-
         var slot = byPlayer.InventoryManager.ActiveHotbarSlot;
         var reqs = Mod.RequirementsFor(CurrentStageId!);
 
         if (slot?.Itemstack != null && TryDeliver(slot, reqs))
         {
+            released = true;
             Api.World.PlaySoundAt(new AssetLocation("game:sounds/block/plate"), Pos, 0, null, true, 16f);
         }
         else if (slot?.Itemstack == null && byPlayer.Entity.Controls.ShiftKey && byPlayer.WorldData.CurrentGameMode == EnumGameMode.Creative)
         {
             for (int i = 0; i < delivered.Length; i++) delivered[i] = required[i];
+            released = true;
         }
         else
         {
-            if (stage == 0) ShowFootprint(player);
+            if (stage == 0 && step == 0 && !building) ShowFootprint(player);
+            if (required.Length == 0) released = true;      // nothing to deliver: asking is the go-ahead
             Tell(player, StatusText());
         }
 
-        if (RequirementsMet()) BeginStage();
         MarkDirty(true);
         return true;
     }
@@ -149,11 +155,14 @@ public class BlockEntityGeneratorConsole : BlockEntity
         return false;
     }
 
-    private bool RequirementsMet()
+    /// <summary>The next piece can go up once the stage has received its running share of every material.</summary>
+    private bool CanStartPiece()
     {
-        for (int i = 0; i < required.Length; i++)
+        if (required.Length == 0) return released;
+
+        for (int i = 0; i < required.Length && i < pieceNeed.Length; i++)
         {
-            if (delivered[i] < required[i]) return false;
+            if (delivered[i] < pieceNeed[i]) return false;
         }
 
         return true;
@@ -161,21 +170,25 @@ public class BlockEntityGeneratorConsole : BlockEntity
 
     // ------------------------------------------------------------ construction
 
-    private void BeginStage()
-    {
-        building = true;
-        cursor = 0;
-        total = Stages[stage].Placements.Count;
-        ClearFootprints();
-    }
-
     private void OnServerTick(float dt)
     {
-        if (!building || IsComplete) return;
+        if (IsComplete) return;
 
-        var placements = Stages[stage].Placements;
+        var steps = Stages[stage].Steps;
+        if (step >= steps.Count) { FinishStage(); MarkDirty(true); return; }
+
+        if (!building)
+        {
+            if (!CanStartPiece()) return;
+            building = true;
+            cursor = 0;
+            total = steps[step].Placements.Count;
+            ClearFootprints();
+        }
+
+        var placements = steps[step].Placements;
         float seconds = Mod.BuildSecondsFor(CurrentStageId!);
-        int perTick = Math.Max(1, (int)Math.Ceiling(placements.Count / (seconds * 1000f / TickMs)));
+        int perTick = Math.Max(1, (int)Math.Ceiling(Stages[stage].Placements.Count / (seconds * 1000f / TickMs)));
 
         var center = Center;
         scratch ??= Pos.Copy();
@@ -195,18 +208,33 @@ public class BlockEntityGeneratorConsole : BlockEntity
             Api.World.PlaySoundAt(new AssetLocation("game:sounds/effect/anvilhit"), lastPlaced, 0, null, true, 48f, 0.6f);
         }
 
-        if (cursor >= placements.Count) FinishStage();
+        if (cursor >= placements.Count) FinishPiece();
         MarkDirty();
+    }
+
+    private void FinishPiece()
+    {
+        step++;
+        building = false;
+        cursor = 0;
+        total = 0;
+
+        if (step >= Stages[stage].Steps.Count) FinishStage();
+        else SyncPiece();
     }
 
     private void FinishStage()
     {
         string finished = StageName(CurrentStageId!);
         stage++;
+        step = 0;
         building = false;
+        released = false;
         cursor = 0;
         total = 0;
+        delivered = Array.Empty<int>();
         SyncRequirements();
+        SyncPiece();
 
         string message = IsComplete
             ? Lang.Get("froststory:console-allcomplete", finished)
@@ -217,10 +245,37 @@ public class BlockEntityGeneratorConsole : BlockEntity
     /// <summary>Starts building the current stage without its materials. Used by the admin command.</summary>
     public bool StartCurrentStage()
     {
-        if (IsComplete || building) return false;
+        if (IsComplete) return false;
 
         for (int i = 0; i < delivered.Length; i++) delivered[i] = required[i];
-        BeginStage();
+        released = true;
+        MarkDirty(true);
+        return true;
+    }
+
+    /// <summary>
+    /// Credits the current stage with materials as if they had been delivered: requirement is 1-based, in the
+    /// order the console lists them. Used by the admin command. Returns the new total, or -1 if there is no such requirement.
+    /// </summary>
+    public int Credit(int requirement, int amount)
+    {
+        if (IsComplete || requirement < 1 || requirement > required.Length) return -1;
+
+        int i = requirement - 1;
+        delivered[i] = Math.Clamp(delivered[i] + amount, 0, required[i]);
+        released = true;
+        MarkDirty(true);
+        return delivered[i];
+    }
+
+    /// <summary>Puts up the next piece of the current stage immediately. Used by the admin command.</summary>
+    public bool CompleteCurrentPiece()
+    {
+        if (IsComplete) return false;
+        if (!Builder.PlaceStep(Center, Stages[stage].Steps[step], Pos)) return false;
+
+        for (int i = 0; i < delivered.Length && i < pieceNeed.Length; i++) delivered[i] = Math.Max(delivered[i], pieceNeed[i]);
+        FinishPiece();
         MarkDirty(true);
         return true;
     }
@@ -229,7 +284,8 @@ public class BlockEntityGeneratorConsole : BlockEntity
     public string Summary()
     {
         var c = Center;
-        string state = IsComplete ? (lit ? "running" : "complete, cold") : building ? $"building {CurrentStageId} {Percent()}%" : $"waiting for materials for {CurrentStageId}";
+        string piece = IsComplete ? "" : $" piece {step + 1}/{Stages[stage].Steps.Count} ({stepKey})";
+        string state = IsComplete ? (lit ? "running" : "complete, cold") : building ? $"building {CurrentStageId}{piece} {Percent()}%" : $"waiting for materials for {CurrentStageId}{piece}";
         return $"Stages finished: {stage}/{StageCount}; {state}; centre {c.X} {c.Y} {c.Z}; shaft depth {depth}.";
     }
 
@@ -258,6 +314,29 @@ public class BlockEntityGeneratorConsole : BlockEntity
         required = new int[reqs.Length];
         for (int i = 0; i < reqs.Length; i++) required[i] = reqs[i].Quantity;
         if (delivered.Length != reqs.Length) delivered = new int[reqs.Length];
+    }
+
+    /// <summary>Works out what the next piece is and what the stage must have received before it goes up.</summary>
+    private void SyncPiece()
+    {
+        if (IsComplete)
+        {
+            stepCount = 0;
+            stepKey = "";
+            pieceNeed = Array.Empty<int>();
+            return;
+        }
+
+        var blueprint = Stages[stage];
+        step = Math.Clamp(step, 0, blueprint.Steps.Count - 1);
+        var piece = blueprint.Steps[step];
+        stepCount = blueprint.Steps.Count;
+        stepKey = piece.Key;
+        stepNumber = piece.Number;
+        stepOf = piece.Of;
+
+        pieceNeed = new int[required.Length];
+        for (int i = 0; i < required.Length; i++) pieceNeed[i] = blueprint.Threshold(step, required[i]);
     }
 
     // ------------------------------------------------------------ footprint preview
@@ -352,6 +431,8 @@ public class BlockEntityGeneratorConsole : BlockEntity
         return sb.ToString();
     }
 
+    private string PieceName() => Lang.Get("froststory:step-" + stepKey, stepNumber, stepOf);
+
     private void AppendStatus(StringBuilder sb)
     {
         if (IsComplete)
@@ -362,31 +443,33 @@ public class BlockEntityGeneratorConsole : BlockEntity
 
         string id = CurrentStageId!;
         sb.AppendLine(Lang.Get("froststory:console-stage", stage + 1, StageCount, StageName(id)));
-
-        if (building)
-        {
-            sb.AppendLine(Lang.Get("froststory:console-progress", Percent()));
-            return;
-        }
+        if (stepCount > 0) sb.AppendLine(Lang.Get("froststory:console-piece", step + 1, stepCount, PieceName()));
+        if (building) sb.AppendLine(Lang.Get("froststory:console-progress", Percent()));
 
         var reqs = Mod.Stages.Find(id)?.Requirements ?? Array.Empty<StageRequirement>();
+        var owed = new List<string>();
         for (int i = 0; i < required.Length && i < reqs.Length; i++)
         {
-            sb.AppendLine(Lang.Get("froststory:console-requirement", delivered[i], required[i], RequirementName(reqs[i])));
+            string name = RequirementName(reqs[i]);
+            sb.AppendLine(Lang.Get("froststory:console-requirement", delivered[i], required[i], name));
+            if (!building && i < pieceNeed.Length && delivered[i] < pieceNeed[i])
+                owed.Add(Lang.Get("froststory:console-owed", pieceNeed[i] - delivered[i], name));
         }
+
+        if (owed.Count > 0) sb.AppendLine(Lang.Get("froststory:console-pieceneeds", string.Join(", ", owed)));
     }
 
     public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
     {
         base.GetBlockInfo(forPlayer, dsc);
         AppendStatus(dsc);
-        if (!IsComplete && !building) dsc.AppendLine(Lang.Get("froststory:stagedesc-" + CurrentStageId));
+        if (!IsComplete) dsc.AppendLine(Lang.Get("froststory:stagedesc-" + CurrentStageId));
     }
 
     /// <summary>Materials still owed for the current stage, for the interaction hint.</summary>
     public ItemStack[] OutstandingStacks()
     {
-        if (IsComplete || building) return Array.Empty<ItemStack>();
+        if (IsComplete) return Array.Empty<ItemStack>();
 
         var reqs = Mod.Stages.Find(CurrentStageId!)?.Requirements ?? Array.Empty<StageRequirement>();
         var stacks = new List<ItemStack>();
@@ -409,6 +492,13 @@ public class BlockEntityGeneratorConsole : BlockEntity
     {
         base.ToTreeAttributes(tree);
         tree.SetInt("stage", stage);
+        tree.SetInt("step", step);
+        tree.SetBool("released", released);
+        tree.SetInt("stepCount", stepCount);
+        tree.SetString("stepKey", stepKey);
+        tree.SetInt("stepNumber", stepNumber);
+        tree.SetInt("stepOf", stepOf);
+        tree["pieceNeed"] = new IntArrayAttribute(pieceNeed);
         tree.SetInt("depth", depth);
         tree.SetBool("building", building);
         tree.SetInt("cursor", cursor);
@@ -422,6 +512,13 @@ public class BlockEntityGeneratorConsole : BlockEntity
     {
         base.FromTreeAttributes(tree, worldAccessForResolve);
         stage = tree.GetInt("stage");
+        step = tree.GetInt("step");
+        released = tree.GetBool("released");
+        stepCount = tree.GetInt("stepCount");
+        stepKey = tree.GetString("stepKey", "");
+        stepNumber = tree.GetInt("stepNumber");
+        stepOf = tree.GetInt("stepOf");
+        pieceNeed = (tree["pieceNeed"] as IntArrayAttribute)?.value ?? Array.Empty<int>();
         depth = tree.GetInt("depth");
         building = tree.GetBool("building");
         cursor = tree.GetInt("cursor");

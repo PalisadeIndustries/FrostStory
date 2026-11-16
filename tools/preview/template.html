@@ -88,6 +88,10 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
 .detail p { margin: 0; max-width: 62ch; }
 .needs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; font-family: var(--font-data); font-size: 13px; font-variant-numeric: tabular-nums; }
 .needs .q { text-align: right; color: var(--brass); font-weight: 500; }
+.pieces { display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--line); padding-top: 10px; }
+.pieces input { width: 100%; accent-color: var(--accent); margin: 2px 0; }
+.pieces #pieces-count { color: var(--ink); margin-left: 6px; }
+.piece-name { margin: 0; font-weight: 500; min-height: 1.5em; }
 .label { font-family: var(--font-data); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0; }
 .foot { color: var(--muted); font-size: 13px; margin: 0; max-width: 70ch; }
 </style>
@@ -137,7 +141,12 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
       <div class="detail" aria-live="polite">
         <h3 id="d-name"></h3>
         <p id="d-desc"></p>
-        <p class="label" id="d-label">Delivered to the console</p>
+        <div class="pieces" id="pieces-row">
+          <label class="label" for="pieces">Pieces in place <span id="pieces-count"></span></label>
+          <input type="range" id="pieces" min="0" max="1" step="1" value="1">
+          <p class="piece-name" id="pieces-name"></p>
+        </div>
+        <p class="label" id="d-label">Delivered to the console, over the whole stage</p>
         <ul class="needs" id="d-needs"></ul>
       </div>
     </section>
@@ -159,7 +168,20 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
     .concat(D.stages)
     .concat([{ name: "Fired", desc: "The core heart is lit from the console. It gives off light and warmth, and steam leaves the stack.", needs: [], segments: 0 }]);
   var current = STEPS.length - 1;
+  var pieces = 999;
   var stepsEl = document.getElementById("steps");
+  var piecesEl = document.getElementById("pieces");
+
+  function renderPieces() {
+    var stage = current >= 1 && current <= D.stages.length ? D.stages[current - 1] : null;
+    document.getElementById("pieces-row").hidden = !stage;
+    if (!stage) return;
+    var n = Math.min(pieces, stage.steps.length);
+    piecesEl.max = stage.steps.length;
+    piecesEl.value = n;
+    document.getElementById("pieces-count").textContent = n + " of " + stage.steps.length;
+    document.getElementById("pieces-name").textContent = n === 0 ? "Nothing of this stage built yet" : stage.steps[n - 1].name;
+  }
 
   STEPS.forEach(function (step, i) {
     var li = document.createElement("li");
@@ -194,6 +216,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
     });
     document.getElementById("d-label").hidden = step.needs.length === 0;
     needs.hidden = step.needs.length === 0;
+    renderPieces();
   }
 
   document.getElementById("spec-depth").textContent = D.depth + " m";
@@ -233,13 +256,17 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
   var cache = {};
   var dirty = true;
 
-  function worldAt(stageCount, lit) {
+  // stages before the last are whole; the last shows only its first `pieceCount` pieces
+  function worldAt(stageCount, pieceCount, lit) {
     var map = new Map(), voids = new Set();
     for (var s = 0; s < stageCount; s++) {
-      var c = D.stages[s].cells;
-      for (var i = 0; i < c.length; i += 4) {
-        var k = key(c[i], c[i + 1], c[i + 2]);
-        if (c[i + 3] < 0) { map.delete(k); voids.add(k); } else { map.set(k, c[i + 3]); voids.delete(k); }
+      var steps = D.stages[s].steps, upTo = s === stageCount - 1 ? pieceCount : steps.length;
+      for (var p = 0; p < upTo; p++) {
+        var c = steps[p].cells;
+        for (var i = 0; i < c.length; i += 4) {
+          var k = key(c[i], c[i + 1], c[i + 2]);
+          if (c[i + 3] < 0) { map.delete(k); voids.add(k); } else { map.set(k, c[i + 3]); voids.delete(k); }
+        }
       }
     }
     if (lit) for (var h = 0; h < D.swaps.length; h += 5) {
@@ -250,8 +277,8 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
     return { map: map, voids: voids };
   }
 
-  function buildGroup(stageCount, lit, cut) {
-    var w = worldAt(stageCount, lit), map = w.map;
+  function buildGroup(stageCount, pieceCount, lit, cut) {
+    var w = worldAt(stageCount, pieceCount, lit), map = w.map;
     var pos = [], uv = [], col = [], idx = [];
     var cap = { pos: [], uv: [], col: [], idx: [] };
 
@@ -328,6 +355,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
     // snow all round, with the shaft mouth left open so the deck grating reads as a grating
     var snow = [0.74, 0.80, 0.84], zFront = cut ? 0.5 : R, m0 = -3, m1 = 4;
     slab(-R, m0, -R, m0, snow); slab(m0, m1, -R, m0, snow); slab(m1, R, -R, m0, snow);
+    if (!w.map.has(key(0, 0, 0))) slab(m0, m1, m0, Math.min(m1, zFront), snow);     // the shaft has not been opened yet
     slab(-R, m0, m0, Math.min(m1, zFront), snow);
     slab(m1, R, m0, Math.min(m1, zFront), snow);
     if (zFront > m1) { slab(-R, m0, m1, zFront, snow); slab(m0, m1, m1, zFront, snow); slab(m1, R, m1, zFront, snow); }
@@ -356,8 +384,10 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
 
   function showState() {
     var stageCount = Math.min(current, D.stages.length), lit = current === STEPS.length - 1;
-    var id = stageCount + (lit ? "L" : "") + (section ? "S" : "E");
-    if (!cache[id]) cache[id] = buildGroup(stageCount, lit, section);
+    var all = stageCount ? D.stages[stageCount - 1].steps.length : 0;
+    var pieceCount = current >= 1 && current <= D.stages.length ? Math.min(pieces, all) : all;
+    var id = stageCount + "/" + pieceCount + (lit ? "L" : "") + (section ? "S" : "E");
+    if (!cache[id]) cache[id] = buildGroup(stageCount, pieceCount, lit, section);
     if (group) scene.remove(group);
     group = cache[id];
     scene.add(group);
@@ -417,9 +447,16 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
 
   function setStep(i) {
     current = i;
+    pieces = 999;            // a stage opens complete; the slider winds it back piece by piece
     renderPanel();
     showState();
   }
+
+  piecesEl.addEventListener("input", function () {
+    pieces = Number(piecesEl.value);
+    renderPieces();
+    showState();
+  });
 
   document.getElementById("view-exterior").addEventListener("click", function () { setSection(false); });
   document.getElementById("view-section").addEventListener("click", function () { setSection(true); });
@@ -507,6 +544,6 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
   requestAnimationFrame(frame);
 
   // test hook for screenshots
-  window.__preview = { setStep: setStep, setSection: setSection, setFocus: setFocus, cam: cam, apply: applyCamera, stop: function () { autoTurn = false; } };
+  window.__preview = { setPieces: function (n) { pieces = n; renderPieces(); showState(); }, setStep: setStep, setSection: setSection, setFocus: setFocus, cam: cam, apply: applyCamera, stop: function () { autoTurn = false; } };
 })();
 </script>

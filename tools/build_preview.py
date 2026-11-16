@@ -230,14 +230,15 @@ def main():
 
     stages = []
     for s in blueprint["stages"]:
-        cells = s["cells"]
+        cells = [c for step in s["steps"] for c in step["cells"]]
         stages.append({
             "id": s["id"],
             "name": lang["stage-" + s["id"]],
             "desc": lang["stagedesc-" + s["id"]],
             "segments": sum(1 for i in range(3, len(cells), 4) if cells[i] >= 0 and "gensegment" in blueprint["codes"][cells[i]]),
             "needs": [[r["quantity"], REQUIREMENT_NAMES.get(r["code"], r["code"])] for r in config[s["id"]]["requirements"]],
-            "cells": cells,
+            "steps": [{"name": lang["step-" + step["key"]].format(step["number"], step["of"]), "cells": step["cells"]}
+                      for step in s["steps"]],
         })
 
     data = {

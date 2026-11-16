@@ -46,8 +46,32 @@ public static class GeneratorCommands
                 .WithArgs(parsers.OptionalWorldPosition("console"))
                 .HandleWith(args => WithConsole(api, args, console =>
                     console.StartCurrentStage()
-                        ? TextCommandResult.Success($"Construction of stage {console.FinishedStages + 1} started.")
-                        : TextCommandResult.Error("Nothing to start: the stage is already under construction or the generator is complete.")))
+                        ? TextCommandResult.Success($"Materials for stage {console.FinishedStages + 1} waived; its pieces will go up in turn.")
+                        : TextCommandResult.Error("Nothing to start: the generator is complete.")))
+            .EndSubCommand()
+
+            .BeginSubCommand("deliver")
+                .WithDescription("Credit a console's current stage with materials: which requirement (1 is the first listed), how many, then the console's position if you are not looking at it.")
+                .WithArgs(parsers.Int("requirement"), parsers.Int("amount"), parsers.OptionalWorldPosition("console"))
+                .HandleWith(args => WithConsole(api, args, console =>
+                {
+                    int now = console.Credit((int)args[0], (int)args[1]);
+                    return now < 0
+                        ? TextCommandResult.Error("The current stage has no such requirement.")
+                        : TextCommandResult.Success($"Requirement {(int)args[0]} now stands at {now}. {console.Summary()}");
+                }, 2))
+            .EndSubCommand()
+
+            .BeginSubCommand("piece")
+                .WithDescription("Put up the next piece of a console's current stage at once (looked at, or at a position).")
+                .WithArgs(parsers.OptionalWorldPosition("console"))
+                .HandleWith(args => WithConsole(api, args, console =>
+                {
+                    if (console.IsComplete) return TextCommandResult.Error("This generator is already complete.");
+                    return console.CompleteCurrentPiece()
+                        ? TextCommandResult.Success(console.Summary())
+                        : TextCommandResult.Error("Part of the site is in unloaded chunks.");
+                }))
             .EndSubCommand()
 
             .BeginSubCommand("advance")
@@ -172,9 +196,9 @@ public static class GeneratorCommands
         return TextCommandResult.Success($"Console placed at {pos.X} {pos.Y} {pos.Z}; the generator centre is {c.X} {c.Y} {c.Z}.");
     }
 
-    private static TextCommandResult WithConsole(ICoreServerAPI api, TextCommandCallingArgs args, System.Func<BlockEntityGeneratorConsole, TextCommandResult> action)
+    private static TextCommandResult WithConsole(ICoreServerAPI api, TextCommandCallingArgs args, System.Func<BlockEntityGeneratorConsole, TextCommandResult> action, int posArg = 0)
     {
-        BlockPos? pos = !args.Parsers[0].IsMissing && args[0] is Vec3d given
+        BlockPos? pos = !args.Parsers[posArg].IsMissing && args[posArg] is Vec3d given
             ? given.AsBlockPos
             : args.Caller.Player?.CurrentBlockSelection?.Position;
 

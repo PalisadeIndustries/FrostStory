@@ -28,7 +28,14 @@ var stages = GeneratorBlueprint.Build(depth)
     .Select(s => new
     {
         id = s.Id,
-        cells = s.Placements.SelectMany(p => new[] { p.X, p.Y, p.Z, IndexOf(p.Code) }).ToArray()
+        steps = s.Steps.Select(step => new
+        {
+            key = step.Key,
+            number = step.Number,
+            of = step.Of,
+            weight = step.Weight,
+            cells = step.Placements.SelectMany(p => new[] { p.X, p.Y, p.Z, IndexOf(p.Code) }).ToArray()
+        }).ToArray()
     })
     .ToArray();
 
@@ -46,4 +53,4 @@ var doc = new
 };
 
 File.WriteAllText(outPath, JsonSerializer.Serialize(doc));
-Console.WriteLine($"Wrote {outPath}: {stages.Length} stages, {stages.Sum(s => s.cells.Length / 4)} placements, {codes.Count} block codes.");
+Console.WriteLine($"Wrote {outPath}: {stages.Length} stages, {stages.Sum(s => s.steps.Length)} pieces, {stages.Sum(s => s.steps.Sum(p => p.cells.Length / 4))} placements, {codes.Count} block codes.");

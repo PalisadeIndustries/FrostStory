@@ -30,13 +30,10 @@ public class BlockGeneratorConsole : Block
                 MouseButton = EnumMouseButton.Right
             };
         }
-        else if (console.IsBuilding)
-        {
-            return help;
-        }
         else
         {
             var stacks = console.OutstandingStacks();
+            if (stacks.Length == 0 && console.IsBuilding) return help;
             own = new WorldInteraction
             {
                 ActionLangCode = "froststory:blockhelp-console-deliver",

@@ -76,6 +76,19 @@ public sealed class GeneratorBuilder
         return complete;
     }
 
+    /// <summary>Places one piece of a stage at once. Returns false if part of it lies in unloaded chunks.</summary>
+    public bool PlaceStep(BlockPos center, StepBlueprint step, BlockPos? keep = null)
+    {
+        var scratch = center.Copy();
+        bool complete = true;
+        foreach (var p in step.Placements)
+        {
+            if (Place(center, p, keep, scratch) == PlaceResult.NotLoaded) complete = false;
+        }
+
+        return complete;
+    }
+
     /// <summary>Swaps the segments that have one between their cold and lit models.</summary>
     public void SetCoreLit(BlockPos center, bool lit)
     {

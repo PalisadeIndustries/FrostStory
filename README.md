@@ -24,22 +24,30 @@ each a block shape several metres across, with octagonal walls, round pipes and 
 Invisible filler cells behind the models give you something to stand on, climb and bump into. Only
 the foundation pad and the rock lining of the shaft are ordinary blocks.
 
-It goes up in seven stages, each started from the control console:
+It goes up in seven stages from the control console, and each stage goes up piece by piece: 42
+pieces in all at full depth. A stage's materials are delivered to one running total, and every
+piece is raised as soon as that total covers its share. Deliver a third of a stage and a third of
+it stands there, waiting for the rest.
 
-1. **Foundation Shaft** – clears the site, lays the pad, sinks and lines the shaft in 8 m lifts, with
-   a service ladder and a grated platform every 16 m.
-2. **Regulator Valves** – the main riser, its wellhead, and three valve stations with relief ports.
+1. **Foundation Shaft** – clears the site, lays the pad and raises a headframe over the dig, then
+   sinks and lines the shaft one 8 m lift at a time, with a service ladder and a grated platform
+   every 16 m. The headframe stays until the core takes its place. (11 pieces)
+2. **Regulator Valves** – the main riser, its wellhead, and three valve stations with relief ports,
+   in 16 m sections from the bottom. (5 pieces)
 3. **Injection Pumps** – four pump towers with flywheels on the pad, the feed-water ring main that
-   links them, and their injection lines down the shaft.
-4. **Steam Core** – the core vessel, standpipes, distribution header and exhaust line.
-5. **Support Frame (east-west)** – paired columns with raking buttresses, cross-bracing and head beams.
-6. **Support Frame (north-south)** – the second frame, lapped across the first.
+   links them, and their injection lines down the shaft: the lines first, then the ring main, then
+   one tower at a time. (10 pieces)
+4. **Steam Core** – the plinth, lower vessel and steam ports, then the upper vessel, the
+   distribution header and the exhaust line. (4 pieces)
+5. **Support Frame (east-west)** – paired columns with raking buttresses, cross-bracing and head
+   beams, in three 12 m lifts. (3 pieces)
+6. **Support Frame (north-south)** – the second frame, lapped across the first. (3 pieces)
 7. **Thermal Hull** – the octagonal shell with doorways and louvres, heat-exchange risers up its
    flanks, the shoulder with its relief valves, the crown, and the stack under a weather cowl. Two
    outside service galleries (12 m and 24 m up) are reached by a ladder on the south frame, and
    there is a third gallery inside. An insulating jacket rings the upper tower from 20 m up: it stands a
    block and a half clear of the galleries on beams and raking struts, and hoods in at 45 degrees
-   below the stack.
+   below the stack. The hull goes up as three lifts, the shoulder, the stack, then the jacket. (6 pieces)
 
 Then the console fires it: the core heart lights up and shows through the louvres, warms anyone near
 it, and the stack steams.
@@ -50,8 +58,10 @@ it, and the stack steams.
   FrostStory creative tab.
 - Place it facing where the tower should stand. The centre is 8 blocks behind the console.
   Right-click it empty-handed to see the footprint and what the current stage needs.
-- Right-click with the listed materials to deliver them. When a stage is paid for, it builds itself
-  over a minute or two.
+- Right-click with the listed materials to deliver them, as much or as little as you have. The
+  console shows the stage's totals, which piece is next and what that piece is still short of.
+  Each piece builds itself as soon as it is paid for; deliver everything and the stage goes up
+  piece after piece.
 - In creative mode, sneak + right-click empty-handed to skip the materials.
 - When all seven stages are done, right-click to fire the generator (and again to bank it).
 
@@ -98,7 +108,9 @@ leaves the loaded world keeps the state it last had until the server restarts.
 | `/frostgen check [pos] [stages] [lit]` | Counts cells that differ from the blueprint |
 | `/frostgen demolish [pos]` | Removes a generator, leaving the open shaft |
 | `/frostgen console [pos] [side]` | Puts a console down |
-| `/frostgen start [pos]` | Waives materials and starts the console's current stage |
+| `/frostgen start [pos]` | Waives the materials of the console's current stage |
+| `/frostgen deliver <n> <amount> [pos]` | Credits requirement n of the current stage with materials |
+| `/frostgen piece [pos]` | Puts up the next piece immediately |
 | `/frostgen advance [pos]` | Finishes the console's current stage immediately |
 | `/frostgen fire [pos] [on]` | Fires or banks a finished generator |
 | `/frostgen status [pos]` | Reports a console's state |
@@ -168,7 +180,8 @@ textures, stage by stage, with a section view of the shaft. (`pip install pillow
 ## Status
 
 Working and checked on a 1.22.7 dedicated server: assets load without errors, all seven stages
-build through the console, firing and banking swap the lit models and the steam ports, and the
+build through the console, partial deliveries raise exactly the pieces they pay for and then wait,
+a build resumes mid-stage after a restart, firing and banking swap the lit models and the steam ports, and the
 result matches the blueprint cell for cell. Pipes and mains laid from the ports report steam when
 the generator is fired, taps off a main work, a misaligned main stays cold, and everything goes cold
 downstream of a cut. Every shape file loads cleanly through the game's own

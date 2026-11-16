@@ -358,6 +358,39 @@ def collar():
     return m
 
 
+def headframe():
+    """A temporary headframe over the dig: four raking legs to a crown, a winding sheave, a hoist rope down
+    the shaft and a winch on the pad. It stands from the first piece of the shaft until the core replaces it."""
+    m = Model("headframe", (-2, 2, 0))
+    top = 10.5
+    feet = [(4.3, 0.0), (0.0, 4.3), (-4.3, 0.0), (0.0, -4.3)]
+    heads = [(1.0, 0.0), (0.0, 1.0), (-1.0, 0.0), (0.0, -1.0)]
+    for (fx, fz), (hx, hz) in zip(feet, heads):
+        m.member((fx, 0.0, fz), (hx, top, hz), 0.38, 0.38, "girder")
+        m.box((fx, 0.12, fz), (0.9, 0.24, 0.9), "band")
+    for y in (3.6, 7.2):
+        f = y / top
+        ring = [(fx + (hx - fx) * f, fz + (hz - fz) * f) for (fx, fz), (hx, hz) in zip(feet, heads)]
+        for i in range(4):
+            (ax, az), (bx, bz) = ring[i], ring[(i + 1) % 4]
+            m.member((ax, y, az), (bx, y, bz), 0.2, 0.2, "girder")
+    m.box((0, top + 0.1, 0), (2.6, 0.2, 2.6), "checker")                         # crown
+    axle = top + 1.75
+    for sz in (0.45, -0.45):
+        m.member((0, top + 0.2, sz), (0, axle + 0.15, sz), 0.18, 0.18, "girder", caps=True)
+    m.wheel((0, axle, 0), 1.25, 0.2, 0.22, "band", axis="z")                     # winding sheave
+    m.member((0, axle, -0.62), (0, axle, 0.62), 0.12, 0.12, "steel", caps=True)
+    # hoist rope: down the shaft on one side with a kibble on it, out to the winch on the other
+    m.member((1.2, axle, 0), (1.2, -1.5, 0), 0.05, 0.05, "steel", chunk=1.0)
+    m.box((1.2, 0.9, 0), (0.7, 0.8, 0.7), "band")
+    m.member((-1.2, axle, 0), (-6.2, 0.75, 0), 0.05, 0.05, "steel", chunk=1.0)
+    m.hprism((-6.3, 0.75, -0.6), (-6.3, 0.75, 0.6), 0.45, "band", caps=(True, True), captex="band")
+    for sz in (0.75, -0.75):
+        m.box((-6.3, 0.5, sz), (1.1, 1.0, 0.16), "girder")
+    m.box((-6.3, 0.08, 0), (1.4, 0.16, 1.9), "checker")
+    return m
+
+
 # ----------------------------------------------------------------------------- riser and valves
 
 def riser(base):
@@ -971,7 +1004,7 @@ def mainport(side):
 
 def build_all():
     return [
-        shaft(False), shaft(True), collar(),
+        shaft(False), shaft(True), collar(), headframe(),
         riser(False), riser(True), valvestation(),
         injectors(), pump(), ringmain(),
         core(True, False), core(True, True), core(False, False), core(False, True), manifold(), exhaust(),

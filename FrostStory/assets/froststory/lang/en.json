@@ -2,7 +2,7 @@
 	"game:tabname-froststory": "FrostStory",
 
 	"block-generatorconsole-*": "Generator control console",
-	"blockdesc-generatorconsole-*": "Place it facing the spot where the generator should stand: the tower rises eight blocks behind it, over a shaft sunk deep into the rock. Deliver materials here to raise each stage. Breaking the console abandons the project.",
+	"blockdesc-generatorconsole-*": "Place it facing the spot where the generator should stand: the tower rises eight blocks behind it, over a shaft sunk deep into the rock. Deliver materials here: each stage goes up piece by piece as its materials arrive. Breaking the console abandons the project.",
 
 	"block-gensegment-*": "Generator structure",
 	"block-genfill-*": "Generator structure",
@@ -40,7 +40,7 @@
 	"stage-frame-b": "Support Frame (north-south)",
 	"stage-hull": "Thermal Hull",
 
-	"stagedesc-shaft": "A lined shaft sunk into warm rock, with a foundation collar at its mouth. Everything above will stand on it, and everything the generator draws will come up through it.",
+	"stagedesc-shaft": "A lined shaft sunk into warm rock under a headframe, with a foundation collar at its mouth. Everything above will stand on it, and everything the generator draws will come up through it.",
 	"stagedesc-valves": "The main riser and its heavy gate valves. They bleed surges from the deep off into relief ports, so the pressure stays inside what the machine can bear.",
 	"stagedesc-pumps": "Four pump towers on a feed-water ring main. They drive surface water down the injection lines, to where the rock turns it into superheated steam.",
 	"stagedesc-core": "The vessel where rising steam is split through the distribution header into working lines, for pumps, light, heat and industry. Eight steam ports come up through the pad rim for them.",
@@ -50,7 +50,28 @@
 
 	"req-stonebricks": "Ashlar blocks (any stone)",
 
+	"step-site": "Site clearance, pad and headframe",
+	"step-shaftlift": "Shaft lift {0} of {1}",
+	"step-riser": "Main riser, section {0} of {1}",
+	"step-injectors": "Injection lines, section {0} of {1}",
+	"step-ringmain": "Feed-water ring main",
+	"step-pump": "Pump tower {0} of {1}",
+	"step-corelower": "Core plinth, lower vessel and steam ports",
+	"step-coreupper": "Upper vessel",
+	"step-manifold": "Distribution header",
+	"step-exhaust": "Exhaust line",
+	"step-framelift": "Frame lift {0} of {1}",
+	"step-hulla": "Hull, first lift with the doorways",
+	"step-hullb": "Hull, second lift with the first gallery and the large ports",
+	"step-hullc": "Hull, third lift with the second gallery",
+	"step-shoulder": "Shoulder and crown",
+	"step-stack": "Stack",
+	"step-jacket": "Insulating jacket",
+
 	"console-stage": "Stage {0} of {1}: {2}",
+	"console-piece": "Piece {0} of {1}: {2}",
+	"console-owed": "{0} more {1}",
+	"console-pieceneeds": "This piece still needs: {0}",
 	"console-requirement": "  {0} / {1}  {2}",
 	"console-progress": "Under construction: {0}%",
 	"console-building": "Under construction, {0}: {1}%",
