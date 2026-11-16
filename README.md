@@ -33,8 +33,9 @@ it stands there, waiting for the rest.
 1. **Foundation Shaft** – clears the site, lays the pad and raises a headframe over the dig, then
    sinks and lines the shaft one 8 m lift at a time. The tower stands on the rim of the mouth, so
    the first 3 m is a throat of that width; below it the shaft opens out by two blocks all round.
-   Every 16 m a grated catwalk runs round the wall, leaving the middle open, with the service
-   ladder hanging at its inner edge. The headframe stays until the core takes its place. (11 pieces)
+   Every 16 m a grated catwalk runs round the wall, leaving the middle open. The service ladder
+   runs down the throat wall from the deck hatch and hangs free to a landing on the first
+   catwalk; from there a second ladder runs down the shaft wall, through a hatch in every catwalk. The headframe stays until the core takes its place. (11 pieces)
 2. **Regulator Valves** – the main riser (nearly 2 m across), its wellhead, and three valve stations
    whose arms reach the wall over the catwalks, with inverted valves and relief ports,
    in 16 m sections from the bottom. (5 pieces)

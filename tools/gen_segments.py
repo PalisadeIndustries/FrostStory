@@ -341,54 +341,81 @@ MODULE = 8        # shaft module height
 
 # ----------------------------------------------------------------------------- shaft
 
-LADDER_X, LADDER_Z = 1.0, -2.78     # the inside ladder column: against the far side of its cell from the wall
-CATWALK_IN = 3.5                    # inner edge of the shaft catwalks; the ladder hangs just inside it
+CATWALK_IN = 3.5                    # inner edge of the shaft catwalks
+LADDER_X = 1.0                      # every inside ladder is in this column of cells, east of the axis
+THROAT_LADDER_Z = -LINER + 0.14     # on the throat wall, from the deck hatch
+WALL_LADDER_Z = -WIDE + 0.14        # on the wall of the wide shaft, through a hatch in every catwalk
 
 
-def shaft_ladder(m, y0, y1, wall, ties):
-    """The shaft ladder runs straight down one column, tied back to the wall behind the climber."""
-    m.ladder(LADDER_X, LADDER_Z, y0, y1, standoff=-(wall + LADDER_Z), ties=ties)
+def catwalk(m, y, a0=CATWALK_IN, a1=WIDE - 0.15, landing=False):
+    """A shaft platform: a grated catwalk round the wall, leaving the middle of the shaft open, with a guard
+    rail along its inner edge. The wall ladder passes through a hatch on its north side.
 
-
-def catwalk(m, y, a0=CATWALK_IN, a1=WIDE - 0.15):
-    """A shaft platform: a grated catwalk round the wall, leaving the middle of the shaft open. A guard rail
-    runs along its inner edge, with a gate way on the north side where the ladder hangs."""
+    The first catwalk also has a landing: a bay standing out from its inner edge, where the ladder that
+    hangs from the throat comes down."""
     mid, width = (a0 + a1) / 2, a1 - a0
+    half = side(a1) / 2
+    hatch = 4.5      # the hatch runs from here out to the wall
+    faces = ["up", "down", "east", "west"]
     for k in range(8):
         yy = y - 0.05 - (0.012 if k % 2 else 0)      # neighbours overlap at the corners, so they sit a hair apart
-        m.east(k * 45, (mid, yy, 0), (width, 0.1, side(a1)), "grating", faces=["up", "down", "east", "west"])
+        if k == 2:
+            # north side (its tangential axis is world x): deck everywhere but the hatch cell at x 0.5..1.5
+            m.east(90, ((a0 + hatch) / 2, yy, 0), (hatch - a0, 0.1, 2 * half), "grating", faces=faces)
+            m.east(90, ((hatch + a1) / 2, yy, (0.5 - half) / 2), (a1 - hatch, 0.1, half + 0.5), "grating", faces=faces)
+            m.east(90, ((hatch + a1) / 2, yy, (1.5 + half) / 2), (a1 - hatch, 0.1, half - 1.5), "grating", faces=faces)
+            for x in (LADDER_X - 0.5, LADDER_X + 0.5):
+                m.box((x, y + 0.07, -(hatch + a1) / 2), (0.08, 0.14, a1 - hatch), "band")       # coaming
+            m.box((LADDER_X, y + 0.07, -hatch), (1.08, 0.14, 0.08), "band")
+        else:
+            m.east(k * 45, (mid, yy, 0), (width, 0.1, 2 * half), "grating", faces=faces)
         m.east(k * 45, (a0 + 0.06, y - 0.2, 0), (0.12, 0.3, side(a0)), "girder", faces=["east", "west", "down"])    # inner stringer
         wx, wz = yaw(k * 45 + 22.5, a1 / C22, 0)
         ix, iz = yaw(k * 45 + 22.5, (a0 + 0.2) / C22, 0)
         m.member((wx, y - 1.7, wz), (ix, y - 0.3, iz), 0.16, 0.16, "girder")                                         # bracket off the wall
 
+    def post(x, z):
+        m.member((x, y, z), (x, y + 1.1, z), 0.09, 0.09, "steel", caps=True, chunk=1.2)
+
+    def rail(p0, p1):
+        if math.hypot(p1[0] - p0[0], p1[1] - p0[1]) < 0.3:
+            return
+        for h in (0.55, 1.05):
+            m.member((p0[0], y + h, p0[1]), (p1[0], y + h, p1[1]), 0.06, 0.06, "steel", chunk=6)
+
     corners = [yaw(k * 45 + 22.5, (a0 + 0.08) / C22, 0) for k in range(8)]
     for x, z in corners:
-        m.member((x, y, z), (x, y + 1.1, z), 0.09, 0.09, "steel", caps=True, chunk=1.2)
+        post(x, z)
+    bay = (LADDER_X - 1.5, LADDER_X + 0.5)      # the landing is two cells wide: under the ladder and beside it
     for k in range(8):
-        (x0, z0), (x1, z1) = corners[k - 1], corners[k]
-        runs = [((x0, z0), (x1, z1))]
-        if k == 2:
-            # the north side: leave the ladder's gate way open, with a post either side of it
-            gz = (z0 + z1) / 2
-            runs = [((x0, z0), (LADDER_X + 0.55, gz)), ((LADDER_X - 0.55, gz), (x1, z1))]
-            for gx in (LADDER_X + 0.55, LADDER_X - 0.55):
-                m.member((gx, y, gz), (gx, y + 1.1, gz), 0.09, 0.09, "steel", caps=True, chunk=1.2)
-        for (ax, az), (bx, bz) in runs:
-            if math.hypot(bx - ax, bz - az) < 0.3:
-                continue
-            for h in (0.55, 1.05):
-                m.member((ax, y + h, az), (bx, y + h, bz), 0.06, 0.06, "steel", chunk=6)
-    # two short bearers from the catwalk's edge out to the ladder
-    for dx in (-0.36, 0.36):
-        m.box((LADDER_X + dx, y - 0.08, (LADDER_Z - a0) / 2), (0.1, 0.12, a0 + LADDER_Z + 0.1), "girder")
+        p0, p1 = corners[k - 1], corners[k]
+        if k == 2 and landing:
+            # the inner rail opens where the landing joins: p0 is the east corner, p1 the west
+            edge = (p0[1] + p1[1]) / 2
+            rail((bay[0], edge), p1)
+            post(bay[0], edge)
+        else:
+            rail(p0, p1)
+
+    if landing:
+        z0, z1 = -a0, -a0 + 1.0
+        m.box(((bay[0] + bay[1]) / 2, y - 0.07, (z0 + z1) / 2), (bay[1] - bay[0], 0.1, 1.0), "grating")
+        m.box(((bay[0] + bay[1]) / 2, y - 0.22, z1 - 0.06), (bay[1] - bay[0], 0.3, 0.12), "girder", faces=["north", "south", "down"])
+        for x in bay:
+            post(x, z1)
+            m.member((x, y - 1.3, z0 - 0.1), (x, y - 0.3, z1 - 0.1), 0.14, 0.14, "girder")         # knee brace off the catwalk
+        rail((bay[0], z1), (bay[1], z1))
+        rail((bay[0], z0), (bay[0], z1))
+        rail((bay[1], z0), (bay[1], z1))
 
 
 def shaft(kind):
     """One 8 m lift of the shaft: liner, ring beams and ladder.
 
     'top' is the first lift: a 3 m throat the width of the shaft mouth, which carries the tower, opening
-    out to the full bore beneath it. 'platform' lifts carry a catwalk at their top."""
+    out to the full bore beneath it. Its ladder runs down the throat wall from the deck hatch and then
+    hangs free to the landing on the first catwalk. From there down the ladder is on the shaft wall.
+    'platform' lifts carry a catwalk at their top; 'landing' is the first of them."""
     m = Model("shaft" + kind, (-2, -4, -1))
     y0, y1 = -MODULE, 0.0
     wide_top = THROAT if kind == "top" else y1
@@ -397,8 +424,6 @@ def shaft(kind):
     m.flange(y0, y0 + 0.35, WIDE - 0.02, t=0.4)
     m.flange(y0 + 4, y0 + 4.2, WIDE - 0.02, t=0.25)
 
-    # stays to the wall sit well above anyone walking the catwalk at the foot of this lift
-    stays = [y0 + 3.2, y0 + 5.6]
     if kind == "top":
         m.ring(THROAT, y1, LINER - 0.02, 0.12, "tubbing", outside=False, rims=False)
         m.flange(THROAT - 0.3, THROAT + 0.1, LINER + 0.35, t=0.5)                          # rim of the throat
@@ -406,13 +431,15 @@ def shaft(kind):
         # brackets carrying the throat rim back to the wall, one over each corner
         for k in range(8):
             m.east(k * 45 + 22.5, ((LINER + WIDE) / 2 / C22, THROAT - 0.25, 0), ((WIDE - LINER) / C22 - 0.3, 0.3, 0.2), "girder")
-        shaft_ladder(m, THROAT, y1, LINER, [THROAT + 1.0, THROAT + 2.4])
-        shaft_ladder(m, y0, THROAT, WIDE, stays)
+        m.ladder(LADDER_X, THROAT_LADDER_Z, THROAT, y1)
+        # below the roof it hangs free, stayed to the wall above head height, down to the landing
+        m.ladder(LADDER_X, THROAT_LADDER_Z, y0, THROAT, standoff=-(WIDE - LINER), ties=[y0 + 3.2, y0 + 4.6])
+        m.ladder(LADDER_X, WALL_LADDER_Z, y0, y0 + 1.1)                                     # the wall ladder stands a rung above the first catwalk
     else:
-        shaft_ladder(m, y0, y1, WIDE, stays)
+        m.ladder(LADDER_X, WALL_LADDER_Z, y0, y1)
 
-    if kind == "platform":
-        catwalk(m, y1)
+    if kind in ("platform", "landing"):
+        catwalk(m, y1, landing=kind == "landing")
     return m
 
 
@@ -514,7 +541,7 @@ def valvestation():
         m.handwheel(at(valve)[0], yc - 1.33, at(valve)[2])                                                # 2.1 m above the platform
         for r in (1.9, 3.3):
             m.east(k * 90, (r, yc, 0), (0.14, 0.9, 0.9), "band")                                      # pipe flanges
-        m.east(k * 90, (WIDE - 0.2, yc, 0), (0.2, 1.3, 1.3), "band")                                  # relief port
+        m.east(k * 90, (WIDE - 0.2, yc, 0), (0.2, 1.3, 1.0), "band")                                  # relief port, clear of the ladder
     return m
 
 
@@ -858,7 +885,7 @@ def hull(level, lit=False):
     while y < ladder_top:
         stays.append(y)
         y += 2.4
-    m.ladder(LADDER_X, LADDER_Z, y0, ladder_top, standoff=-(HULL - t + LADDER_Z), ties=stays)
+    m.ladder(LADDER_X, -3.44, y0, ladder_top, standoff=-0.75, ties=stays)
     # and one up the outside of the south frame, to the galleries
     m.ladder(1.0, 5.6, y0, min(y1, 25.1), standoff=-0.2)
 
@@ -1106,7 +1133,7 @@ def mainport(side):
 
 def build_all():
     return [
-        shaft("top"), shaft("plain"), shaft("platform"), collar(), headframe(),
+        shaft("top"), shaft("plain"), shaft("platform"), shaft("landing"), collar(), headframe(),
         riser(False), riser(True), valvestation(),
         injectors(), injectors(top=True), pump(), ringmain(),
         core(True, False), core(True, True), core(False, False), core(False, True), manifold(), exhaust(),
