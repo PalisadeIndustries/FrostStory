@@ -355,6 +355,13 @@ def collar():
     m = Model("collar", (-1, -1, 0))
     m.flange(-0.5, 0.0, LINER + 0.25, t=0.5)
     m.deck(0.0, LINER - 0.02, gap=(0.5, 1.5))
+    # The ladder way is a hatch one block square against the north wall, with a raised coaming round it.
+    a = LINER - 0.02
+    inner = side(a) / 2
+    m.box((1.0, -0.05, -(2.5 + inner) / 2), (1.0, 0.1, 2.5 - inner), "grating")
+    for x in (0.5, 1.5):
+        m.box((x, 0.07, -3.0), (0.08, 0.14, 1.0), "band")
+    m.box((1.0, 0.07, -2.5), (1.08, 0.14, 0.08), "band")
     return m
 
 
@@ -416,8 +423,10 @@ def riser(base):
 
 
 def valvestation():
-    """Four gate valves on arms from the riser to relief ports in the liner. Anchor cell is the arms' level."""
-    m = Model("valvestation", (0, 0, 0))
+    """Four gate valves on arms from the riser to relief ports in the liner, hung four blocks above a
+    platform. The valves are inverted: bonnet and handwheel hang below the arm, just overhead, so they
+    can be worked from the platform and walked under. Anchored in the south arm, at the arms' level."""
+    m = Model("valvestation", (0, 0, 1))
     yc = -0.5
     m.vprism(0, 0, yc - 0.55, yc + 0.55, 0.9, "band", caps=(True, True), captex="band")
     for k in range(4):
@@ -428,9 +437,9 @@ def valvestation():
 
         m.hprism(at(0.8), at(LINER - 0.1), 0.3, "pipe")
         m.vprism(*at(2.0)[::2], yc - 0.6, yc + 0.6, 0.55, "red", caps=(True, True), captex="band")   # valve body
-        m.vprism(*at(2.0)[::2], yc + 0.6, yc + 1.05, 0.3, "band", caps=(False, True), captex="band")  # bonnet
-        m.vprism(*at(2.0)[::2], yc + 1.05, yc + 1.6, 0.06, "steel")                                   # stem
-        m.handwheel(at(2.0)[0], yc + 1.55, at(2.0)[2])
+        m.vprism(*at(2.0)[::2], yc - 1.0, yc - 0.6, 0.3, "band", caps=(True, False), captex="band")   # bonnet, underneath
+        m.vprism(*at(2.0)[::2], yc - 1.38, yc - 1.0, 0.06, "steel")                                   # stem
+        m.handwheel(at(2.0)[0], yc - 1.33, at(2.0)[2])                                                # 2.1 m above the platform
         for r in (1.3, 2.7):
             m.east(k * 90, (r, yc, 0), (0.14, 0.9, 0.9), "band")                                      # pipe flanges
         m.east(k * 90, (LINER - 0.2, yc, 0), (0.2, 1.3, 1.3), "band")                                 # relief port
@@ -496,8 +505,8 @@ def core(lower, lit):
     coil = "coillit" if lit else "coil"
 
     if lower:
-        m.vprism(0, 0, 0.0, 0.6, 3.0, "band", caps=(False, True), captex="checker")
-        m.cone(0.6, 1.0, 3.0, VESSEL + 0.1, 0.12, "darkplate", courses=1, ribs=False, inside=False)
+        # The plinth stays inside the vessel's footprint: the deck round it is the way to the shaft hatch.
+        m.vprism(0, 0, 0.0, 1.0, VESSEL + 0.12, "band", caps=(False, True), captex="checker")
 
     # the heart: a ribbed column that glows once lit
     m.vprism(0, 0, wall_bot, wall_top, 1.2, coil, glow=255 if lit else 0, chunk=2.0)
@@ -519,10 +528,18 @@ def core(lower, lit):
         m.flange(y, y + 0.3, VESSEL + 0.12, t=0.4)
 
     # standpipes up the diagonals
+    # They leave the vessel overhead, so the walkway round the core stays clear.
     for k in range(4):
         x, z = yaw(k * 90 + 45, VESSEL + 0.5, 0)
-        m.vprism(x, z, 0.6 if lower else y0, y1, 0.28, "pipe")
-        for y in ((2.5, 6.5) if lower else (10.5, 14.5)):
+        if lower:
+            elbow = 2.75
+            vx, vz = yaw(k * 90 + 45, VESSEL - 0.1, 0)
+            m.hprism((vx, elbow, vz), (x, elbow, z), 0.28, "pipe")
+            m.vprism(x, z, elbow - 0.3, elbow + 0.3, 0.36, "band", caps=(True, True), captex="band")
+            m.vprism(x, z, elbow, y1, 0.28, "pipe")
+        else:
+            m.vprism(x, z, y0, y1, 0.28, "pipe")
+        for y in ((4.6, 6.8) if lower else (10.5, 14.5)):
             m.east(k * 90 + 45, (VESSEL + 0.25, y, 0), (0.5, 0.12, 0.7), "steel")
 
     if not lower:

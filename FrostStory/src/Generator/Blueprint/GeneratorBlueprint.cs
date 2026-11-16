@@ -296,13 +296,16 @@ public static class GeneratorBlueprint
         for (int m = 1; m < Modules(depth); m += 2) yield return -ShaftModule * m;
     }
 
-    /// <summary>Valve stations hang three blocks above every other platform, clear of a walker's head.</summary>
+    /// <summary>
+    /// Valve stations hang four blocks above every other platform: three clear blocks under the arms, with the
+    /// inverted valves' handwheels just overhead.
+    /// </summary>
     public static IEnumerable<int> ValveLevels(int depth)
     {
         int i = 0;
         foreach (int y in PlatformLevels(depth))
         {
-            if (i++ % 2 == 0) yield return y + 3;
+            if (i++ % 2 == 0) yield return y + 4;
         }
     }
 
@@ -408,7 +411,6 @@ public static class GeneratorBlueprint
 
                 if (!stations.Contains(y)) continue;
 
-                b.Set(0, y, 0, Blocks.Segment("valvestation"));
                 for (int k = 0; k < 4; k++)
                 {
                     for (int dist = 1; dist <= 3; dist++)
@@ -417,6 +419,9 @@ public static class GeneratorBlueprint
                         b.Set(x, y, z, Blocks.FillSolid);
                     }
                 }
+
+                // anchored in the south arm: the axis cell at this height can belong to a riser lift
+                b.Set(0, y, 1, Blocks.Segment("valvestation"));
             }
         }
 
