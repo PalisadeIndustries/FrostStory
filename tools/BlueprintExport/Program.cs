@@ -42,6 +42,29 @@ var stages = GeneratorBlueprint.Build(depth)
 var swaps = GeneratorBlueprint.LitSwaps.SelectMany(s => new[] { s.X, s.Y, s.Z, IndexOf(s.Cold), IndexOf(s.Lit) }).ToArray();
 IndexOf(Blocks.Console + "-north");
 
+// A segment's model hangs off its anchor block, so a later piece must never write over one: the world
+// would still match the blueprint while the model silently vanished. Only the headframe is meant to go.
+var anchors = new Dictionary<(int, int, int), string>();
+int clobbered = 0;
+foreach (var stage in GeneratorBlueprint.Build(depth))
+{
+    foreach (var step in stage.Steps)
+    {
+        foreach (var p in step.Placements)
+        {
+            var cell = (p.X, p.Y, p.Z);
+            if (anchors.TryGetValue(cell, out var held) && held != p.Code && !held.Contains("headframe"))
+            {
+                Console.WriteLine($"ANCHOR LOST: {held} at {cell} is overwritten by {p.Code ?? "air"} in {stage.Id}/{step.Key}");
+                clobbered++;
+            }
+
+            if (p.Code != null && p.Code.Contains("gensegment")) anchors[cell] = p.Code;
+            else anchors.Remove(cell);
+        }
+    }
+}
+
 var doc = new
 {
     depth = GeneratorBlueprint.ClampDepth(depth),
@@ -54,3 +77,4 @@ var doc = new
 
 File.WriteAllText(outPath, JsonSerializer.Serialize(doc));
 Console.WriteLine($"Wrote {outPath}: {stages.Length} stages, {stages.Sum(s => s.steps.Length)} pieces, {stages.Sum(s => s.steps.Sum(p => p.cells.Length / 4))} placements, {codes.Count} block codes.");
+return clobbered == 0 ? 0 : 1;

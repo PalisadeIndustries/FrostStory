@@ -4,6 +4,7 @@
 		{
 			"code": "part",
 			"states": [
+				"shafttop",
 				"shaftplain",
 				"shaftplatform",
 				"collar",
@@ -12,6 +13,7 @@
 				"riserbase",
 				"valvestation",
 				"injectors",
+				"injectorstop",
 				"pump",
 				"ringmain",
 				"corelower",

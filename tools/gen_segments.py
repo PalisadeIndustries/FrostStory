@@ -177,8 +177,9 @@ class Model:
                 self.box((p0[0] + dx * mid, p0[1], p0[2] + dz * mid), (s, 2 * a, hi - lo), tex, (0, theta, k * 45), faces=faces,
                          facetex={"north": captex, "south": captex})
 
-    def ring(self, y0, y1, a, t, tex, sides=range(8), inside=True, outside=True, rims=True, origin=(0, 0), phase=0, intex=None, chunk=None):
-        """An octagonal wall: one panel per side, outer faces meeting at the corners."""
+    def ring(self, y0, y1, a, t, tex, sides=range(8), inside=True, outside=True, rims=True, origin=(0, 0), phase=0, intex=None, chunk=None, split=1):
+        """An octagonal wall: one panel per side (or `split` panels, where a side is wider than its texture),
+        outer faces meeting at the corners."""
         s = side(a)
         _, _, th = TEXTURES[tex]
         chunk = chunk or th / 16
@@ -193,8 +194,10 @@ class Model:
                     faces.append("down")
                 if rims and i == n - 1:
                     faces.append("up")
-                self.east(k * 45 + phase, (a - t / 2, y0 + (i + 0.5) * step, 0), (t, step, s), tex, origin=origin, faces=faces,
-                          facetex={"west": intex or tex}, uvoff=(k * 24, 0))
+                for j in range(split):
+                    zc = -s / 2 + (j + 0.5) * s / split
+                    self.east(k * 45 + phase, (a - t / 2, y0 + (i + 0.5) * step, zc), (t, step, s / split), tex, origin=origin,
+                              faces=faces, facetex={"west": intex or tex}, uvoff=(k * 24 + j * 16, 0))
 
     def wall(self, k, a, t, y0, y1, z0, z1, tex, inside=True, intex=None):
         """Part of one octagon side, between tangential offsets z0..z1, e.g. the piers either side of a door."""
@@ -280,8 +283,10 @@ class Model:
         for k in range(4):
             self.east(k * 90 + 45, ((inner + a) / 2, yc - 0.03, 0), (a - inner, t, 2 * s), "checker", faces=["up", "down", "west"])
 
-    def ladder(self, x, z, y0, y1, standoff=0.0):
-        """A steel ladder on the north side of a cell column; its rungs run east-west."""
+    def ladder(self, x, z, y0, y1, standoff=0.0, ties=None):
+        """A steel ladder up a cell column; its rungs run east-west. standoff ties it back to a wall that far
+        away in z, with a pair of stays at each height in ties (every 2 m by default). The stays run from
+        the rails, so they pass either side of whoever is climbing."""
         zr = z
         for dx in (-0.36, 0.36):
             self.member((x + dx, y0, zr), (x + dx, y1, zr), 0.07, 0.07, "steel", chunk=1.0)
@@ -290,11 +295,15 @@ class Model:
             self.box((x, y, zr), (0.66, 0.05, 0.05), "steel", faces=["north", "south", "up", "down"])
             y += 0.4
         if standoff:
-            y = y0 + 1
-            while y < y1:
+            if ties is None:
+                ties = []
+                y = y0 + 1
+                while y < y1:
+                    ties.append(y)
+                    y += 2
+            for y in ties:
                 for dx in (-0.36, 0.36):
-                    self.box((x + dx, y, z + standoff / 2), (0.06, 0.06, abs(standoff)), "steel", faces=["east", "west", "up", "down"])
-                y += 2
+                    self.box((x + dx, y, z + standoff / 2), (0.08, 0.08, abs(standoff)), "steel", faces=["east", "west", "up", "down"])
 
     # ------------------------------------------------------------------ output
 
@@ -321,7 +330,9 @@ HULL = 4.5        # hull drum, 9 m across the flats
 CROWN = 2.5       # upper drum
 STACK = 1.5
 VESSEL = 2.5      # core vessel
-LINER = 3.5       # shaft liner, inside the block lining
+LINER = 3.5       # liner of the shaft mouth and throat, inside the block lining
+WIDE = 5.5        # liner of the shaft below the throat, two blocks wider
+THROAT = -3.0     # the throat runs from the deck down to here
 COLUMN_X = 5.1    # frame columns stand just outside the hull
 COLUMN_Z = 2.0
 FRAME_TOP = 35.0
@@ -330,29 +341,84 @@ MODULE = 8        # shaft module height
 
 # ----------------------------------------------------------------------------- shaft
 
-def shaft(platform):
-    """One 8 m lift of the shaft: liner, ring beam, ladder, and (every other lift) a platform at its top."""
-    m = Model("shaftplatform" if platform else "shaftplain", (-1, -4, 0))
+LADDER_X, LADDER_Z = 1.0, -2.78     # the inside ladder column: against the far side of its cell from the wall
+CATWALK_IN = 3.5                    # inner edge of the shaft catwalks; the ladder hangs just inside it
+
+
+def shaft_ladder(m, y0, y1, wall, ties):
+    """The shaft ladder runs straight down one column, tied back to the wall behind the climber."""
+    m.ladder(LADDER_X, LADDER_Z, y0, y1, standoff=-(wall + LADDER_Z), ties=ties)
+
+
+def catwalk(m, y, a0=CATWALK_IN, a1=WIDE - 0.15):
+    """A shaft platform: a grated catwalk round the wall, leaving the middle of the shaft open. A guard rail
+    runs along its inner edge, with a gate way on the north side where the ladder hangs."""
+    mid, width = (a0 + a1) / 2, a1 - a0
+    for k in range(8):
+        yy = y - 0.05 - (0.012 if k % 2 else 0)      # neighbours overlap at the corners, so they sit a hair apart
+        m.east(k * 45, (mid, yy, 0), (width, 0.1, side(a1)), "grating", faces=["up", "down", "east", "west"])
+        m.east(k * 45, (a0 + 0.06, y - 0.2, 0), (0.12, 0.3, side(a0)), "girder", faces=["east", "west", "down"])    # inner stringer
+        wx, wz = yaw(k * 45 + 22.5, a1 / C22, 0)
+        ix, iz = yaw(k * 45 + 22.5, (a0 + 0.2) / C22, 0)
+        m.member((wx, y - 1.7, wz), (ix, y - 0.3, iz), 0.16, 0.16, "girder")                                         # bracket off the wall
+
+    corners = [yaw(k * 45 + 22.5, (a0 + 0.08) / C22, 0) for k in range(8)]
+    for x, z in corners:
+        m.member((x, y, z), (x, y + 1.1, z), 0.09, 0.09, "steel", caps=True, chunk=1.2)
+    for k in range(8):
+        (x0, z0), (x1, z1) = corners[k - 1], corners[k]
+        runs = [((x0, z0), (x1, z1))]
+        if k == 2:
+            # the north side: leave the ladder's gate way open, with a post either side of it
+            gz = (z0 + z1) / 2
+            runs = [((x0, z0), (LADDER_X + 0.55, gz)), ((LADDER_X - 0.55, gz), (x1, z1))]
+            for gx in (LADDER_X + 0.55, LADDER_X - 0.55):
+                m.member((gx, y, gz), (gx, y + 1.1, gz), 0.09, 0.09, "steel", caps=True, chunk=1.2)
+        for (ax, az), (bx, bz) in runs:
+            if math.hypot(bx - ax, bz - az) < 0.3:
+                continue
+            for h in (0.55, 1.05):
+                m.member((ax, y + h, az), (bx, y + h, bz), 0.06, 0.06, "steel", chunk=6)
+    # two short bearers from the catwalk's edge out to the ladder
+    for dx in (-0.36, 0.36):
+        m.box((LADDER_X + dx, y - 0.08, (LADDER_Z - a0) / 2), (0.1, 0.12, a0 + LADDER_Z + 0.1), "girder")
+
+
+def shaft(kind):
+    """One 8 m lift of the shaft: liner, ring beams and ladder.
+
+    'top' is the first lift: a 3 m throat the width of the shaft mouth, which carries the tower, opening
+    out to the full bore beneath it. 'platform' lifts carry a catwalk at their top."""
+    m = Model("shaft" + kind, (-2, -4, -1))
     y0, y1 = -MODULE, 0.0
-    m.ring(y0, y1, LINER - 0.02, 0.12, "tubbing", outside=False, rims=False)
-    m.flange(y0, y0 + 0.35, LINER - 0.02, t=0.4)
-    m.flange(y0 + 4, y0 + 4.2, LINER - 0.02, t=0.25)
-    m.ladder(1.0, -LINER + 0.14, y0, y1)
-    if platform:
-        m.deck(y1, LINER - 0.15, hole=1.5, gap=(0.5, 1.5))
-        # guard rail round the well
-        for sx, sz in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
-            m.member((sx * 1.5, y1, sz * 1.5), (sx * 1.5, y1 + 1.05, sz * 1.5), 0.08, 0.08, "steel", caps=True)
-        for h in (0.55, 1.05):
-            for sgn in (1, -1):
-                m.member((-1.5, y1 + h, sgn * 1.5), (1.5, y1 + h, sgn * 1.5), 0.06, 0.06, "steel")
-                m.member((sgn * 1.5, y1 + h, -1.5), (sgn * 1.5, y1 + h, 1.5), 0.06, 0.06, "steel")
+    wide_top = THROAT if kind == "top" else y1
+
+    m.ring(y0, wide_top, WIDE - 0.02, 0.12, "tubbing", outside=False, rims=False, split=2)
+    m.flange(y0, y0 + 0.35, WIDE - 0.02, t=0.4)
+    m.flange(y0 + 4, y0 + 4.2, WIDE - 0.02, t=0.25)
+
+    # stays to the wall sit well above anyone walking the catwalk at the foot of this lift
+    stays = [y0 + 3.2, y0 + 5.6]
+    if kind == "top":
+        m.ring(THROAT, y1, LINER - 0.02, 0.12, "tubbing", outside=False, rims=False)
+        m.flange(THROAT - 0.3, THROAT + 0.1, LINER + 0.35, t=0.5)                          # rim of the throat
+        m.cone(THROAT - 0.6, THROAT, WIDE - 0.02, WIDE - 0.62, 0.14, "darkplate", courses=1)   # cove under the roof
+        # brackets carrying the throat rim back to the wall, one over each corner
+        for k in range(8):
+            m.east(k * 45 + 22.5, ((LINER + WIDE) / 2 / C22, THROAT - 0.25, 0), ((WIDE - LINER) / C22 - 0.3, 0.3, 0.2), "girder")
+        shaft_ladder(m, THROAT, y1, LINER, [THROAT + 1.0, THROAT + 2.4])
+        shaft_ladder(m, y0, THROAT, WIDE, stays)
+    else:
+        shaft_ladder(m, y0, y1, WIDE, stays)
+
+    if kind == "platform":
+        catwalk(m, y1)
     return m
 
 
 def collar():
     """The shaft mouth: a steel curb and the grated deck the core will stand on."""
-    m = Model("collar", (-1, -1, 0))
+    m = Model("collar", (-2, -1, 0))
     m.flange(-0.5, 0.0, LINER + 0.25, t=0.5)
     m.deck(0.0, LINER - 0.02, gap=(0.5, 1.5))
     # The ladder way is a hatch one block square against the north wall, with a raised coaming round it.
@@ -400,25 +466,30 @@ def headframe():
 
 # ----------------------------------------------------------------------------- riser and valves
 
+RISER = 0.95      # main riser: just under 2 m across
+
+
 def riser(base):
     m = Model("riserbase" if base else "riser", (0, -4, 0))
     y0, y1 = -MODULE, 0.0
     if base:
         # wellhead: a heavy footing with a 45 degree bell where the bore comes up
-        m.vprism(0, 0, y0, y0 + 0.4, 1.5, "band", caps=(False, True), captex="checker")
-        m.cone(y0 + 0.4, y0 + 1.3, 1.4, 0.55, 0.12, "darkplate", courses=2, inside=False)
+        m.vprism(0, 0, y0, y0 + 0.4, 2.3, "band", caps=(False, True), captex="checker")
+        m.cone(y0 + 0.4, y0 + 1.6, 2.15, RISER, 0.14, "darkplate", courses=2, inside=False)
         for k in range(4):
-            m.east(k * 90 + 45, (1.0, y0 + 0.85, 0), (0.9, 0.9, 0.12), "band", faces=["north", "south", "east", "up"])
-        m.vprism(0, 0, y0 + 1.3, y1, 0.55, "pipe")
+            m.east(k * 90 + 45, (1.75, y0 + 1.0, 0), (1.2, 1.2, 0.14), "band", faces=["north", "south", "east", "up"])
+        m.vprism(0, 0, y0 + 1.6, y1, RISER, "pipe")
         # finned heat exchanger where the riser leaves the bore
-        y = y0 + 1.55
-        while y < y0 + 4.6:
-            m.vprism(0, 0, y, y + 0.08, 1.05, "band", caps=(True, True), captex="band")
+        y = y0 + 1.9
+        while y < y0 + 5.0:
+            m.vprism(0, 0, y, y + 0.08, RISER + 0.55, "band", caps=(True, True), captex="band")
             y += 0.34
     else:
-        m.vprism(0, 0, y0, y1, 0.55, "pipe")
+        m.vprism(0, 0, y0, y1, RISER, "pipe")
     for y in (y0 + 1.9, y0 + 3.9, y0 + 5.9, y0 + 7.8):
-        m.vprism(0, 0, y, y + 0.2, 0.75, "band", caps=(True, True), captex="band")
+        if base and y < y0 + 5.0:
+            continue
+        m.vprism(0, 0, y, y + 0.22, RISER + 0.25, "band", caps=(True, True), captex="band")
     return m
 
 
@@ -428,38 +499,42 @@ def valvestation():
     can be worked from the platform and walked under. Anchored in the south arm, at the arms' level."""
     m = Model("valvestation", (0, 0, 1))
     yc = -0.5
-    m.vprism(0, 0, yc - 0.55, yc + 0.55, 0.9, "band", caps=(True, True), captex="band")
+    m.vprism(0, 0, yc - 0.6, yc + 0.6, RISER + 0.4, "band", caps=(True, True), captex="band")
+    valve = 4.4      # over the catwalk, so the handwheel can be reached
     for k in range(4):
         ox, oz = yaw(k * 90, 1, 0)
 
         def at(r, y=yc):
             return (ox * r, y, oz * r)
 
-        m.hprism(at(0.8), at(LINER - 0.1), 0.3, "pipe")
-        m.vprism(*at(2.0)[::2], yc - 0.6, yc + 0.6, 0.55, "red", caps=(True, True), captex="band")   # valve body
-        m.vprism(*at(2.0)[::2], yc - 1.0, yc - 0.6, 0.3, "band", caps=(True, False), captex="band")   # bonnet, underneath
-        m.vprism(*at(2.0)[::2], yc - 1.38, yc - 1.0, 0.06, "steel")                                   # stem
-        m.handwheel(at(2.0)[0], yc - 1.33, at(2.0)[2])                                                # 2.1 m above the platform
-        for r in (1.3, 2.7):
+        m.hprism(at(RISER + 0.3), at(WIDE - 0.1), 0.3, "pipe", chunk=2.5)
+        m.vprism(*at(valve)[::2], yc - 0.6, yc + 0.6, 0.55, "red", caps=(True, True), captex="band")   # valve body
+        m.vprism(*at(valve)[::2], yc - 1.0, yc - 0.6, 0.3, "band", caps=(True, False), captex="band")   # bonnet, underneath
+        m.vprism(*at(valve)[::2], yc - 1.38, yc - 1.0, 0.06, "steel")                                   # stem
+        m.handwheel(at(valve)[0], yc - 1.33, at(valve)[2])                                                # 2.1 m above the platform
+        for r in (1.9, 3.3):
             m.east(k * 90, (r, yc, 0), (0.14, 0.9, 0.9), "band")                                      # pipe flanges
-        m.east(k * 90, (LINER - 0.2, yc, 0), (0.2, 1.3, 1.3), "band")                                 # relief port
+        m.east(k * 90, (WIDE - 0.2, yc, 0), (0.2, 1.3, 1.3), "band")                                  # relief port
     return m
 
 
 # ----------------------------------------------------------------------------- pumps
 
-INJECTOR = (3.15, -1.2)
+INJECTOR = (5.15, -1.2)
 
 
-def injectors():
-    """Four injection lines down one lift of the shaft."""
-    m = Model("injectors", (1, -4, 0))
+def injectors(top=False):
+    """Four injection lines down one lift of the shaft. In the top lift they come out of the roof under the pad."""
+    m = Model("injectorstop" if top else "injectors", (2, -4, 1))
+    y1 = THROAT if top else 0.0
     for k in range(4):
         x, z = yaw(k * 90, *INJECTOR)
-        m.vprism(x, z, -MODULE, 0.0, 0.25, "pipe")
+        m.vprism(x, z, -MODULE, y1, 0.25, "pipe")
+        if top:
+            m.vprism(x, z, y1 - 0.2, y1, 0.45, "band", caps=(True, False), captex="band")     # where it leaves the roof
         for y in (-MODULE + 0.1, -MODULE + 4.1):
             m.vprism(x, z, y, y + 0.16, 0.36, "band", caps=(True, True), captex="band")
-            m.east(k * 90, (LINER - 0.14, y + 0.08, INJECTOR[1]), (0.3, 0.1, 0.5), "steel")   # wall bracket
+            m.east(k * 90, (WIDE - 0.14, y + 0.08, INJECTOR[1]), (0.3, 0.1, 0.5), "steel")   # wall bracket
     return m
 
 
@@ -778,7 +853,12 @@ def hull(level, lit=False):
 
     # service ladder up the inside, standing off the north wall
     ladder_top = (10.0, 19.0, 21.0)[level]
-    m.ladder(1.0, -3.44, y0, ladder_top, standoff=-0.75)
+    stays = []
+    y = y0 + 2.6          # clear of anyone walking round the core or along the gallery
+    while y < ladder_top:
+        stays.append(y)
+        y += 2.4
+    m.ladder(LADDER_X, LADDER_Z, y0, ladder_top, standoff=-(HULL - t + LADDER_Z), ties=stays)
     # and one up the outside of the south frame, to the galleries
     m.ladder(1.0, 5.6, y0, min(y1, 25.1), standoff=-0.2)
 
@@ -1021,9 +1101,9 @@ def mainport(side):
 
 def build_all():
     return [
-        shaft(False), shaft(True), collar(), headframe(),
+        shaft("top"), shaft("plain"), shaft("platform"), collar(), headframe(),
         riser(False), riser(True), valvestation(),
-        injectors(), pump(), ringmain(),
+        injectors(), injectors(top=True), pump(), ringmain(),
         core(True, False), core(True, True), core(False, False), core(False, True), manifold(), exhaust(),
         frame(0), frame(1), frame(2), frame(2, lapped=True),
         hull(0), hull(0, lit=True), hull(1), hull(1, lit=True), hull(2), shoulder(), stack(), jacket(),

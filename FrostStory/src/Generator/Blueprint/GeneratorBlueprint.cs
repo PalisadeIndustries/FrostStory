@@ -82,7 +82,7 @@ public readonly record struct LitSwap(int X, int Y, int Z, string Cold, string L
 /// the rock lining of the shaft are ordinary blocks. Dimensions here and in gen_segments.py go together.
 ///
 /// Looking down (north is -Z):
-///   - hull: an octagon 9 blocks across the flats, shaft liner 7 across
+///   - hull: an octagon 9 blocks across the flats; shaft liner 7 across at the mouth, 11 below the throat
 ///   - support frames: paired columns just outside the hull, on the four axes
 ///   - injection pumps: towers on the four diagonals
 ///   - foundation pad: 17 blocks across
@@ -97,6 +97,13 @@ public static class GeneratorBlueprint
     public const int ShaftModule = 8;
 
     public const int HullRadius = 4;
+
+    /// <summary>
+    /// The shaft mouth is the hull's width, because the tower stands on its rim. Three blocks down, under
+    /// the pad, the shaft opens out to this radius.
+    /// </summary>
+    public const int ShaftRadius = 6;
+    private const int ThroatBottom = -2;
     public const int PadRadius = 8;
     public const int ClearRadiusUpper = 9;
 
@@ -245,16 +252,25 @@ public static class GeneratorBlueprint
 
     public static bool InInterior(int x, int z, int r) => InDisc(x, z, r) && !InShell(x, z, r);
 
+    private static int ShaftRadiusAt(int y) => y >= ThroatBottom ? HullRadius : ShaftRadius;
+
     /// <summary>Shaft cells that lie behind the diagonal faces of the modelled liner.</summary>
-    private static bool BehindLiner(int x, int z) => InInterior(x, z, HullRadius) && Math.Abs(x) + Math.Abs(z) >= 5;
+    private static bool BehindLiner(int x, int y, int z)
+    {
+        int r = ShaftRadiusAt(y);
+        return InInterior(x, z, r) && Math.Abs(x) + Math.Abs(z) >= (r == HullRadius ? 5 : 8);
+    }
 
     /// <summary>Walkway cells of a platform: everything inside the wall except the 3x3 well and the ladder way.</summary>
     private static bool IsWalkway(int x, int z, bool inShaft)
     {
-        return InInterior(x, z, HullRadius)
-            && !(inShaft && BehindLiner(x, z))
-            && Math.Max(Math.Abs(x), Math.Abs(z)) >= 2
-            && !(x == LadderX && z == LadderZ);
+        if (x == LadderX && z == LadderZ) return false;
+
+        // In the shaft the platforms are catwalks round the wall, leaving the middle open; the ladder
+        // hangs at their inner edge. In the hull the gallery leaves only a well round the exhaust.
+        return inShaft
+            ? InInterior(x, z, ShaftRadius) && !BehindLiner(x, ThroatBottom - 1, z) && OctRadius(x, z) >= 3.9
+            : InInterior(x, z, HullRadius) && Math.Max(Math.Abs(x), Math.Abs(z)) >= 2;
     }
 
     /// <summary>Cells under an outside gallery: an octagonal ring between 5.5 and 6.7 blocks from the axis.</summary>
@@ -287,7 +303,10 @@ public static class GeneratorBlueprint
 
     private static int Modules(int depth) => depth / ShaftModule;
 
-    /// <summary>Cell an 8 m shaft lift is anchored at; the three families of lift use three columns.</summary>
+    /// <summary>
+    /// Height an 8 m shaft lift is anchored at. The three families of lift use three columns, all clear of
+    /// the riser and of the valve arms, which can pass at this height.
+    /// </summary>
     private static int ModuleAnchorY(int module) => -ShaftModule * module - 4;
 
     /// <summary>Platforms cap every other lift.</summary>
@@ -348,9 +367,10 @@ public static class GeneratorBlueprint
 
         for (int y = 0; y >= -3; y--)
         {
+            int open = ShaftRadiusAt(y);
             for (int x = -PadRadius; x <= PadRadius; x++)
                 for (int z = -PadRadius; z <= PadRadius; z++)
-                    if (InDisc(x, z, PadRadius) && !InDisc(x, z, HullRadius)) b.Set(x, y, z, Blocks.Foundation);
+                    if (InDisc(x, z, PadRadius) && !InDisc(x, z, open)) b.Set(x, y, z, Blocks.Foundation);
         }
 
         // A headframe stands over the dig until the core takes its place.
@@ -364,24 +384,25 @@ public static class GeneratorBlueprint
             {
                 // the top course is part of the pad; below it the rock is lined
                 string ring = y == 0 ? Blocks.Foundation : Blocks.Lining;
-                ForDisc(HullRadius, (x, z) => { if (InShell(x, z, HullRadius)) b.Set(x, y, z, ring); });
+                int r = ShaftRadiusAt(y);
+                ForDisc(r, (x, z) => { if (InShell(x, z, r)) b.Set(x, y, z, ring); });
 
-                ForDisc(HullRadius, (x, z) =>
+                ForDisc(r, (x, z) =>
                 {
-                    if (!InInterior(x, z, HullRadius)) return;
-                    if (x == LadderX && z == LadderZ) b.Set(x, y, z, Blocks.FillLadder);
-                    else if (BehindLiner(x, z)) b.Set(x, y, z, Blocks.FillSolid);
+                    if (!InInterior(x, z, r)) return;
+                    if (x == LadderX && z == LadderZ) b.Set(x, y, z, Blocks.FillLadderBack);
+                    else if (BehindLiner(x, y, z)) b.Set(x, y, z, Blocks.FillSolid);
                     else if (y == 0) b.Set(x, y, z, Blocks.FillDeck);
                     else if (platforms.Contains(y) && IsWalkway(x, z, true)) b.Set(x, y, z, Blocks.FillDeck);
                     else b.Set(x, y, z, null);
                 });
 
-                if (y == -1) b.Set(-1, y, 0, Blocks.Segment("collar"));
-                if (y == ModuleAnchorY(m)) b.Set(-1, y, 0, Blocks.Segment(m % 2 == 1 ? "shaftplatform" : "shaftplain"));
+                if (y == -1) b.Set(-2, y, 0, Blocks.Segment("collar"));
+                if (y == ModuleAnchorY(m)) b.Set(-2, y, -1, Blocks.Segment(m == 0 ? "shafttop" : m % 2 == 1 ? "shaftplatform" : "shaftplain"));
             }
 
             // Floor plug under the last lift.
-            if (m == modules - 1) ForDisc(HullRadius, (x, z) => b.Set(x, -depth, z, Blocks.Foundation));
+            if (m == modules - 1) ForDisc(ShaftRadius, (x, z) => b.Set(x, -depth, z, Blocks.Foundation));
         }
 
         return b.Build();
@@ -402,7 +423,7 @@ public static class GeneratorBlueprint
             b.Step("riser", number: i + 1, of: sections.Count);
             for (int y = sections[i].Low; y <= sections[i].High; y++)
             {
-                b.Set(0, y, 0, Blocks.FillSolid);
+                ForDisc(1, (x, z) => b.Set(x, y, z, Blocks.FillSolid));     // the riser is three cells across
 
                 for (int m = 0; m < modules; m++)
                 {
@@ -413,7 +434,7 @@ public static class GeneratorBlueprint
 
                 for (int k = 0; k < 4; k++)
                 {
-                    for (int dist = 1; dist <= 3; dist++)
+                    for (int dist = 2; dist <= ShaftRadius - 1; dist++)
                     {
                         var (x, z) = Rot(dist, 0, k);
                         b.Set(x, y, z, Blocks.FillSolid);
@@ -441,15 +462,19 @@ public static class GeneratorBlueprint
             b.Step("injectors", number: i + 1, of: sections.Count);
             for (int y = sections[i].Low; y <= sections[i].High; y++)
             {
-                for (int k = 0; k < 4; k++)
+                // the lines run down the wall of the wide shaft, and come out of its roof under the pad
+                if (y < ThroatBottom)
                 {
-                    var (x, z) = Rot(3, -1, k);
-                    b.Set(x, y, z, Blocks.FillSolid);
+                    for (int k = 0; k < 4; k++)
+                    {
+                        var (x, z) = Rot(ShaftRadius - 1, -1, k);
+                        b.Set(x, y, z, Blocks.FillSolid);
+                    }
                 }
 
                 for (int m = 0; m < Modules(depth); m++)
                 {
-                    if (y == ModuleAnchorY(m)) b.Set(1, y, 0, Blocks.Segment("injectors"));
+                    if (y == ModuleAnchorY(m)) b.Set(2, y, 1, Blocks.Segment(m == 0 ? "injectorstop" : "injectors"));
                 }
             }
         }
@@ -610,7 +635,7 @@ public static class GeneratorBlueprint
                 }
 
                 if (y <= OuterGalleries[^1]) b.Set(OuterLadderX, y, OuterLadderZ, Blocks.FillLadder);
-                if (y <= Gallery) b.Set(LadderX, y, LadderZ, Blocks.FillLadder);
+                if (y <= Gallery) b.Set(LadderX, y, LadderZ, Blocks.FillLadderBack);
                 if (y == Gallery)
                     ForDisc(HullRadius, (x, z) => { if (IsWalkway(x, z, false)) b.Set(x, y, z, Blocks.FillDeck); });
             }
@@ -730,6 +755,9 @@ public static class Blocks
     public const string FillSolid = D + "genfill-solid";
     public const string FillDeck = D + "genfill-deck";
     public const string FillLadder = D + "genfill-ladder";
+
+    /// <summary>A ladder cell climbed from the wall side: its plate is on the far side of the cell.</summary>
+    public const string FillLadderBack = D + "genfill-ladderback";
 
     public const string Console = D + "generatorconsole";
 

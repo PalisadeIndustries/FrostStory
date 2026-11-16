@@ -14,6 +14,7 @@ One block is one metre.
 |---|---|
 | Height above the deck | 40 m |
 | Shaft depth | 80 m (less if the site is close to the bottom of the world; minimum 24) |
+| Shaft | 7 m across at the mouth and for a 3 m throat under the pad, then 11 m across |
 | Hull | octagon, 9 m across |
 | Across the support frames | 11 m |
 | Foundation pad | 17 m across |
@@ -30,9 +31,12 @@ piece is raised as soon as that total covers its share. Deliver a third of a sta
 it stands there, waiting for the rest.
 
 1. **Foundation Shaft** – clears the site, lays the pad and raises a headframe over the dig, then
-   sinks and lines the shaft one 8 m lift at a time, with a service ladder and a grated platform
-   every 16 m. The headframe stays until the core takes its place. (11 pieces)
-2. **Regulator Valves** – the main riser, its wellhead, and three valve stations with relief ports,
+   sinks and lines the shaft one 8 m lift at a time. The tower stands on the rim of the mouth, so
+   the first 3 m is a throat of that width; below it the shaft opens out by two blocks all round.
+   Every 16 m a grated catwalk runs round the wall, leaving the middle open, with the service
+   ladder hanging at its inner edge. The headframe stays until the core takes its place. (11 pieces)
+2. **Regulator Valves** – the main riser (nearly 2 m across), its wellhead, and three valve stations
+   whose arms reach the wall over the catwalks, with inverted valves and relief ports,
    in 16 m sections from the bottom. (5 pieces)
 3. **Injection Pumps** – four pump towers with flywheels on the pad, the feed-water ring main that
    links them, and their injection lines down the shaft: the lines first, then the ring main, then
