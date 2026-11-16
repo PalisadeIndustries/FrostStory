@@ -6,3 +6,4 @@ obj/
 /dist/
 tools/preview/blueprint.json
 __pycache__/
+.claude/worktrees/
