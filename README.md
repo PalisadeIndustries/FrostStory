@@ -6,6 +6,243 @@ you raise stage by stage. Built for Vintage Story **1.22** (.NET 10).
 The genre is the frozen-city survival builder; every name, description, block and texture in this
 repository is original to the mod.
 
+## The Long Winter
+
+Create a world with **The Long Winter** playstyle and the game starts in a frozen waste. It is
+deeply and permanently cold, snow falls instead of rain, and whiteout storms come more often and
+bite harder the longer you last. You start as an expedition survivor with iron tools and heavy
+furs, a few metres from the hole in the side of the freighter frozen into the ice:
+
+1. **The first nights.** Pitch a tent of rods and cloth, set the tent stove in it, run its flue
+   out through the roof and burn firewood. Furs keep you alive outside in calm weather; in a storm,
+   get under cover.
+2. **Salvage.** The wreck is the early game's iron and coal: cut her open for plates, break open
+   her packing cases, dig the coal out of her bunkers to keep the stove going.
+3. **The generator.** Raise it stage by stage from the console, fire it on coal and pipe steam to
+   a heated camp of panel houses, radiators and steam hubs.
+4. **Hold on.** Keep the bunker full (a steam borer and conveyors take over from shovelling) and
+   keep pushing the heat outward as the cold deepens and the storms lengthen.
+
+In a world without the Long Winter option none of this section applies: the generator, steam,
+wreck, tents and gear below all work in an ordinary world as before.
+
+### Climate, storms and exposure
+
+Everything on this page happens only in a world with the world option **Long Winter**
+(`froststoryLongWinter`) turned on. Ordinary worlds play as before.
+
+#### Starting a Long Winter world
+
+Pick the **The Long Winter** playstyle when you create a world. It turns the option on and sets:
+
+| Setting | Value |
+|---|---|
+| Starting climate | Icy |
+| Global temperature | Very cold |
+| Seasons | Always winter |
+| Precipitation | Humid (more snow) |
+| Temporal storms | Very rare |
+| Sapling growth | Slower |
+
+Three world options sit in their own **The Long Winter** group and can be changed in any playstyle:
+
+| Option | Code | Values |
+|---|---|---|
+| Long Winter | `froststoryLongWinter` | on / off (only when the world is created) |
+| Long Winter cold | `froststoryColdOffset` | -5, -10 (default), -15, -20, -30 °C |
+| Whiteout storms | `froststoryStormFrequency` | Off, Rare, Normal (default), Often, Relentless |
+
+On a dedicated server, set `"PlayStyle": "froststory-longwinter"` under `WorldConfig` in
+`serverconfig.json` before the world is first created.
+
+#### The cold
+
+The world's cold offset is taken off the temperature everywhere, and the cold deepens by a
+quarter of a degree for each day since the world began, up to 15 °C more. A storm takes up to
+another 8 °C off while it blows. It is cold enough that snow falls instead of rain, and the game's
+own body temperature makes it dangerous: furs, a fire and a closed room are what keep you alive.
+
+#### Whiteout storms
+
+Storms go round a cycle:
+
+1. **Calm.** Two days or so at first, getting shorter as the days pass (never under 8 hours).
+   No storm comes in the first day and a half.
+2. **Building** (2 hours). Everyone is warned in chat, with the wind's direction and how long is
+   left. The wind rises and the light goes white.
+3. **Storm.** A few hours at first, up to 16 hours late in the game. Strong wind, driving snow,
+   white fog that closes in to a few metres. Storms hit harder the longer the world has run; a
+   killing storm gets its own warning.
+4. **Easing** (2 hours). The wind drops and the fog lifts.
+
+Times are in-game hours.
+
+#### Exposure
+
+Out in a storm you lose body heat on top of the ordinary cold, up to about 1.2 °C a minute in the
+open in a full storm. You are sheltered, and lose nothing extra, when you are:
+
+- inside a closed room (the game's own room check: walls, roof and a door that shuts), or
+- near enough heat: a lit tent stove, a live steam pipe or two, a fire.
+
+Under a roof but not in a closed room (a lean-to, a doorway) you lose half as much. Windproof
+gear cuts the loss: each worn piece's windproof value adds up, to a total of 1 (no loss at all).
+Storm goggles thin the whiteout fog the same way.
+
+Below 35 °C body temperature you are **hypothermic**: you are told so, a red warning shows, and
+you walk a quarter slower, up to half as slow as you get colder. Get to heat. You are told again
+when you have warmed up.
+
+#### Admin commands
+
+All need the `controlserver` privilege.
+
+| Command | Does |
+|---|---|
+| `/frostclimate status` | Days survived, the cold now, storm phase, strength and time left, your body temperature, exposure and gear |
+| `/frostclimate storm start [strength] [hours]` | Start a storm now (strength 0..1, default 1) |
+| `/frostclimate storm stop` | End any storm and start a calm |
+| `/frostclimate days <offset>` | Add days to the days survived, to try out late-game cold and storms |
+
+#### Server config
+
+`ModConfig/froststory-climate.json` holds the tuning: how fast the cold deepens, calm and storm
+lengths, how strength grows, wind, fog and snow strength, heat loss, how much heat counts as
+shelter, and the hypothermia threshold and slow-down. Each field is commented in
+`src/Climate/ClimateConfig.cs`.
+
+### The expedition start
+
+Only in a **Long Winter** world (world config `froststoryLongWinter`); in any other world none of
+this happens and the class below is not offered.
+
+#### The wreck by the spawn
+
+When a Long Winter world is created, the freighter is set down frozen
+into the ice near the world spawn, once per world:
+
+- The ground within 48 blocks of the spawn is loaded first, and she goes on the flattest dry site
+  there (a little water is allowed: she is frozen in). Her ice sheet comes up level with the ground.
+- Where the ground falls away under the hull or the ice sheet, it is packed with ice down to the
+  ground, at most 12 blocks below the keel, so she does not hang in the air.
+- The world spawn moves onto the ice two blocks off the hole stove in her port side, which opens
+  into the No. 2 'tween deck. Survivors already in the world when she goes down are moved there.
+- She is remembered in the save. If the server stops before the ground is loaded she is set down at
+  the next start.
+
+#### Expedition survivor
+
+A character class offered in Long Winter worlds:
+
+- **Cold-seasoned**: loses body heat to the cold about a third more slowly.
+- **Hardy** (+10% mining speed, +5 health) and **Ravenous** (+30% hunger: cold work burns food).
+- Starts dressed in the fur set: hood, parka, trousers, mittens, boots and snow goggles.
+
+#### The starting kit
+
+Every player gets it once, the first time they join a Long Winter world
+(after choosing their character), whatever their class. Clothing goes on where its slot is free,
+and furs the class already put on are not given twice.
+
+| | |
+|---|---|
+| Iron tools | felling axe, pickaxe, knife, shovel, hammer |
+| Ice tools | ice pick, ice saw |
+| Furs | hood, parka, trousers, mittens, boots, snow goggles |
+| Fire | firestarter, 32 firewood |
+| Rations | 12 cured meat, 8 spelt bread |
+| Shelter | 16 tent rods, 40 tent cloth |
+| Stove | tent stove, 4 flue lengths, a flue elbow, a flue upturn, a flue cap |
+
+The list is `assets/froststory/config/expeditionkit.json`, an ordinary asset other mods can patch.
+A code in it that does not exist is left out with a warning in the server log.
+
+#### The first day
+
+A new survivor gets a few short hints in chat over the first few minutes:
+shelter, the stove, salvaging the wreck, and the generator. The handbook has a **Long Winter**
+guide page for the whole loop.
+
+#### Admin commands
+
+(`controlserver` privilege):
+
+| Command | Does |
+|---|---|
+| `/frostexp kit [player]` | Gives the starting kit to a player (or you), whether or not they have had it |
+| `/frostexp resetkit [player]` | Forgets that a player has had the kit, so it is given again on their next join |
+| `/frostexp wreck [pos]` | Sets the start wreck down: at a position on the ice amidships, or with no position on the best site near the world spawn; moves the world spawn beside her hole |
+| `/frostexp status` | Reports the Long Winter flag, the wreck, the spawn and the kit |
+
+#### Configuration
+
+(`ModConfig/froststory-expedition.json`, server):
+
+| Setting | Default | |
+|---|---|---|
+| `Kit` | true | give the starting kit |
+| `Wreck` | true | set the wreck down when a Long Winter world is created |
+| `WreckDistance` | 48 | how far from the world spawn the middle of the wreck may lie (8 to 256) |
+| `WreckFillDepth` | 12 | how deep ice is packed under her where the ground falls away (0 for none) |
+| `Guidance` | true | the first day's hints |
+| `ColdSeasonedKeep` | 0.35 | the share of body heat lost to the cold that a cold-seasoned survivor keeps (0 to 0.9) |
+
+Code: `src/Expedition/`; assets: `patches/expedition-classes.json` (class and trait, applied only
+when `froststoryLongWinter` is true), `config/expeditionkit.json`,
+`config/handbook/expedition-longwinter.json`, and the `//expedition` block of `lang/en.json`.
+
+### Fur gear and ice tools
+
+Heavy cold-weather clothing and two iron tools for working ice. All of it is in the FrostStory
+creative tab and in the vanilla clothing and tools tabs.
+
+#### Clothing
+
+Every piece is ordinary vanilla clothing: it goes in the matching character slot, adds warmth and
+wears out like any other clothes. Two extra numbers, shown in the tooltip, matter in a Long Winter
+storm:
+
+- **Windproof**: each piece's share is added up over everything worn (capped at 100%) and cuts the
+  wind chill of a storm. The full outfit is exactly 100%.
+- **Storm vision**: cuts how thick the whiteout fog is.
+
+| Item | Code | Slot | Warmth (°C) | Windproof | Storm vision | Walk speed |
+|---|---|---|---|---|---|---|
+| Fur hood | `froststory:furhood` | head | 3 | 15% | | |
+| Fur parka | `froststory:furparka` | upper body, over | 5 | 35% | | |
+| Fur trousers | `froststory:furtrousers` | lower body | 4.5 | 20% | | -2% |
+| Fur mittens | `froststory:furmittens` | hands | 2 | 10% | | |
+| Fur boots | `froststory:furboots` | feet | 4.5 | 10% | | -2% |
+| Snow goggles | `froststory:snowgoggles` | face | 0.5 | 10% | 60% | |
+
+The parka goes in the outer upper-body slot, so a shirt can be worn under it. The goggles also
+protect the eyes the way vanilla eye-protective gear does.
+
+#### Tools
+
+- **Iron ice pick** (`froststory:icepick-iron`): breaks ice at speed 9 and snow blocks at 7, against
+  3.5 for an iron pickaxe on ice. Its tool tier is too low for rock, so it does not replace a pickaxe.
+  Attack power 2, durability 700.
+- **Iron ice saw** (`froststory:icesaw-iron`): mines ice and snow at speed 6 and cuts them out whole:
+  lake ice, glacier ice and snow blocks drop as the block itself, for building. Sawn lake ice still
+  leaves its water behind. It saws wood slowly (2.5). Attack power 1.5, durability 500.
+
+#### Recipes (crafting grid)
+
+`P` any pelt, `K` knife or shears (not used up), `T` flax twine, `L` leather, `N` iron nails and
+strips, `I` iron ingot, `S` stick, `G` glass block, `M` iron metal bit.
+
+| Item | Pattern |
+|---|---|
+| Fur hood | `P K P` / `_ T _` |
+| Fur parka | `P K P` / `P L P` / `P T P` |
+| Fur trousers | `P K P` / `P T P` / `L _ L` |
+| Fur mittens | `P K P` / `T _ T` |
+| Fur boots | `P K P` / `L _ L` / `N _ N` |
+| Snow goggles | `L G L` / `T M T` |
+| Iron ice pick | `I I I` / `_ S _` / `_ L _` |
+| Iron ice saw | `L I I` / `S N I` |
+
 ## The generator
 
 One block is one metre.
@@ -365,7 +602,9 @@ Console commands take the console's position, or the one you are looking at.
 
 ## Building
 
-Needs the .NET 10 SDK and a Vintage Story 1.22 install (client or server).
+Needs the .NET 10 SDK and a Vintage Story 1.22 install (client or server). On Linux,
+`tools/setup_env.sh` installs both under `/opt/vsenv` (a dedicated server is enough to build) and
+prints the environment to use: `eval "$(tools/setup_env.sh)"`.
 
 ```bash
 export VINTAGE_STORY=/path/to/vintagestory
@@ -376,6 +615,12 @@ dotnet build FrostStory/FrostStory.csproj -c Release
 ```
 
 That writes `dist/froststory/` and `dist/froststory.zip`; copy either into your `Mods` folder.
+
+`tools/smoketest.sh` boots a throwaway headless server with the built mod, creates a world and
+lists any errors; extra arguments go to the server, so
+`tools/smoketest.sh . --withconfig '{"WorldConfig":{"PlayStyle":"froststory-longwinter"}}'`
+tries a Long Winter world. The team of agents that builds the mod is described in `CLAUDE.md` and
+`.claude/agents/`.
 
 ## Layout
 
@@ -389,10 +634,16 @@ FrostStory/
   src/Generator/GeneratorCommands.cs    /frostgen
   src/Steam/                            pipe runs, pipes, mains, fittings and ports; tracing back to a live port
   src/Tent/                             tent rods and stretched cloth panels
+  src/Climate/                          Long Winter cold, storm cycle, exposure, whiteout, /frostclimate
+  src/Expedition/                       survivor class, starting kit, start wreck, hints, /frostexp
+  src/Gear/                             fur gear tooltips, the ice saw
+  worldconfig.json                      the Long Winter world options and playstyle
   assets/froststory/                    blocktypes, shapes, textures, lang, recipes, stage config
 tools/
   gen_segments.py                       the geometry of the modelled segments; writes their shapes
   gen_assets.py                         regenerates the placeholder textures and small block shapes
+  gen_gear.py                           the fur gear and ice tool models and textures
+  setup_env.sh, smoketest.sh            build toolchain; headless server test
   BlueprintExport/                      dumps the blueprint to JSON
   build_preview.py, preview/            builds a standalone 3D preview page
 ```
