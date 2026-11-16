@@ -44,7 +44,7 @@
       <ModAssets Include="assets/**/*" />
     </ItemGroup>
     <RemoveDir Directories="$(ModOutDir)" />
-    <Copy SourceFiles="$(TargetPath);modinfo.json" DestinationFolder="$(ModOutDir)" />
+    <Copy SourceFiles="$(TargetPath);modinfo.json;worldconfig.json" DestinationFolder="$(ModOutDir)" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ModOutDir)" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
     <Copy SourceFiles="@(ModAssets)" DestinationFiles="@(ModAssets->'$(ModOutDir)/assets/%(RecursiveDir)%(Filename)%(Extension)')" />
     <ZipDirectory SourceDirectory="$(ModOutDir)" DestinationFile="$(ModOutDir)/../froststory.zip" Overwrite="true" />

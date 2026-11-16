@@ -1,0 +1,22 @@
+{
+	"//": "FrostStory Long Winter world options and playstyle. The game reads world-config text for a mod from assets/game/lang, also on the world creation screen.",
+	"playstyle-preset-froststory-longwinter": "The Long Winter",
+	"playstyle-desc-preset-froststory-longwinter": "The world has frozen and will not thaw. You wake beside a wrecked steamer locked in the ice, with iron tools and heavy furs. Snow falls instead of rain, the cold deepens with every day, and whiteout storms come more often and bite harder as time goes on. Find heat, build the generator and keep it fed.",
+	"worldconfig-category-froststory": "The Long Winter",
+	"worldattribute-froststoryLongWinter": "Long Winter",
+	"worldattribute-froststoryLongWinter-desc": "Deep permanent cold, snow instead of rain, and whiteout storms that worsen as the days go on. Players caught outdoors in a storm lose body heat quickly unless they wear windproof gear or stay near heat.",
+	"worldattribute-froststoryColdOffset": "Long Winter cold",
+	"worldattribute-froststoryColdOffset-desc": "Temperature taken off everywhere in a Long Winter world, before the cold deepens with the days and the storms.",
+	"worldconfig-froststoryColdOffset-Bitter (-5 \u00b0C)": "Bitter (-5 °C)",
+	"worldconfig-froststoryColdOffset-Deep (-10 \u00b0C)": "Deep (-10 °C)",
+	"worldconfig-froststoryColdOffset-Severe (-15 \u00b0C)": "Severe (-15 °C)",
+	"worldconfig-froststoryColdOffset-Brutal (-20 \u00b0C)": "Brutal (-20 °C)",
+	"worldconfig-froststoryColdOffset-Killing (-30 \u00b0C)": "Killing (-30 °C)",
+	"worldattribute-froststoryStormFrequency": "Whiteout storms",
+	"worldattribute-froststoryStormFrequency-desc": "How often whiteout storms come in a Long Winter world. They come more often and hit harder as the days go on whatever this is set to.",
+	"worldconfig-froststoryStormFrequency-Off": "Off",
+	"worldconfig-froststoryStormFrequency-Rare": "Rare",
+	"worldconfig-froststoryStormFrequency-Normal": "Normal",
+	"worldconfig-froststoryStormFrequency-Often": "Often",
+	"worldconfig-froststoryStormFrequency-Relentless": "Relentless"
+}
