@@ -64,8 +64,20 @@ public class FrostStoryModSystem : ModSystem
         api.RegisterBlockEntityClass("FrostStoryGeneratorConsole", typeof(BlockEntityGeneratorConsole));
     }
 
+    /// <summary>The wrecked freighter's plan, from config/wreck.json.</summary>
+    public FrostStory.Ship.WreckPlan Wreck { get; private set; } = new();
+
     public override void AssetsLoaded(ICoreAPI api)
     {
+        try
+        {
+            Wreck = api.Assets.TryGet(new AssetLocation(Domain, "config/wreck.json"))?.ToObject<FrostStory.Ship.WreckPlan>() ?? new FrostStory.Ship.WreckPlan();
+        }
+        catch (Exception e)
+        {
+            Mod.Logger.Error("Could not read config/wreck.json: {0}", e.Message);
+        }
+
         var asset = api.Assets.TryGet(new AssetLocation(Domain, "config/generatorstages.json"));
         if (asset == null)
         {

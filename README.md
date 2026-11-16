@@ -237,26 +237,41 @@ leaves the loaded world keeps the state it last had until the server restarts.
 
 ### The wreck
 
-A steam freighter lies frozen in, 53 blocks long and 11 in the beam, bow to the east: the
-early game's iron. `/frostgen ship [pos]` sets it down (it is not yet placed by world generation).
+A tramp steamer lies frozen in, 110 blocks long and 15 in the beam, bow to the east: the early
+game's iron. `/frostgen ship [pos]` sets it down (it is not yet placed by world generation).
 
-- The **hull** is seven modelled sections: curved riveted plating with frames standing proud,
-  a brass rubbing strake, portholes, deck pipework and ventilators, a deckhouse with a brass-domed
-  pilothouse and bridge wings amidships, a pressure sphere on the foredeck. Cut through any part
-  of a section (slow work, with a copper-tier pickaxe or better) and the whole section comes
-  away: about 11 iron plates and 50 iron bits, and planks from its deck. Anything still standing
-  in that section is left where it was, so clear it first.
-- The ways in: a hole stove in the port side at the level of the ice, and a hatch with a ladder
-  over each hold.
-- **Packing cases** in the fore and aft holds break open for iron ingots, nails, rope, coal and
-  planks, and now and then an iron tool.
-- The **boiler room** amidships has two boilers and a coal bunker holding about 5,000 coal as
-  ordinary coal pile. A boiler breaks down into four **boiler sections**: heavy, one to an
-  inventory slot, meant to be hauled home. A section on its own in the grid cuts up into three
-  iron plates.
-- The **engine**, the two **funnels** and the two **masts** break down whole for plates, ingots,
-  nails, planks and rope. The deck is planking.
-- Ice is packed round the hull up to the waterline. The ship always lies east to west.
+She is a three-island ship of about 1900: forecastle, a bridge island amidships over the
+machinery, and a poop, with a well deck and two hatches forward and aft.
+
+- **Below:** four holds, each with a 'tween deck over a lower hold and a ladder down the hatch;
+  the engine room with a triple-expansion engine and gratings round it; the stokehold with two
+  Scotch boilers; a cross bunker and side bunkers with about 22,000 coal as ordinary coal pile;
+  the shaft tunnel; a steering flat aft and stores in the fore peak.
+- **The island:** machinery casings down the middle, an alleyway each side, and cabins, messes,
+  a galley, a saloon, a bathroom and stores outboard, each its real size behind partitions a
+  plank thick. A ladder in the forward lobby goes up to the master's quarters and chart room,
+  and on up to the wheelhouse.
+- **Forward and aft:** the crew's quarters in the forecastle with their bunks and mess tables,
+  the steering engine and a hospital in the poop.
+- **On deck:** two masts with derricks, four steam winches, the windlass, four lifeboats in
+  davits, the funnel, ventilators, the engine room skylight.
+- **Ways in:** a hole stove in the port side into No. 2 'tween deck, at the level of the ice;
+  ladders up the ends of the islands; doors at the ends of every alleyway; the open hatches.
+
+What you see is models: one for each of ten sections of the hull with everything built into it,
+and one for each fitting. What you touch is unseen cells, so walls and decks are thin.
+
+- Cut through any part of a **section of hull** (slow work, copper-tier pickaxe or better) and
+  the whole section comes away with its decks and partitions: iron plates, iron bits and
+  planks, some 300 plates in all. Loose things in it are left where they were.
+- The **engine**, **boilers**, **funnel**, **masts**, **winches**, **windlass**, **lifeboats**,
+  **steering engine** and **shaft tunnel** each come away whole the same way. A boiler gives six
+  **boiler sections**: heavy, one to an inventory slot; a section on its own in the grid cuts up
+  into three iron plates.
+- About 200 **packing cases** in the holds and stores break open for iron ingots, nails, rope,
+  coal and planks, and now and then an iron tool.
+- The whole ship is designed in `tools/gen_ship.py`, which writes her models and the plan the
+  mod lays down (`config/wreck.json`). She always lies east to west.
 
 ### Tents
 

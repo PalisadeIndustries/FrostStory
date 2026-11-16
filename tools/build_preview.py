@@ -357,18 +357,26 @@ def coal_pile(at, amount, blocked=()):
     return cells
 
 
-SHIP_AT = (0, -3, 58)      # the middle of the wreck's keel: its waterline is level with the ground
+SHIP_Z = 74      # the wreck lies this far south of the generator, with the ice level with the ground
 
 
-def ship_example(blueprint, atlas):
-    """The wrecked freighter, set down south of the generator with ice packed round it."""
-    ox, oy, oz = SHIP_AT
-    ship = blueprint["ship"]
+def ship_example(codes, atlas):
+    """The wrecked freighter, from the plan the mod itself lays down, with ice packed round it."""
+    plan = load(os.path.join(ASSETS, "config", "wreck.json"))
+    ox, oy, oz = 0, -plan["waterline"], SHIP_Z
+
+    def idx(code):
+        if code not in codes:
+            codes.append(code)
+        return codes.index(code)
+
+    index = [idx(code) for code in plan["codes"]]
+    ship = plan["cells"]
     cells = []
-    for i in range(0, len(ship), 4):
-        cells += [ship[i] + ox, ship[i + 1] + oy, ship[i + 2] + oz, ship[i + 3]]
+    for i in range(0, len(ship), 5):
+        cells += [ship[i] + ox, ship[i + 1] + oy, ship[i + 2] + oz, index[ship[i + 3]]]
 
-    ice = blueprint["shipIce"]
+    ice = plan["ice"]
     top = max(ice[i + 1] for i in range(0, len(ice), 3))
     uv = [atlas.uv("block/generator/ice", u, v) for u, v in ((0, 0), (1, 0), (1, 1), (0, 1))]
     quads = []
@@ -551,7 +559,7 @@ def main():
         "height": blueprint["height"],
         "consoleDistance": blueprint["consoleDistance"],
         "swaps": blueprint["swaps"],
-        "pipework": pipework_example(blueprint["codes"], atlas) + [ship_example(blueprint, atlas)],
+        "pipework": pipework_example(blueprint["codes"], atlas) + [ship_example(blueprint["codes"], atlas)],
         "codes": [c.split(":")[-1] for c in blueprint["codes"]],
         "consoleCode": blueprint["codes"].index("froststory:generatorconsole-north"),
         "figure": list(atlas.uv("block/generator/paint-red", 0.2, 0.2) + atlas.uv("block/generator/paint-red", 0.8, 0.8)),

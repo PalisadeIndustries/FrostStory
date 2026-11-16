@@ -253,7 +253,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
   var flatMat = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
 
   var NB = [[0, 0, -1], [1, 0, 0], [0, 0, 1], [-1, 0, 0], [0, 1, 0], [0, -1, 0]];
-  function key(x, y, z) { return (x + 64) + (z + 64) * 128 + (y + 128) * 16384; }
+  function key(x, y, z) { return (x + 256) + (z + 256) * 512 + (y + 128) * 262144; }
 
   var section = false;
   var pipework = true;
@@ -307,7 +307,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
     var main = { pos: pos, uv: uv, col: col, idx: idx };
 
     map.forEach(function (code, k) {
-      var x = (k % 128) - 64, z = (Math.floor(k / 128) % 128) - 64, y = Math.floor(k / 16384) - 128;
+      var x = (k % 512) - 256, z = (Math.floor(k / 512) % 512) - 256, y = Math.floor(k / 262144) - 128;
       if (!cut && y < -1) return;                      // below ground only shows in section
       var def = D.defs[code], light = y < 0 ? 0.88 : 1;
       for (var i = 0; i < def.q.length; i++) {

@@ -268,15 +268,14 @@ def tex_junction():
 
 
 def tex_ship_hull():
-    """Ship's plating: black paint going to rust, a lap seam and a row of rivets along each plate edge."""
-    t = Tex("shiphull", (58, 50, 48), grain=8, blotch=14)
-    t.streaks(6)
-    t.panel(0, 0, S, 16, 10, -20)
-    t.panel(0, 16, S, S, 10, -20)
+    """Ship's plating: black paint going to rust, a butt seam and a row of rivets along each plate edge."""
+    t = Tex("shiphull", (46, 42, 42), grain=5, blotch=12)
+    t.panel(0, 0, S, S, 9, -18)
     t.rivet_row(2, 4, 1)
-    t.rivet_row(18, 4, 3)
-    t.rust(26, (126, 68, 38))
-    t.rust(10, (150, 92, 50))
+    t.rivet_row(29, 4, 3)
+    t.rivet_col(1, 5, 4)
+    t.rust(16, (110, 60, 36))
+    t.rust(6, (140, 84, 46))
     return t
 
 
@@ -300,6 +299,26 @@ def tex_crate():
     for a, b in ((0, 4), (28, 32)):
         t.rect_shade(0, a, 32, b, -28)
         t.rect_shade(a, 0, b, 32, -28)
+    return t
+
+
+def tex_ship_panel():
+    """Painted tongue-and-groove boarding: the cream paint of a ship's accommodation, gone grubby."""
+    t = Tex("shippanel", (206, 196, 168), grain=4, blotch=8)
+    for x in range(0, 32, 4):
+        t.rect_shade(x, 0, x + 1, 32, -20)
+    t.rust(10, (150, 136, 108))
+    return t
+
+
+def tex_ship_white():
+    """White-painted plate for the upperworks, streaked with rust from every rivet."""
+    t = Tex("shipwhite", (198, 196, 188), grain=5, blotch=10)
+    t.panel(0, 0, S, S, 8, -16)
+    t.rivet_row(2, 4, 1)
+    t.rivet_row(28, 4, 3)
+    t.streaks(5)
+    t.rust(14, (150, 96, 60))
     return t
 
 
@@ -621,7 +640,7 @@ def tex_canvas():
 TEXTURES = [
     tex_steel, tex_hull_plain, tex_hull_riveted, tex_hull_vent, tex_foundation,
     lambda: tex_lining("shaftlining-plain", False), lambda: tex_lining("shaftlining-ribbed", True), tex_lining_top,
-    tex_pipe, tex_pipe_end, tex_junction, tex_paint_red, tex_coal, tex_ship_hull, tex_ship_deck, tex_crate, tex_ice,
+    tex_pipe, tex_pipe_end, tex_junction, tex_paint_red, tex_coal, tex_ship_hull, tex_ship_deck, tex_crate, tex_ice, tex_ship_panel, tex_ship_white,
     tex_grating, tex_pole, tex_canvas, tex_girder, tex_girder_node, tex_console_front, tex_console_side, tex_console_top,
 ]
 

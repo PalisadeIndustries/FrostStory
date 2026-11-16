@@ -65,13 +65,8 @@ foreach (var stage in GeneratorBlueprint.Build(depth))
     }
 }
 
-var ship = ShipBlueprint.Build().SelectMany(p => new[] { p.X, p.Y, p.Z, IndexOf(p.Code) }).ToArray();
-var shipIce = ShipBlueprint.Ice().SelectMany(c => new[] { c.X, c.Y, c.Z }).ToArray();
-
 var doc = new
 {
-    ship,
-    shipIce,
     depth = GeneratorBlueprint.ClampDepth(depth),
     height = GeneratorBlueprint.Height,
     consoleDistance = GeneratorBlueprint.ConsoleDistance,

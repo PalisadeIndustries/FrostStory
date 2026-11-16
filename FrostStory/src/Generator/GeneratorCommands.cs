@@ -135,10 +135,10 @@ public static class GeneratorCommands
                 {
                     var at = CentreFrom(api, args);
                     bool ice = args.Parsers[1].IsMissing || (bool)args[1];
-                    var keel = at.DownCopy(FrostStory.Generator.Blueprint.ShipBlueprint.Waterline);
+                    var keel = at.DownCopy(mod.Wreck.Waterline + 1);
                     int placed = FrostStory.Ship.ShipBuilder.Place(api.World, keel, ice);
                     return placed < 0
-                        ? TextCommandResult.Error("Part of the site is in unloaded chunks: the ship is 53 blocks long, east to west. Stand nearer the middle of it.")
+                        ? TextCommandResult.Error("Part of the site is in unloaded chunks: the ship is 110 blocks long, east to west. Stand nearer the middle of it.")
                         : TextCommandResult.Success($"The wreck is in: {placed} blocks, keel at {keel.X} {keel.Y} {keel.Z}, bow to the east.");
                 })
             .EndSubCommand()

@@ -1,5 +1,4 @@
 using FrostStory.Coal;
-using FrostStory.Generator.Blueprint;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
@@ -14,40 +13,43 @@ public static class ShipBuilder
     /// </summary>
     public static int Place(IWorldAccessor world, BlockPos keel, bool ice)
     {
+        var mod = world.Api.ModLoader.GetModSystem<FrostStoryModSystem>();
+        var plan = mod.Wreck;
         var ba = world.BlockAccessor;
-        var plan = ShipBlueprint.Build();
         var pos = keel.Copy();
 
-        foreach (var p in plan)
+        for (int x = plan.MinX; x <= plan.MaxX; x += 8)
         {
-            pos.Set(keel.X + p.X, keel.Y + p.Y, keel.Z + p.Z);
+            pos.Set(keel.X + x, keel.Y, keel.Z);
             if (ba.GetChunkAtBlockPos(pos) == null) return -1;
         }
 
-        // clear the inside of the hull and what stands on it, then build
-        for (int x = -ShipBlueprint.HalfLength; x <= ShipBlueprint.HalfLength; x++)
+        pos.Set(keel.X + plan.MaxX, keel.Y, keel.Z);
+        if (ba.GetChunkAtBlockPos(pos) == null) return -1;
+
+        // clear the hull's whole volume and what stands over it, then build
+        for (int i = 0; i + 3 < plan.Clear.Length; i += 4)
         {
-            for (int z = -ShipBlueprint.HalfBeam; z <= ShipBlueprint.HalfBeam; z++)
+            for (int z = plan.Clear[i + 1]; z <= plan.Clear[i + 2]; z++)
             {
-                for (int y = 0; y <= ShipBlueprint.Deck + 22; y++)
+                for (int y = 0; y <= plan.Clear[i + 3]; y++)
                 {
-                    if (y <= ShipBlueprint.TopAt(x) + 1 && !ShipBlueprint.InHull(x, System.Math.Min(y, ShipBlueprint.TopAt(x)), z)) continue;
-                    pos.Set(keel.X + x, keel.Y + y, keel.Z + z);
+                    pos.Set(keel.X + plan.Clear[i], keel.Y + y, keel.Z + z);
                     if (ba.GetBlock(pos).Id != 0) ba.SetBlock(0, pos);
                     ba.SetBlock(0, pos, BlockLayersAccess.Fluid);
                 }
             }
         }
 
-        var mod = world.Api.ModLoader.GetModSystem<FrostStoryModSystem>();
-        if (!mod.Wrecks.Exists(k => k.Equals(keel))) mod.Wrecks.Add(keel.Copy());
+        var blocks = new Block?[plan.Codes.Length];
+        for (int i = 0; i < blocks.Length; i++) blocks[i] = world.GetBlock(new AssetLocation(plan.Codes[i]));
 
         int placed = 0;
-        foreach (var p in plan)
+        for (int i = 0; i + 4 < plan.Cells.Length; i += 5)
         {
-            var block = world.GetBlock(new AssetLocation(p.Code!));
+            var block = blocks[plan.Cells[i + 3]];
             if (block == null) continue;
-            pos.Set(keel.X + p.X, keel.Y + p.Y, keel.Z + p.Z);
+            pos.Set(keel.X + plan.Cells[i], keel.Y + plan.Cells[i + 1], keel.Z + plan.Cells[i + 2]);
             ba.SetBlock(block.Id, pos);
             placed++;
 
@@ -59,20 +61,18 @@ public static class ShipBuilder
         if (ice)
         {
             var packed = world.GetBlock(new AssetLocation("game", "glacierice"));
-            if (packed != null)
+            for (int i = 0; packed != null && i + 2 < plan.Ice.Length; i += 3)
             {
-                foreach (var (x, y, z) in ShipBlueprint.Ice())
-                {
-                    pos.Set(keel.X + x, keel.Y + y, keel.Z + z);
-                    if (ba.GetChunkAtBlockPos(pos) == null) continue;
-                    var there = ba.GetBlock(pos);
-                    if (there.Id != 0 && there.Replaceable < 6000) continue;      // leave the ground alone
-                    ba.SetBlock(0, pos, BlockLayersAccess.Fluid);
-                    ba.SetBlock(packed.Id, pos);
-                }
+                pos.Set(keel.X + plan.Ice[i], keel.Y + plan.Ice[i + 1], keel.Z + plan.Ice[i + 2]);
+                if (ba.GetChunkAtBlockPos(pos) == null) continue;
+                var there = ba.GetBlock(pos);
+                if (there.Id != 0 && there.Replaceable < 6000) continue;      // leave the ground alone
+                ba.SetBlock(0, pos, BlockLayersAccess.Fluid);
+                ba.SetBlock(packed.Id, pos);
             }
         }
 
+        if (!mod.Wrecks.Exists(k => k.Equals(keel))) mod.Wrecks.Add(keel.Copy());
         return placed;
     }
 }
