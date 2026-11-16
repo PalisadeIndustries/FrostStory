@@ -98,6 +98,19 @@ public static class GeneratorCommands
                 }))
             .EndSubCommand()
 
+            .BeginSubCommand("run")
+                .WithDescription("String a pipe run between two fittings or ports, or take down the one that is there. Add 'true' for a steam main.")
+                .WithArgs(parsers.WorldPosition("from"), parsers.WorldPosition("to"), parsers.OptionalBool("main"))
+                .HandleWith(args =>
+                {
+                    var from = ((Vec3d)args[0]).AsBlockPos;
+                    var to = ((Vec3d)args[1]).AsBlockPos;
+                    string key = FrostStory.Steam.SteamRuns.Toggle(api.World, from, to, (bool)args[2], int.MaxValue, out int cost, out bool built);
+                    string text = Vintagestory.API.Config.Lang.Get(key, System.Math.Abs(cost));
+                    return built || cost < 0 ? TextCommandResult.Success(text) : TextCommandResult.Error(text);
+                })
+            .EndSubCommand()
+
             .BeginSubCommand("stand")
                 .WithDescription("Raise a steam main stand with its post starting at a position (or where you stand).")
                 .WithArgs(parsers.OptionalWorldPosition("position"))
@@ -183,6 +196,13 @@ public static class GeneratorCommands
         BlockPos? pos = !args.Parsers[0].IsMissing && args[0] is Vec3d given
             ? given.AsBlockPos
             : args.Caller.Player?.CurrentBlockSelection?.Position;
+
+        if (pos != null && api.World.BlockAccessor.GetBlock(pos) is FrostStory.Steam.BlockPipeWarmth warmth)
+        {
+            return TextCommandResult.Success(warmth.GetHeatStrength(api.World, pos, pos) > 0
+                ? "Warm air round a pipe run that is carrying steam."
+                : "Air round a pipe run that is cold.");
+        }
 
         if (pos == null || !FrostStory.Steam.SteamNetwork.Resolve(api.World.BlockAccessor, pos, out var conduit, out _))
             return TextCommandResult.Error("Look at a steam pipe, main, fitting or port, or give its position.");

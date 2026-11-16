@@ -1128,6 +1128,17 @@ def mainstand():
     return m
 
 
+RUN_BORE = 0.24       # bore of a small pipe run
+
+
+def runpiece(big):
+    """The straight piece a pipe run is drawn from: half a block of pipe along +Z, centred on the block
+    centre. The game lays copies of it end to end along the run's curve."""
+    m = Model("mainseg" if big else "pipeseg", (0, 1, 0))
+    m.hprism((0, 0.5, -0.25), (0, 0.5, 0.25), MAIN_BORE if big else RUN_BORE, "pipe")
+    return m
+
+
 MAIN_PORT_ANCHORS = {"east": (7, 15, 0), "south": (-1, 15, 7), "west": (-7, 15, -1), "north": (0, 15, -7)}
 
 
@@ -1220,7 +1231,7 @@ def main():
         total += n
         print(f"  {m.name:16s} {n:4d} elements")
     write_blocktype(models)
-    parts = [steamport(), mainjunction(), mainpost(), mainstand()] + [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
+    parts = [steamport(), mainjunction(), mainpost(), mainstand(), runpiece(False), runpiece(True)] + [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:
         part.save(os.path.join(SHAPE_DIR, ".."))
     print(f"Wrote {len(parts)} steam fitting shapes")

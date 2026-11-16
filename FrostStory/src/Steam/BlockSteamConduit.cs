@@ -3,6 +3,7 @@ using System.Text;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
 namespace FrostStory.Steam;
@@ -30,6 +31,13 @@ public class BlockSteamConduit : Block, IHeatSource
     /// <summary>True for the two-block-wide conduits.</summary>
     public bool IsBig { get; private set; }
 
+    /// <summary>True for fittings and ports: the places pipe runs are strung between.</summary>
+    public bool IsNode { get; private set; }
+
+    /// <summary>The straight pieces pipe runs are drawn from (client only).</summary>
+    public Vintagestory.API.Common.Shape? PipeSegment { get; private set; }
+    public Vintagestory.API.Common.Shape? MainSegment { get; private set; }
+
     /// <summary>True for the posts of a main stand: they carry a fitting but no steam.</summary>
     public bool IsStructural { get; private set; }
 
@@ -44,7 +52,15 @@ public class BlockSteamConduit : Block, IHeatSource
         base.OnLoaded(api);
         mod = api.ModLoader.GetModSystem<FrostStoryModSystem>();
 
-        switch (FirstCodePart())
+        string kind = FirstCodePart();
+        IsNode = kind is "pipejunction" or "mainjunction" or "steamport" or "mainport";
+        if (IsNode && api.Side == EnumAppSide.Client)
+        {
+            PipeSegment = Vintagestory.API.Common.Shape.TryGet(api, new AssetLocation("froststory", "shapes/block/generator/pipeseg.json"));
+            MainSegment = Vintagestory.API.Common.Shape.TryGet(api, new AssetLocation("froststory", "shapes/block/generator/mainseg.json"));
+        }
+
+        switch (kind)
         {
             case "steampipe":
                 OpenAlong(Variant["axis"]);
@@ -147,6 +163,23 @@ public class BlockSteamConduit : Block, IHeatSource
         if (sb.Length > 0 && sb[^1] != '\n') sb.AppendLine();
         sb.AppendLine(SteamInfo(world, pos));
         return sb.ToString();
+    }
+
+    // ------------------------------------------------------------------ stringing runs
+
+    /// <summary>
+    /// Clicking a fitting or port with pipes in hand strings a run: first one end, then the other. Small
+    /// pipes make a small run, steam mains a large one. (Sneak to set a pipe block against it instead.)
+    /// </summary>
+    public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
+    {
+        string? held = byPlayer.InventoryManager.ActiveHotbarSlot?.Itemstack?.Block?.FirstCodePart();
+        if (!IsNode || (held != "steampipe" && held != "steammain"))
+            return base.OnBlockInteractStart(world, byPlayer, blockSel);
+
+        if (world.Side == EnumAppSide.Server && byPlayer is IServerPlayer player)
+            SteamRuns.Click(world, player, blockSel.Position, held == "steammain");
+        return true;
     }
 
     // ------------------------------------------------------------------ placing and removing

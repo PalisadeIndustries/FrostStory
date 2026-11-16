@@ -1,0 +1,30 @@
+{
+	"code": "pipewarmth",
+	"class": "FrostStoryPipeWarmth",
+	"attributes": {
+		"handbook": {
+			"exclude": true
+		}
+	},
+	"drawtype": "json",
+	"shape": {
+		"base": "game:block/basic/nothing"
+	},
+	"blockmaterial": "Other",
+	"collisionbox": null,
+	"selectionbox": null,
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"lightAbsorption": 0,
+	"rainPermeable": true,
+	"replaceable": 9999,
+	"resistance": 0,
+	"drops": []
+}

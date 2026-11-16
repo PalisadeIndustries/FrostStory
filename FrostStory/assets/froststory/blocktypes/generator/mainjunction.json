@@ -1,6 +1,7 @@
 {
 	"code": "mainjunction",
 	"class": "FrostStorySteamConduit",
+	"entityClass": "FrostStorySteamNode",
 	"creativeinventory": {
 		"general": [
 			"*"

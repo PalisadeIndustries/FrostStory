@@ -155,7 +155,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
     </section>
   </div>
 
-  <p class="foot" id="pipework-note">The pipework example is not part of the generator: it shows what a player can build off it. From the east large port, steam mains run out level to two stands, with a branch and a riser off their fittings and an ordinary pipe tapping the main. From a base port, ordinary pipes and fittings run along the ground. Each group appears once its port has been built.</p>
+  <p class="foot" id="pipework-note">The pipework example is not part of the generator: it shows what a player can build off it. Fittings stand where a player has put them, and pipe runs are strung between them and the ports as curved tubes. From the east large port a main runs level to a stand, on to a lower stand off to one side, with a branch to a third and an ordinary pipe dropping from the fitting. From a base port, ordinary runs go along the ground and up to a fitting overhead. Each group appears once its port has been built.</p>
   <p class="foot">Drawn from the mod's own blueprint, block shapes and textures, so what shows here is what the console builds in the world. Textures are procedural placeholders.</p>
 </div>
 
@@ -263,7 +263,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
 
   // stages before the last are whole; the last shows only its first `pieceCount` pieces
   function worldAt(stageCount, pieceCount, lit) {
-    var map = new Map(), voids = new Set();
+    var map = new Map(), voids = new Set(), loose = [];
     for (var s = 0; s < stageCount; s++) {
       var steps = D.stages[s].steps, upTo = s === stageCount - 1 ? pieceCount : steps.length;
       for (var p = 0; p < upTo; p++) {
@@ -284,8 +284,9 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
       if (port === undefined || D.codes[port].indexOf(group.port) !== 0) return;     // its port is not built yet
       var c = group.cells;
       for (var i = 0; i < c.length; i += 4) map.set(key(c[i], c[i + 1], c[i + 2]), c[i + 3]);
+      loose.push(group.quads);
     });
-    return { map: map, voids: voids };
+    return { map: map, voids: voids, loose: loose };
   }
 
   function buildGroup(stageCount, pieceCount, lit, cut) {
@@ -323,6 +324,11 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
         [[1, 1], [0, 1], [0, 0], [1, 0]].forEach(function (p, j) { c.push(p[0], p[1], 0.5, nq[3 + j * 5 + 3], nq[3 + j * 5 + 4]); });
         pushQuad(cap, c, x, y, z, light);
       }
+    });
+
+    // pipe runs: tubes strung between fittings, not tied to any one cell
+    w.loose.forEach(function (quads) {
+      for (var i = 0; i < quads.length; i++) pushQuad(main, quads[i], 0, 0, 0, 1);
     });
 
     // a figure for scale, beside the console

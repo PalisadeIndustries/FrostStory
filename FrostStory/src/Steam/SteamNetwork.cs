@@ -101,6 +101,22 @@ public sealed class SteamNetwork
             var anchor = queue.Dequeue();
             if (ba.GetBlock(anchor) is not BlockSteamConduit conduit) continue;
 
+            // pipe runs strung from this fitting
+            if (ba.GetBlockEntity(anchor) is BlockEntitySteamNode node)
+            {
+                foreach (var pipeRun in node.Runs)
+                {
+                    if (run.Contains(pipeRun.Other)) continue;
+                    if (ba.GetChunkAtBlockPos(pipeRun.Other) == null) { incomplete = true; continue; }
+                    if (ba.GetBlock(pipeRun.Other) is not BlockSteamConduit { IsNode: true } far) continue;
+                    if (run.Count >= MaxRun) { incomplete = true; continue; }
+
+                    run.Add(pipeRun.Other.Copy());
+                    queue.Enqueue(pipeRun.Other.Copy());
+                    live |= far.IsLiveSource;
+                }
+            }
+
             foreach (var cell in conduit.Cells(anchor))
             {
                 foreach (var face in BlockFacing.ALLFACES)

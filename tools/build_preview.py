@@ -218,48 +218,124 @@ def resolve_all(codes, atlas):
 
 # --------------------------------------------------------------------------- page
 
-def pipework_example(codes):
+# --------------------------------------------------------------------------- pipe runs
+# These mirror FrostStory/src/Steam/SteamRuns.cs and BlockEntitySteamNode.AddTube, so a run in the
+# preview is laid out the way the game lays it out.
+
+NORMALS = {"north": (0, 0, -1), "east": (1, 0, 0), "south": (0, 0, 1), "west": (-1, 0, 0), "up": (0, 1, 0), "down": (0, -1, 0)}
+PIECE_LENGTH = 0.5
+
+
+def attach_point(anchor, size, face):
+    n = NORMALS[face]
+    return tuple(anchor[i] + size[i] / 2 + n[i] * size[i] / 2 for i in range(3))
+
+
+def run_point(start, face, end, other_face, big, t):
+    distance = math.dist(start, end)
+    h = max(1.5 if big else 0.75, min(distance * 0.45, 8.0))
+    n0, n1 = NORMALS[face], NORMALS[other_face]
+    u = 1 - t
+    b = (u ** 3, 3 * u * u * t, 3 * u * t * t, t ** 3)
+    return tuple(b[0] * start[i] + b[1] * (start[i] + n0[i] * h) + b[2] * (end[i] + n1[i] * h) + b[3] * end[i] for i in range(3))
+
+
+def run_sample(start, face, end, other_face, big):
+    length, previous = 0.0, start
+    for i in range(1, 25):
+        p = run_point(start, face, end, other_face, big, i / 24)
+        length += math.dist(previous, p)
+        previous = p
+    pieces = max(2, min(160, math.ceil(length / (PIECE_LENGTH * 0.9))))
+    return [run_point(start, face, end, other_face, big, i / pieces) for i in range(pieces + 1)], length
+
+
+def place_piece(piece, scale, direction, centre):
+    """One copy of the run piece: scaled about the block centre, pitched, turned, then moved to centre."""
+    dx, dy, dz = direction
+    pitch = -math.asin(max(-1.0, min(1.0, dy)))
+    heading = math.atan2(dx, dz)
+    cp, sp, ch, sh = math.cos(pitch), math.sin(pitch), math.cos(heading), math.sin(heading)
+    quads = []
+    for q in piece:
+        corners, uvs = [], []
+        for j in range(4):
+            o = 3 + j * 5
+            x, y, z = (q[o] - 0.5) * scale[0], (q[o + 1] - 0.5) * scale[1], (q[o + 2] - 0.5) * scale[2]
+            y, z = y * cp - z * sp, y * sp + z * cp                 # pitch about X
+            x, z = x * ch + z * sh, -x * sh + z * ch                # heading about Y
+            corners.append(((x + centre[0]) * 16, (y + centre[1]) * 16, (z + centre[2]) * 16))
+            uvs.append((q[o + 3], q[o + 4]))
+        quads.append(quad(corners, uvs, -1))
+    return quads
+
+
+def run_quads(piece, start, face, end, other_face, big):
+    points, length = run_sample(start, face, end, other_face, big)
+    quads = []
+    for a, b in zip(points, points[1:]):
+        d = tuple(b[i] - a[i] for i in range(3))
+        chord = math.sqrt(sum(c * c for c in d))
+        if chord < 1e-4:
+            continue
+        quads += place_piece(piece, (1, 1, chord / PIECE_LENGTH * 1.08), tuple(c / chord for c in d),
+                             tuple((a[i] + b[i]) / 2 for i in range(3)))
+    for at, f in ((start, face), (end, other_face)):
+        n = NORMALS[f]
+        quads += place_piece(piece, (1.3, 1.3, 0.3), n, tuple(at[i] + n[i] * 0.08 for i in range(3)))
+    return quads, length
+
+
+def pipework_example(codes, atlas):
     """A sample of what a player can build off the generator, so every steam part can be seen in place.
 
-    Each group hangs off one port and is only drawn once that port has been built. Positions are
-    blueprint cells: the east large port's mouth is at (7, 15, 0), the pad stands at y = 0."""
+    Fittings stand where a player has put them; pipe runs are strung between them and the ports. Each
+    group hangs off one port and is only drawn once that port has been built. Positions are blueprint
+    cells: the east large port's mouth is at (7, 15, 0), the pad stands at y = 0."""
     def idx(name):
         code = "froststory:" + name
         if code not in codes:
             codes.append(code)
         return codes.index(code)
 
+    def piece(shape):
+        bt = {"drawtype": "json", "shape": {"base": "block/generator/" + shape},
+              "textures": {"pipe": {"base": "block/generator/segment/pipe"}}}
+        return resolve_block(bt, shape, {}, atlas)["q"]
+
+    pieces = {False: piece("pipeseg"), True: piece("mainseg")}
+    SMALL, FITTING, MOUTH = (1, 1, 1), (2, 2, 2), (1, 2, 2)
+
+    def run(a, a_size, a_face, b, b_size, b_face, big):
+        quads, _ = run_quads(pieces[big], attach_point(a, a_size, a_face), a_face, attach_point(b, b_size, b_face), b_face, big)
+        return quads
+
     def cells(*parts):
         return [v for x, y, z, name in parts for v in (x, y, z, idx(name))]
 
-    def run(name, start, step, count):
-        return [(start[0] + step[0] * i, start[1] + step[1] * i, start[2] + step[2] * i, name) for i in range(count)]
+    def stand(x, z, top):
+        return [(x, y, z, "mainpost") for y in range(1, top)] + [(x, top, z, "mainjunction")]
 
-    def stand(x, z, top=15):
-        return run("mainpost", (x, 1, z), (0, 1, 0), top - 1) + [(x, top, z, "mainjunction")]
+    port, a, b, c = (7, 15, 0), (12, 15, 0), (20, 11, 4), (12, 15, -9)
+    tap = (10, 8, 5)
+    large_cells = cells(*stand(a[0], a[2], a[1]), *stand(b[0], b[2], b[1]), *stand(c[0], c[2], c[1]), (*tap, "pipejunction"))
+    large_runs = (
+        run(port, MOUTH, "east", a, FITTING, "west", True)           # out from the large port, level
+        + run(a, FITTING, "east", b, FITTING, "west", True)          # on to a lower stand, off to one side
+        + run(a, FITTING, "north", c, FITTING, "south", True)        # a branch
+        + run(a, FITTING, "down", tap, SMALL, "up", False)           # an ordinary pipe tapping the fitting
+    )
 
-    large = cells(
-        *run("steammain-we", (8, 15, 0), (1, 0, 0), 4),          # out from the large port, level
-        *stand(12, 0),                                           # a stand to carry it and branch from
-        *run("steammain-we", (14, 15, 0), (1, 0, 0), 4),
-        *stand(18, 0),
-        *run("steammain-ns", (12, 15, -1), (0, 0, -1), 4),       # a branch off the first stand
-        *run("steammain-ud", (18, 17, 0), (0, 1, 0), 3),         # and a riser off the second
-        *run("steampipe-ud", (9, 14, 0), (0, -1, 0), 4),         # an ordinary pipe tapping the main
-        (9, 10, 0, "pipejunction"),
-        *run("steampipe-ns", (9, 10, 1), (0, 0, 1), 4),
+    base, e, f = (7, 1, 3), (12, 1, 6), (14, 5, 10)
+    small_cells = cells((*e, "pipejunction"), (*f, "pipejunction"))
+    small_runs = (
+        run(base, SMALL, "east", e, SMALL, "west", False)            # from a base port along the ground
+        + run(e, SMALL, "south", f, SMALL, "down", False)            # and up to a fitting overhead
     )
-    small = cells(
-        *run("steampipe-we", (8, 1, 3), (1, 0, 0), 3),           # from a base port, along the ground
-        (11, 1, 3, "pipejunction"),
-        *run("steampipe-ns", (11, 1, 4), (0, 0, 1), 3),
-        (11, 1, 7, "pipejunction"),
-        *run("steampipe-ud", (11, 2, 7), (0, 1, 0), 3),
-        *run("steampipe-we", (12, 1, 7), (1, 0, 0), 3),
-    )
+
     return [
-        {"at": [7, 15, 0], "port": "mainport", "cells": large},
-        {"at": [7, 1, 3], "port": "steamport", "cells": small},
+        {"at": list(port), "port": "mainport", "cells": large_cells, "quads": large_runs},
+        {"at": list(base), "port": "steamport", "cells": small_cells, "quads": small_runs},
     ]
 
 
@@ -291,7 +367,7 @@ def main():
         "height": blueprint["height"],
         "consoleDistance": blueprint["consoleDistance"],
         "swaps": blueprint["swaps"],
-        "pipework": pipework_example(blueprint["codes"]),
+        "pipework": pipework_example(blueprint["codes"], atlas),
         "codes": [c.split(":")[-1] for c in blueprint["codes"]],
         "consoleCode": blueprint["codes"].index("froststory:generatorconsole-north"),
         "figure": list(atlas.uv("block/generator/paint-red", 0.2, 0.2) + atlas.uv("block/generator/paint-red", 0.8, 0.8)),

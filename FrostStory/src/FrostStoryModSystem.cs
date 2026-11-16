@@ -18,6 +18,9 @@ public class FrostStoryModSystem : ModSystem
     public GeneratorStagesConfig Stages { get; private set; } = new();
 
     private readonly Dictionary<string, ItemStack[]> stackCache = new();
+    /// <summary>Server side: which fitting each cell of warm air round a pipe run belongs to.</summary>
+    public readonly Dictionary<Vintagestory.API.MathTools.BlockPos, (Vintagestory.API.MathTools.BlockPos Node, bool Big)> WarmthOwners = new();
+
     private SteamNetwork? serverSteam;
     private SteamNetwork? clientSteam;
 
@@ -35,6 +38,8 @@ public class FrostStoryModSystem : ModSystem
         api.RegisterBlockClass("FrostStorySteamConduit", typeof(BlockSteamConduit));
         api.RegisterBlockClass("FrostStorySteamMainFill", typeof(BlockSteamMainFill));
         api.RegisterBlockClass("FrostStorySteamMainStand", typeof(BlockSteamMainStand));
+        api.RegisterBlockClass("FrostStoryPipeWarmth", typeof(BlockPipeWarmth));
+        api.RegisterBlockEntityClass("FrostStorySteamNode", typeof(BlockEntitySteamNode));
         api.RegisterBlockEntityClass("FrostStoryGeneratorConsole", typeof(BlockEntityGeneratorConsole));
     }
 

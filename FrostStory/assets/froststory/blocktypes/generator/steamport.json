@@ -1,6 +1,7 @@
 {
 	"code": "steamport",
 	"class": "FrostStorySteamConduit",
+	"entityClass": "FrostStorySteamNode",
 	"variantgroups": [
 		{
 			"code": "side",

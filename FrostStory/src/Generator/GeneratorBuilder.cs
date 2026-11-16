@@ -100,6 +100,20 @@ public sealed class GeneratorBuilder
             int found = world.BlockAccessor.GetBlock(scratch, BlockLayersAccess.Solid).Id;
             if (found != IdOf(swap.Cold) && found != IdOf(swap.Lit)) continue;
 
+            int wanted = IdOf(lit ? swap.Lit : swap.Cold);
+            if (world.BlockAccessor.GetBlockEntity(scratch) is FrostStory.Steam.BlockEntitySteamNode port)
+            {
+                // a port keeps the pipe runs strung from it, so its block is exchanged under its block entity
+                if (found != wanted)
+                {
+                    world.BlockAccessor.ExchangeBlock(wanted, scratch);
+                    world.BlockAccessor.MarkBlockDirty(scratch);
+                    port.Changed();
+                }
+
+                continue;
+            }
+
             Place(center, new Placement(swap.X, swap.Y, swap.Z, lit ? swap.Lit : swap.Cold), null, scratch);
         }
     }

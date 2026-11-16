@@ -82,6 +82,25 @@ project; what is built stays. The generator itself cannot be selected or broken 
 Eight steam ports stand on the rim of the foundation pad, two to a side, each facing outward. They
 arrive with the Steam Core stage and go live when the generator is fired.
 
+**Pipe runs.** The main way to pipe steam is to string a run between two fittings or ports:
+
+- Hold steam pipes and right-click a fitting or port, then right-click another. A curved tube is
+  strung between them. It leaves each end square to one of its sides, so two fittings at different
+  heights or angles get a smooth bend, and a port is always left by its outlet.
+- A run costs one pipe per block of its length, taken from the stack in your hand. A small run can
+  be up to 24 blocks long; put a fitting in between to go further.
+- Hold steam mains instead to string a large run (up to 32 blocks) between main fittings and large
+  ports. A small run can also start from a main fitting, as a tap.
+- Clicking the same two ends again takes the run down and hands the pipes back; so does breaking
+  a fitting. Clicking the first end again cancels.
+- Each side of a fitting takes one run. A run has no collision and is not checked against what is
+  in its way.
+- The air a live run passes through is warm, much as a line of pipe blocks would be, so a run
+  across a room heats it.
+- Sneak while clicking to set a pipe block against the fitting instead.
+
+**Pipe blocks.** Rigid pipes still work and join the same network:
+
 - Run **steam pipes** from a port. A pipe lies along the face you place it against and joins end to
   end with the next one.
 - Use a **pipe fitting** for corners, tees and crossings: it joins on all six sides.
@@ -131,6 +150,7 @@ leaves the loaded world keeps the state it last had until the server restarts.
 | `/frostgen status [pos]` | Reports a console's state |
 | `/frostgen steam [pos]` | Says whether a pipe, fitting or port is carrying steam |
 | `/frostgen stand [pos]` | Raises a steam main stand with its post starting there |
+| `/frostgen run <from> <to> [main]` | Strings a pipe run between two fittings or ports, or takes it down |
 
 Console commands take the console's position, or the one you are looking at.
 
@@ -165,7 +185,7 @@ FrostStory/
   src/Generator/GeneratorBuilder.cs     writes blueprint cells into the world
   src/Generator/BlockEntityGeneratorConsole.cs   deliveries, timed construction, firing
   src/Generator/GeneratorCommands.cs    /frostgen
-  src/Steam/                            pipes, mains, fittings and ports; tracing a run back to a live port
+  src/Steam/                            pipe runs, pipes, mains, fittings and ports; tracing back to a live port
   assets/froststory/                    blocktypes, shapes, textures, lang, recipes, stage config
 tools/
   gen_segments.py                       the geometry of the modelled segments; writes their shapes
@@ -202,11 +222,15 @@ build through the console, partial deliveries raise exactly the pieces they pay 
 a build resumes mid-stage after a restart, firing and banking swap the lit models and the steam ports, and the
 result matches the blueprint cell for cell. Pipes and mains laid from the ports report steam when
 the generator is fired, taps off a main work, a misaligned main stays cold, and everything goes cold
-downstream of a cut. Main stands come up level and in line with a port or another fitting, on
+downstream of a cut. Pipe runs can be strung and taken down between fittings and ports, carry steam,
+warm the air they cross, keep through banking, firing and a restart, and respect the length and
+size limits. Main stands come up level and in line with a port or another fitting, on
 higher and lower ground. Every shape file loads cleanly through the game's own
 shape class.
 
-Not yet checked in a game client: how the large segment models render and light in-engine, walking
+Not yet checked in a game client: whether pipe runs draw at all, and correctly (they are built into
+the chunk mesh from short straight pieces using the game's tesselator, which I could only check
+against the engine's code and in the preview), and the two-click way of stringing them. Also: how the large segment models render and light in-engine, walking
 and climbing on the invisible collision cells, placing pipes and mains by hand (including a main
 lining itself up with a port, and setting down a stand), how the two-block mains, the stand and
 its post look in the game and the inventory, how much a pipe run actually

@@ -1,6 +1,7 @@
 {
 	"code": "pipejunction",
 	"class": "FrostStorySteamConduit",
+	"entityClass": "FrostStorySteamNode",
 	"drawtype": "cube",
 	"blockmaterial": "Metal",
 	"creativeinventory": {
@@ -14,6 +15,12 @@
 	"textures": {
 		"all": {
 			"base": "block/generator/pipejunction"
+		},
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
 		}
 	},
 	"sidesolid": {

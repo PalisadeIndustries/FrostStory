@@ -37,6 +37,12 @@ public class BlockSteamMainFill : Block
         // a generator port is not broken by way of its fill cells
     }
 
+    public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
+    {
+        var owner = Owner(world, blockSel.Position, out _);
+        return owner != null ? owner.OnBlockInteractStart(world, byPlayer, blockSel) : base.OnBlockInteractStart(world, byPlayer, blockSel);
+    }
+
     public override ItemStack OnPickBlock(IWorldAccessor world, BlockPos pos)
     {
         var owner = Owner(world, pos, out var ownerPos);
