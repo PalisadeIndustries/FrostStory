@@ -1349,6 +1349,47 @@ def steamhub():
     return m
 
 
+def hubframe(kind):
+    """The tower under a steam hub, four blocks square on four legs. 'leg' is one metre of it, going
+    straight up, and stacks. 'head' is the top four metres: the legs lean in to meet the corners of the
+    hub's fitting, with a ring of ties under the heater and another under the fitting. Drawn round the
+    hub's own 2 x 2 column; the block lives in the minimum-corner leg."""
+    m = Model("hubframe-" + kind, (-1, 1, -1))
+    c = 0.5
+    signs = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
+
+    def corners(r):
+        return [(c + sx * r, c + sz * r) for sx, sz in signs]
+
+    if kind == "leg":
+        ring = corners(1.5)
+        for x, z in ring:
+            m.member((x, 0.0, z), (x, 1.0, z), 0.22, 0.22, "girder", chunk=1.0)
+        for i in range(4):
+            (x0, z0), (x1, z1) = ring[i], ring[(i + 1) % 4]
+            m.member((x0, 0.92, z0), (x1, 0.92, z1), 0.14, 0.14, "girder", chunk=4.0)     # tie
+            m.member((x0, 0.05, z0), (x1, 0.88, z1), 0.1, 0.1, "steel", chunk=4.0)        # brace
+        return m
+
+    height, top = 4.0, 0.82
+    def at(y):
+        return 1.5 + (top - 1.5) * y / height
+    foot, crown = corners(1.5), corners(top)
+    for (x0, z0), (x1, z1) in zip(foot, crown):
+        m.member((x0, 0.0, z0), (x1, height, z1), 0.22, 0.22, "girder", chunk=2.0)
+    for y, w in ((1.85, 0.14), (3.9, 0.16)):                                              # rings of ties
+        ring = corners(at(y))
+        for i in range(4):
+            (x0, z0), (x1, z1) = ring[i], ring[(i + 1) % 4]
+            m.member((x0, y, z0), (x1, y, z1), w, w, "girder", chunk=4.0)
+    low, mid = corners(at(0.05)), corners(at(1.8))
+    for i in range(4):                                                                    # a cross brace in each face
+        j = (i + 1) % 4
+        m.member((low[i][0], 0.05, low[i][1]), (mid[j][0], 1.8, mid[j][1]), 0.1, 0.1, "steel", chunk=4.0)
+        m.member((low[j][0], 0.05, low[j][1]), (mid[i][0], 1.8, mid[i][1]), 0.1, 0.1, "steel", chunk=4.0)
+    return m
+
+
 def wallpass(axis):
     """A wall passthrough: a solid block of plate that stands in for one block of a wall, with a pipe
     mount (a collar round an open bore) on each of two opposite sides. The collars stand a little proud
@@ -1466,7 +1507,7 @@ def main():
     parts += [distributor(k, s) for k in ("straight", "drop") for s in DISTRIBUTOR_SIDES]
     parts += [wallpass(a) for a in ("ud", "ns", "we")]
     parts += [radiator(b) for b in RADIATOR_SIDES]
-    parts += [steamhub(), floorgrate(), tentstove("cold"), tentstove("lit"), stoveflue()]
+    parts += [steamhub(), hubframe("leg"), hubframe("head"), floorgrate(), tentstove("cold"), tentstove("lit"), stoveflue()]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:
         part.save(os.path.join(SHAPE_DIR, ".."))

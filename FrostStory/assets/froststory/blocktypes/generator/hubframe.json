@@ -1,0 +1,47 @@
+{
+	"code": "hubframe",
+	"class": "FrostStorySteamConduit",
+	"drawtype": "json",
+	"shape": {
+		"base": "block/generator/hubframe-{type}"
+	},
+	"textures": {
+		"girder": {
+			"base": "block/generator/segment/girder"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		}
+	},
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 4,
+	"requiredMiningTier": 2,
+	"drops": [],
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	},
+	"variantgroups": [
+		{
+			"code": "type",
+			"states": [
+				"leg",
+				"head"
+			]
+		}
+	]
+}

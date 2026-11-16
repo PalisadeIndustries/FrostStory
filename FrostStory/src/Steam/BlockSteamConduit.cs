@@ -72,6 +72,12 @@ public class BlockSteamConduit : Block, IHeatSource
     /// <summary>Blocks a conduit hangs below the part of it that steam flows through.</summary>
     private int hangs;
 
+    /// <summary>
+    /// For the frame under a steam hub: how many levels of it stand on four legs, one in each corner of
+    /// a 4 x 4 square, the block's own cell being the minimum corner. Nothing fills the middle.
+    /// </summary>
+    private int legLevels;
+
     /// <summary>True for the posts of a main stand: they carry a fitting but no steam.</summary>
     public bool IsStructural { get; private set; }
 
@@ -134,6 +140,11 @@ public class BlockSteamConduit : Block, IHeatSource
             case "floorgrate":
                 IsFloorGrate = true;
                 foreach (var face in BlockFacing.ALLFACES) connects[face.Index] = face != BlockFacing.UP;
+                break;
+
+            case "hubframe":
+                IsBig = managesFill = IsStructural = true;
+                legLevels = Variant["type"] == "head" ? 2 : 1;
                 break;
 
             case "steamhub":
@@ -211,16 +222,30 @@ public class BlockSteamConduit : Block, IHeatSource
     /// </summary>
     private AssetLocation FillCode(int x, int y, int z) =>
         IsRadiator ? new AssetLocation("froststory", $"radiatorfill-o{x}{y}{z}")
-        : IsHub ? new AssetLocation("froststory", y < 0 ? $"hubfill-d{x}{-y}{z}" : $"hubfill-o{x}{y}{z}")
+        : IsHub || legLevels > 0 ? new AssetLocation("froststory", y < 0 ? $"hubfill-d{x}{-y}{z}" : $"hubfill-o{x}{y}{z}")
         : BlockSteamMainFill.CodeFor(x, y, z);
 
     /// <summary>Every cell the conduit fills, including anything hanging below the part steam flows through.</summary>
     public IEnumerable<BlockPos> Bulk(BlockPos anchor)
     {
+        foreach (var o in BulkOffsets()) yield return anchor.AddCopy(o.X, o.Y, o.Z);
+    }
+
+    private IEnumerable<Vec3i> BulkOffsets()
+    {
+        if (legLevels > 0)
+        {
+            for (int y = 0; y < legLevels; y++)
+                for (int x = 0; x <= 3; x += 3)
+                    for (int z = 0; z <= 3; z += 3)
+                        yield return new Vec3i(x, y, z);
+            yield break;
+        }
+
         for (int x = 0; x < Size.X; x++)
             for (int y = -hangs; y < Size.Y; y++)
                 for (int z = 0; z < Size.Z; z++)
-                    yield return anchor.AddCopy(x, y, z);
+                    yield return new Vec3i(x, y, z);
     }
 
     public IEnumerable<(BlockFacing Face, Vec3d Point)> RunPoints(BlockPos anchor, bool big)
@@ -471,14 +496,12 @@ public class BlockSteamConduit : Block, IHeatSource
 
         if (managesFill && world.Side == EnumAppSide.Server)
         {
-            for (int x = 0; x < Size.X; x++)
-                for (int y = -hangs; y < Size.Y; y++)
-                    for (int z = 0; z < Size.Z; z++)
-                    {
-                        if (x == 0 && y == 0 && z == 0) continue;
-                        var fill = world.GetBlock(FillCode(x, y, z));
-                        if (fill != null) world.BlockAccessor.SetBlock(fill.Id, blockPos.AddCopy(x, y, z));
-                    }
+            foreach (var o in BulkOffsets())
+            {
+                if (o.X == 0 && o.Y == 0 && o.Z == 0) continue;
+                var fill = world.GetBlock(FillCode(o.X, o.Y, o.Z));
+                if (fill != null) world.BlockAccessor.SetBlock(fill.Id, blockPos.AddCopy(o.X, o.Y, o.Z));
+            }
         }
 
         mod?.SteamFor(world)?.Invalidate();

@@ -217,5 +217,24 @@
 			"type": "block",
 			"code": "froststory:steamhub"
 		}
+	},
+	{
+		"ingredientPattern": "_H_,I_I,I_I",
+		"ingredients": {
+			"I": {
+				"type": "item",
+				"code": "game:ingot-iron"
+			},
+			"H": {
+				"type": "block",
+				"code": "froststory:steamhub"
+			}
+		},
+		"width": 3,
+		"height": 3,
+		"output": {
+			"type": "block",
+			"code": "froststory:hubstand"
+		}
 	}
 ]

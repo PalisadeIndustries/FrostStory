@@ -24,9 +24,72 @@ public class BlockSteamMainStand : Block
     /// <summary>How far along the ground the stand looks for a main or port to line up with.</summary>
     public const int Reach = 48;
 
+    /// <summary>A hub tower's frame tapers in over this many blocks under the fitting.</summary>
+    public const int HubHead = 4;
+
     public override bool TryPlaceBlock(IWorldAccessor world, IPlayer byPlayer, ItemStack itemstack, BlockSelection blockSel, ref string failureCode)
     {
-        return Raise(world, blockSel.Position, byPlayer, out failureCode, out _);
+        return FirstCodePart() == "hubstand"
+            ? RaiseHub(world, blockSel.Position, byPlayer, out failureCode, out _)
+            : Raise(world, blockSel.Position, byPlayer, out failureCode, out _);
+    }
+
+    /// <summary>
+    /// Raises a steam hub on its tower: a frame on four legs, four blocks square, that goes straight up
+    /// and then tapers in over its last four blocks to carry the hub's fitting, with the heater hanging
+    /// inside the taper. <paramref name="ground"/> is one of the cells under the fitting.
+    /// </summary>
+    public static bool RaiseHub(IWorldAccessor world, BlockPos ground, IPlayer? byPlayer, out string failureCode, out BlockPos fittingPos)
+    {
+        failureCode = "";
+        var ba = world.BlockAccessor;
+        var leg = world.GetBlock(new AssetLocation("froststory", "hubframe-leg")) as BlockSteamConduit;
+        var head = world.GetBlock(new AssetLocation("froststory", "hubframe-head")) as BlockSteamConduit;
+        var hub = world.GetBlock(new AssetLocation("froststory", "steamhub")) as BlockSteamConduit;
+        fittingPos = FittingPosition(ba, ground);
+
+        if (leg == null || head == null || hub == null)
+        {
+            failureCode = "missingblock";
+            return false;
+        }
+
+        int rise = fittingPos.Y - ground.Y;
+        if (rise < HubHead || rise > MaxRise || !ba.IsValidPos(fittingPos.UpCopy(hub.Size.Y)))
+        {
+            failureCode = "froststory-stand-height";
+            return false;
+        }
+
+        var foot = new BlockPos(fittingPos.X - 1, ground.Y, fittingPos.Z - 1, ground.dimension);
+        var parts = new List<(BlockSteamConduit Block, BlockPos At)>();
+        for (int y = 0; y < rise - HubHead; y++) parts.Add((leg, foot.UpCopy(y)));
+        parts.Add((head, foot.UpCopy(rise - HubHead)));
+        parts.Add((hub, fittingPos));
+
+        foreach (var (block, at) in parts)
+        {
+            foreach (var cell in block.Bulk(at))
+            {
+                if (!ba.IsValidPos(cell) || ba.GetChunkAtBlockPos(cell) == null || !ba.GetBlock(cell).IsReplacableBy(hub))
+                {
+                    failureCode = "notreplaceable";
+                    return false;
+                }
+
+                if (byPlayer != null && !world.Claims.TryAccess(byPlayer, cell, EnumBlockAccessFlags.BuildOrBreak))
+                {
+                    failureCode = "claimed";
+                    return false;
+                }
+            }
+        }
+
+        if (world.Side != EnumAppSide.Server) return true;
+
+        foreach (var (block, at) in parts) ba.SetBlock(block.Id, at);
+        world.PlaySoundAt(new AssetLocation("game:sounds/block/chute"), fittingPos, 0, byPlayer);
+        return true;
     }
 
     /// <summary>

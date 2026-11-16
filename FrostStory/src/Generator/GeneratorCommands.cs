@@ -148,12 +148,16 @@ public static class GeneratorCommands
             .EndSubCommand()
 
             .BeginSubCommand("stand")
-                .WithDescription("Raise a steam main stand with its post starting at a position (or where you stand).")
-                .WithArgs(parsers.OptionalWorldPosition("position"))
+                .WithDescription("Raise a steam main stand with its post starting at a position (or where you stand). Add 'true' for a steam hub on its tower.")
+                .WithArgs(parsers.OptionalWorldPosition("position"), parsers.OptionalBool("hub"))
                 .HandleWith(args =>
                 {
                     var ground = CentreFrom(api, args);
-                    return FrostStory.Steam.BlockSteamMainStand.Raise(api.World, ground, null, out string why, out var fitting)
+                    bool hub = !args.Parsers[1].IsMissing && (bool)args[1];
+                    string why;
+                    BlockPos fitting;
+                    return (hub ? FrostStory.Steam.BlockSteamMainStand.RaiseHub(api.World, ground, null, out why, out fitting)
+                                : FrostStory.Steam.BlockSteamMainStand.Raise(api.World, ground, null, out why, out fitting))
                         ? TextCommandResult.Success($"Stand raised: fitting at {fitting.X} {fitting.Y} {fitting.Z}, {fitting.Y - ground.Y} blocks up.")
                         : TextCommandResult.Error($"Could not raise a stand there ({why}).");
                 })
