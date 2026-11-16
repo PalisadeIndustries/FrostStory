@@ -629,6 +629,10 @@ stern.box((X0 + 1.0, 2.5, 0), (0.3, 5.0, 0.16), "band")                         
 stern.box((X0 + 0.2, 2.6, 0), (1.6, 4.2, 0.12), "shiphull")                                # rudder
 stern.wheel((X0 + 2.6, 2.4, 0), 1.9, 0.5, 0.3, "brass", axis="x")                          # the screw
 
+def is_shell(cell):
+    return cell in solid and solid[cell] < len(SECTIONS)
+
+
 # decks: one plank or plate for each run of floor across the ship
 by_row = {}
 for (x, Y, z), tex in floors.items():
@@ -640,7 +644,10 @@ for (x, Y, tex), zs in by_row.items():
         if z is not None and z == prev + 1:
             prev = z
             continue
-        sec(x).box((x, Y + 0.06, (start + prev) / 2), (1.0, 0.12, prev - start + 1), tex)
+        # the shell is drawn on the outside of its cells: carry the deck out through them to the plating
+        lo = start - 0.5 - (0.9 if is_shell((x, Y, start - 1)) else 0)
+        hi = prev + 0.5 + (0.9 if is_shell((x, Y, prev + 1)) else 0)
+        sec(x).box((x, Y + 0.06, (lo + hi) / 2), (1.0, 0.12, hi - lo), tex)
         if z is not None:
             start = prev = z
 
@@ -651,11 +658,17 @@ for (x, y, z, side), (tex, kind) in walls.items():
 
 
 def panel(m, x, z, side, ya, yb, tex, inset=0.0):
+    """A thin panel on one side of a cell. Where it ends at the shell it is carried out to the plating."""
     off = 0.5 - 0.06
+    y = int(math.floor(ya))
     if side in "we":
-        m.box((x + (off if side == "e" else -off), (ya + yb) / 2, z), (0.12, yb - ya, 1.0 - inset), tex)
+        lo = z - 0.5 + inset / 2 - (0.9 if is_shell((x, y, z - 1)) else 0)
+        hi = z + 0.5 - inset / 2 + (0.9 if is_shell((x, y, z + 1)) else 0)
+        m.box((x + (off if side == "e" else -off), (ya + yb) / 2, (lo + hi) / 2), (0.12, yb - ya, hi - lo), tex)
     else:
-        m.box((x, (ya + yb) / 2, z + (off if side == "s" else -off)), (1.0 - inset, yb - ya, 0.12), tex)
+        lo = x - 0.5 + inset / 2 - (0.9 if is_shell((x - 1, y, z)) and section_of(x) == section_of(max(X0, x - 1)) else 0)
+        hi = x + 0.5 - inset / 2 + (0.9 if is_shell((x + 1, y, z)) and section_of(x) == section_of(min(X1, x + 1)) else 0)
+        m.box(((lo + hi) / 2, (ya + yb) / 2, z + (off if side == "s" else -off)), (hi - lo, yb - ya, 0.12), tex)
 
 
 for (x, z, side, tex, kind), ys in by_edge.items():
