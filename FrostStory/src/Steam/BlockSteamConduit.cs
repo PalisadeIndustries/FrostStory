@@ -63,9 +63,8 @@ public class BlockSteamConduit : Block, IHeatSource
     public bool IsFloorGrate { get; private set; }
 
     /// <summary>
-    /// True for steam hubs: a main fitting with a heater hanging under it, which warms the open ground
-    /// below and around (see <see cref="SteamHub"/>). The fitting joins mains on its sides and top; the
-    /// heater is two blocks more of the same block, underneath.
+    /// True for steam hubs: a heater that hangs from a steam main coming down onto it, and warms the
+    /// open ground below and around (see <see cref="SteamHub"/>). It takes a main on top and nothing else.
     /// </summary>
     public bool IsHub { get; private set; }
 
@@ -150,8 +149,7 @@ public class BlockSteamConduit : Block, IHeatSource
             case "steamhub":
                 IsBig = managesFill = IsHub = true;
                 Size = new Vec3i(2, 2, 2);
-                hangs = 2;
-                foreach (var face in BlockFacing.ALLFACES) connects[face.Index] = face != BlockFacing.DOWN;
+                connects[BlockFacing.UP.Index] = true;
                 break;
 
             case "radiator":

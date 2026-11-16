@@ -26,7 +26,7 @@ public static class SteamHub
                 if (distance > radius + 0.5 || (dx == 0 && dz == 0)) continue;
 
                 // head height over the ground: the first open cell with something to stand on, from the
-                // fitting's level down (a hub hangs from a main overhead)
+                // hub's level down (it hangs from a main overhead)
                 var pos = new BlockPos(hub.X + dx, hub.Y + 2, hub.Z + dz, hub.dimension);
                 if (ba.GetChunkAtBlockPos(pos) == null) continue;
                 for (int i = 0; i < Drop; i++, pos.Down())

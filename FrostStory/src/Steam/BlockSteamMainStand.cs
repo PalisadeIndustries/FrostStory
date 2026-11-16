@@ -27,6 +27,9 @@ public class BlockSteamMainStand : Block
     /// <summary>A hub tower's frame tapers in over this many blocks under the fitting.</summary>
     public const int HubHead = 4;
 
+    /// <summary>The hub hangs with its underside this far above the ground, where the tower is tall enough.</summary>
+    public const int HubClearance = 6;
+
     public override bool TryPlaceBlock(IWorldAccessor world, IPlayer byPlayer, ItemStack itemstack, BlockSelection blockSel, ref string failureCode)
     {
         return FirstCodePart() == "hubstand"
@@ -36,8 +39,9 @@ public class BlockSteamMainStand : Block
 
     /// <summary>
     /// Raises a steam hub on its tower: a frame on four legs, four blocks square, that goes straight up
-    /// and then tapers in over its last four blocks to carry the hub's fitting, with the heater hanging
-    /// inside the taper. <paramref name="ground"/> is one of the cells under the fitting.
+    /// and then tapers in over its last four blocks to carry a main fitting. The hub hangs inside the
+    /// frame on a main dropped from the fitting, its underside six blocks above the ground (or right
+    /// under the fitting on a short tower). <paramref name="ground"/> is one of the cells under the fitting.
     /// </summary>
     public static bool RaiseHub(IWorldAccessor world, BlockPos ground, IPlayer? byPlayer, out string failureCode, out BlockPos fittingPos)
     {
@@ -46,9 +50,11 @@ public class BlockSteamMainStand : Block
         var leg = world.GetBlock(new AssetLocation("froststory", "hubframe-leg")) as BlockSteamConduit;
         var head = world.GetBlock(new AssetLocation("froststory", "hubframe-head")) as BlockSteamConduit;
         var hub = world.GetBlock(new AssetLocation("froststory", "steamhub")) as BlockSteamConduit;
+        var fitting = world.GetBlock(new AssetLocation("froststory", "mainjunction")) as BlockSteamConduit;
+        var dropMain = world.GetBlock(new AssetLocation("froststory", "steammain-ud")) as BlockSteamConduit;
         fittingPos = FittingPosition(ba, ground);
 
-        if (leg == null || head == null || hub == null)
+        if (leg == null || head == null || hub == null || fitting == null || dropMain == null)
         {
             failureCode = "missingblock";
             return false;
@@ -65,7 +71,10 @@ public class BlockSteamMainStand : Block
         var parts = new List<(BlockSteamConduit Block, BlockPos At)>();
         for (int y = 0; y < rise - HubHead; y++) parts.Add((leg, foot.UpCopy(y)));
         parts.Add((head, foot.UpCopy(rise - HubHead)));
-        parts.Add((hub, fittingPos));
+        parts.Add((fitting, fittingPos));
+        var hubPos = new BlockPos(fittingPos.X, System.Math.Min(ground.Y + HubClearance, fittingPos.Y - hub.Size.Y), fittingPos.Z, ground.dimension);
+        parts.Add((hub, hubPos));
+        for (int y = hubPos.Y + hub.Size.Y; y < fittingPos.Y; y++) parts.Add((dropMain, new BlockPos(fittingPos.X, y, fittingPos.Z, ground.dimension)));
 
         foreach (var (block, at) in parts)
         {

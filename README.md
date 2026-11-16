@@ -151,20 +151,19 @@ Hull stage and go live with the rest.
 - A **steam drop distributor** is the same thing with the four outlets underneath: the main comes
   in at one side and the pipes leave downwards, so they can go down and away from a main carried
   overhead.
-- A **steam hub** is a main fitting with a heater hanging two blocks below it, for warming open
-  ground from a main carried overhead. Set it in line with a main as you would a fitting; mains
-  join its four sides and its top, and can carry on out of the others. It needs the two blocks
-  under the fitting clear for the heater; a stand's post can come up under that. Nothing smaller
-  than a main feeds it. With steam in it, it warms the ground beneath for 12 blocks round (up to
-  30 blocks below it), most strongly close by and falling to 40% at the edge; the warmth follows
-  the lie of the ground and catches up with digging and building within a minute.
-  `HubHeatStrength` and `HubRadius` in the config change it.
-- A **steam hub tower** raises a hub on its own frame. Set it on the ground and it builds four
-  legs, four blocks square, that go straight up and then lean in over the last four blocks to
-  carry the hub's fitting, with the heater hanging inside the taper. Only the four legs are
-  solid, so you can walk under it. It lines the fitting up with a large port or the end of a
-  main exactly as a main stand does, and otherwise stands it 14 blocks up; it needs at least
-  four blocks of height. Breaking the hub leaves the frame; the frame drops nothing.
+- A **steam hub** is a heater two blocks square and two high that hangs from a steam main, for
+  warming open ground. Set it under a main fitting, or under a main coming down from one; it
+  takes a main on top and nothing else. With steam in it, it warms the ground beneath for 12
+  blocks round (up to 30 blocks below it), most strongly close by and falling to 40% at the
+  edge; the warmth follows the lie of the ground and catches up with digging and building within
+  a minute. `HubHeatStrength` and `HubRadius` in the config change it.
+- A **steam hub tower** raises the whole thing. Set it on the ground and it builds four legs,
+  four blocks square, that go straight up and then lean in over the last four blocks to carry a
+  main fitting. The hub hangs inside the frame on a main dropped from the fitting, with its
+  underside six blocks above the ground (right under the fitting on a tower too short for
+  that). Only the four legs are solid, so you can walk under it. It lines the fitting up with a
+  large port or the end of a main exactly as a main stand does, and otherwise stands it 14
+  blocks up; it needs at least four blocks of height. The frame drops nothing when broken.
 - A **steam main stand** carries a main fitting on a lattice post. Set it on the ground in line
   with a large port or the end of a main (within 48 blocks along the compass, on either of the
   two columns the main covers) and the fitting comes up at that pipe's height and lined up with
@@ -314,7 +313,7 @@ higher and lower ground. Both distributors carry steam from a main to a pipe on 
 outlets and to four pipe runs (a fifth is refused), and stay shut to pipes and mains on every other side. A wall passthrough carries steam between its two mounts by pipe or by run,
 stays shut on its other four sides, and counts as a solid, heat-keeping block. A radiator takes steam at the two hookups on its back and from
 underneath, by pipe or by run, passes it on, and stays shut on its front, ends and top. A tent stove lights with fuel and a flue to open sky, refuses without a flue or with the flue top under
-cover, burns its fuel down and goes out, and goes out when its flue is removed. A hub tower comes up with its legs, tapered head and hub in place and the middle open. A steam hub joins mains at its fitting, hangs its heater below, refuses pipes, lays warm air over uneven ground out to its radius that is warm
+cover, burns its fuel down and goes out, and goes out when its flue is removed. A hub tower comes up with its legs, tapered head, fitting, drop main and hub in place, the hub six blocks off the ground and live. A steam hub takes a main on top, refuses pipes, lays warm air over uneven ground out to its radius that is warm
 only while the hub has steam and weaker further out, and takes it up again when broken. Underfloor grates take steam from underneath or the side, pass it
 along a row, take one run underneath, and stay shut on top. Every shape file loads cleanly through the game's own
 shape class.

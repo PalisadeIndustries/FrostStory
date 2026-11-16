@@ -1321,38 +1321,31 @@ def stoveflue():
 
 
 def steamhub():
-    """A steam hub: a main fitting with a heater hanging under it, for a main carried overhead. The
-    fitting joins mains on every side and on top, like any other. From its underside hangs a finned
-    column that throws the heat down and out, ending in a stepped cap and a drain finial two blocks
-    below. Its cell is the minimum corner of the fitting; the heater is below that."""
+    """A steam hub: a heater two blocks square and two high that hangs from a steam main coming down
+    onto it. A flanged collar on top takes the main; under it a finned column throws the heat down and
+    out, ending in a stepped cap and a drain finial. Its cell is its minimum corner."""
     m = Model("steamhub", (0, 1, 0))
     c = 0.5
-    m.vprism(c, c, 0.0, 2.0, MAIN_BORE, "pipe")                                           # the fitting
-    m.hprism((-0.5, 1.0, c), (1.5, 1.0, c), MAIN_BORE, "pipe")
-    m.hprism((c, 1.0, -0.5), (c, 1.0, 1.5), MAIN_BORE, "pipe")
-    m.box((c, 1.0, c), (1.5, 1.5, 1.5), "band")
-    m.vprism(c, c, 1.88, 2.0, MAIN_FLANGE, "band", caps=(True, True), captex="band")
-    for a, b in ((-0.5, -0.38), (1.38, 1.5)):
-        m.hprism((a, 1.0, c), (b, 1.0, c), MAIN_FLANGE, "band", caps=(True, True), captex="band")
-        m.hprism((c, 1.0, a), (c, 1.0, b), MAIN_FLANGE, "band", caps=(True, True), captex="band")
-    m.vprism(c, c, -0.12, 0.12, 0.95, "band", caps=(True, True), captex="band")           # hanger collar
-    m.vprism(c, c, -1.6, -0.12, 0.45, "pipe")                                             # heater column
-    for i in range(7):
-        y = -0.33 - i * 0.2
+    m.vprism(c, c, 1.88, 2.0, MAIN_FLANGE, "band", caps=(True, True), captex="band")      # flange for the main
+    m.vprism(c, c, 1.7, 1.88, MAIN_BORE, "pipe")
+    m.vprism(c, c, 1.58, 1.7, 0.95, "band", caps=(True, True), captex="band")             # hanger collar
+    m.vprism(c, c, 0.4, 1.58, 0.45, "pipe")                                               # heater column
+    for i in range(6):
+        y = 1.44 - i * 0.19
         m.vprism(c, c, y - 0.07, y, 0.86, "band", caps=(True, True), captex="band")       # fins
     for sx, sz in ((1, 0), (-1, 0), (0, 1), (0, -1)):                                     # tie rods through the fins
-        m.box((c + sx * 0.7, -0.86, c + sz * 0.7), (0.06, 1.5, 0.06), "brass")
-    m.vprism(c, c, -1.7, -1.6, 0.9, "band", caps=(True, True), captex="band")             # cap, stepping in
-    m.vprism(c, c, -1.82, -1.7, 0.62, "darkplate", caps=(True, False), captex="darkplate")
-    m.vprism(c, c, -1.92, -1.82, 0.34, "darkplate", caps=(True, False), captex="darkplate")
-    m.vprism(c, c, -2.0, -1.92, 0.12, "brass", caps=(True, False), captex="black")        # drain finial
+        m.box((c + sx * 0.7, 1.0, c + sz * 0.7), (0.06, 1.2, 0.06), "brass")
+    m.vprism(c, c, 0.3, 0.4, 0.9, "band", caps=(True, True), captex="band")               # cap, stepping in
+    m.vprism(c, c, 0.18, 0.3, 0.62, "darkplate", caps=(True, False), captex="darkplate")
+    m.vprism(c, c, 0.08, 0.18, 0.34, "darkplate", caps=(True, False), captex="darkplate")
+    m.vprism(c, c, 0.0, 0.08, 0.12, "brass", caps=(True, False), captex="black")          # drain finial
     return m
 
 
 def hubframe(kind):
     """The tower under a steam hub, four blocks square on four legs. 'leg' is one metre of it, going
     straight up, and stacks. 'head' is the top four metres: the legs lean in to meet the corners of the
-    hub's fitting, with a ring of ties under the heater and another under the fitting. Drawn round the
+    main fitting it carries, with a ring of ties half way and another under the fitting. Drawn round the
     hub's own 2 x 2 column; the block lives in the minimum-corner leg."""
     m = Model("hubframe-" + kind, (-1, 1, -1))
     c = 0.5
