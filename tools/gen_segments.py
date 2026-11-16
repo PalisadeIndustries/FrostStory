@@ -1517,7 +1517,7 @@ def crossover(kind):
         m.box((0, top - 0.13, z + 0.5 / steps - 0.01), (0.86, 0.2, 0.02), "band")         # riser
     for sx in (-1, 1):
         x = sx * 0.46
-        m.member((x, 0.0, -0.5), (x, 1.0, 0.5), 0.05, 0.22, "band", chunk=2.0)            # stringer
+        m.member((x, 0.0, -0.5), (x, 1.0, 0.5), 0.2, 0.06, "band", chunk=2.0)             # stringer: a plate on edge, like the run's toe board
         m.box((x, 0.5, -0.45), (0.05, 1.0, 0.05), "steel")                                # low post
         m.box((x, 1.0, 0.45), (0.05, 2.0, 0.05), "steel")                                 # high post, up to the run's rail
         m.member((x, 0.98, -0.45), (x, 1.97, 0.45), 0.06, 0.06, "band", chunk=2.0)        # handrail, rising with the flight
