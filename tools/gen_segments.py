@@ -1346,6 +1346,11 @@ def stoveflue(kind="pipe"):
         for y, a in ((0.58, 0.3), (0.64, 0.24), (0.7, 0.17), (0.76, 0.1)):        # the cowl, stepping in
             m.vprism(0, 0, y, y + 0.06, a, "band", caps=(True, True), captex="band")
         m.vprism(0, 0, 0.82, 0.9, 0.04, "brass", caps=(False, True), captex="brass")
+    elif kind == "upturn":                                                         # in at the north side, out at the top
+        m.hprism((0, 0.5, -0.5), (0, 0.5, -0.1), 0.12, "pipe")
+        m.hprism((0, 0.5, -0.5), (0, 0.5, -0.43), 0.15, "band", caps=(True, True), captex="band")
+        m.box((0, 0.5, 0), (0.3, 0.3, 0.3), "band")
+        m.vprism(0, 0, 0.6, 1.0, 0.12, "pipe")
     else:
         m.vprism(0, 0, 0.0, 0.5, 0.12, "pipe")
         m.vprism(0, 0, 0.0, 0.07, 0.15, "band", caps=(True, True), captex="band")
@@ -1538,7 +1543,7 @@ def main():
     parts += [distributor(k, s) for k in ("straight", "drop") for s in DISTRIBUTOR_SIDES]
     parts += [wallpass(a) for a in ("ud", "ns", "we")]
     parts += [radiator(b) for b in RADIATOR_SIDES]
-    parts += [steamhub(), hubframe("leg"), hubframe("head"), floorgrate(), tentstove("cold"), tentstove("lit"), stoveflue(), stoveflue("cap"), stoveflue("elbow"), pipe()]
+    parts += [steamhub(), hubframe("leg"), hubframe("head"), floorgrate(), tentstove("cold"), tentstove("lit"), stoveflue(), stoveflue("cap"), stoveflue("elbow"), stoveflue("upturn"), pipe()]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:
         part.save(os.path.join(SHAPE_DIR, ".."))

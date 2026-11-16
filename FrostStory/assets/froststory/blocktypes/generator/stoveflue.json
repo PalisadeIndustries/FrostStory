@@ -5,12 +5,14 @@
 		"general": [
 			"*-ud",
 			"*-cap",
-			"*-elbownorth"
+			"*-elbownorth",
+			"*-upturnnorth"
 		],
 		"froststory": [
 			"*-ud",
 			"*-cap",
-			"*-elbownorth"
+			"*-elbownorth",
+			"*-upturnnorth"
 		]
 	},
 	"drawtype": "json",
@@ -63,7 +65,11 @@
 				"elbownorth",
 				"elboweast",
 				"elbowsouth",
-				"elbowwest"
+				"elbowwest",
+				"upturnnorth",
+				"upturneast",
+				"upturnsouth",
+				"upturnwest"
 			]
 		}
 	],
@@ -96,6 +102,22 @@
 		},
 		"*-elboweast": {
 			"base": "block/generator/stoveflue-elbow",
+			"rotateY": 270
+		},
+		"*-upturnnorth": {
+			"base": "block/generator/stoveflue-upturn",
+			"rotateY": 0
+		},
+		"*-upturnwest": {
+			"base": "block/generator/stoveflue-upturn",
+			"rotateY": 90
+		},
+		"*-upturnsouth": {
+			"base": "block/generator/stoveflue-upturn",
+			"rotateY": 180
+		},
+		"*-upturneast": {
+			"base": "block/generator/stoveflue-upturn",
 			"rotateY": 270
 		}
 	},
@@ -132,6 +154,14 @@
 			"y2": 0.9,
 			"z2": 0.8
 		},
+		"*-upturn*": {
+			"x1": 0.3,
+			"y1": 0.3,
+			"z1": 0.3,
+			"x2": 0.7,
+			"y2": 1,
+			"z2": 0.7
+		},
 		"*": {
 			"x1": 0.3,
 			"y1": 0,
@@ -152,6 +182,12 @@
 			{
 				"type": "block",
 				"code": "stoveflue-elbownorth"
+			}
+		],
+		"*-upturn*": [
+			{
+				"type": "block",
+				"code": "stoveflue-upturnnorth"
 			}
 		],
 		"*": [

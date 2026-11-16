@@ -80,8 +80,8 @@ public class BlockTentStove : Block, IHeatSource, IIgnitable
 }
 
 /// <summary>
-/// Stove flue: straight lengths (upright or lying), an elbow that turns a rising flue out sideways, and
-/// a cap for the top. It is a thin pipe, but it closes the hole it makes in a tent, a wall or a roof.
+/// Stove flue: straight lengths (upright or lying), an elbow that turns a rising flue out sideways, an
+/// upturn that turns a lying flue back up, and a cap for the top. It is a thin pipe, but it closes the hole it makes in a tent, a wall or a roof.
 /// </summary>
 public class BlockStoveFlue : Block
 {
@@ -90,14 +90,16 @@ public class BlockStoveFlue : Block
 
     private EnumAxis? axis;          // a straight length lies along this
     private BlockFacing? turnsTo;    // an elbow takes smoke coming up and sends it this way
+    private BlockFacing? upFrom;     // an upturn takes smoke coming in at this side and sends it up
 
     public override void OnLoaded(ICoreAPI api)
     {
         base.OnLoaded(api);
         string type = Variant["type"] ?? "ud";
         IsCap = type == "cap";
-        if (type.StartsWith("elbow")) turnsTo = BlockFacing.FromCode(type.Substring(5));
-        else if (!IsCap) axis = type == "ns" ? EnumAxis.Z : type == "we" ? EnumAxis.X : EnumAxis.Y;
+        if (type.StartsWith("upturn")) upFrom = BlockFacing.FromCode(type.Substring(6));
+        else if (type.StartsWith("elbow")) turnsTo = BlockFacing.FromCode(type.Substring(5));
+        else if (!IsCap && upFrom == null) axis = type == "ns" ? EnumAxis.Z : type == "we" ? EnumAxis.X : EnumAxis.Y;
     }
 
     /// <summary>
@@ -106,6 +108,7 @@ public class BlockStoveFlue : Block
     /// </summary>
     public BlockFacing? Carry(BlockFacing heading)
     {
+        if (upFrom != null) return heading == upFrom.Opposite ? BlockFacing.UP : null;
         if (turnsTo != null || IsCap) return heading == BlockFacing.UP ? turnsTo ?? BlockFacing.UP : null;
         return heading.Axis == axis ? heading : null;
     }
@@ -115,7 +118,9 @@ public class BlockStoveFlue : Block
         if (byPlayer == null || IsCap) return base.TryPlaceBlock(world, byPlayer, itemstack, blockSel, ref failureCode);
 
         // a length lies along the side it is set against; an elbow turns away from whoever sets it
-        string type = turnsTo != null
+        string type = upFrom != null
+            ? "upturn" + (blockSel.Face.IsHorizontal ? blockSel.Face.Opposite : SuggestedHVOrientation(byPlayer, blockSel)[0]).Code      // its inlet faces what it is set against
+            : turnsTo != null
             ? "elbow" + SuggestedHVOrientation(byPlayer, blockSel)[0].Opposite.Code
             : blockSel.Face.Axis switch { EnumAxis.Y => "ud", EnumAxis.Z => "ns", _ => "we" };
         var turned = world.GetBlock(CodeWithVariant("type", type)) ?? this;
