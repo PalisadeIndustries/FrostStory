@@ -62,5 +62,24 @@
 			"code": "froststory:mainjunction",
 			"quantity": 2
 		}
+	},
+	{
+		"ingredientPattern": "_J_,I_I,I_I",
+		"ingredients": {
+			"J": {
+				"type": "block",
+				"code": "froststory:mainjunction"
+			},
+			"I": {
+				"type": "item",
+				"code": "game:ingot-iron"
+			}
+		},
+		"width": 3,
+		"height": 3,
+		"output": {
+			"type": "block",
+			"code": "froststory:mainstand"
+		}
 	}
 ]

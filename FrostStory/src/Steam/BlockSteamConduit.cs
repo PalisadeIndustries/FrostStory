@@ -30,6 +30,9 @@ public class BlockSteamConduit : Block, IHeatSource
     /// <summary>True for the two-block-wide conduits.</summary>
     public bool IsBig { get; private set; }
 
+    /// <summary>True for the posts of a main stand: they carry a fitting but no steam.</summary>
+    public bool IsStructural { get; private set; }
+
     /// <summary>Cells occupied, counted from this block's own cell.</summary>
     public Vec3i Size { get; private set; } = new(1, 1, 1);
 
@@ -56,6 +59,11 @@ public class BlockSteamConduit : Block, IHeatSource
                     "ns" => new Vec3i(2, 2, 1),
                     _ => new Vec3i(1, 2, 2)
                 };
+                break;
+
+            case "mainpost":
+                IsBig = managesFill = IsStructural = true;
+                Size = new Vec3i(2, 1, 2);
                 break;
 
             case "mainjunction":
@@ -100,7 +108,7 @@ public class BlockSteamConduit : Block, IHeatSource
     public bool ConnectsOn(BlockFacing face) => connects[face.Index];
 
     /// <summary>Whether a small pipe may join on this face: anywhere on a main, only at the mouth of a port.</summary>
-    public bool AcceptsTapOn(BlockFacing face) => IsBig && (!IsPort || connects[face.Index]);
+    public bool AcceptsTapOn(BlockFacing face) => IsBig && !IsStructural && (!IsPort || connects[face.Index]);
 
     public IEnumerable<BlockPos> Cells(BlockPos anchor)
     {
@@ -135,6 +143,7 @@ public class BlockSteamConduit : Block, IHeatSource
     public override string GetPlacedBlockInfo(IWorldAccessor world, BlockPos pos, IPlayer forPlayer)
     {
         var sb = new StringBuilder(base.GetPlacedBlockInfo(world, pos, forPlayer));
+        if (IsStructural) return sb.ToString();
         if (sb.Length > 0 && sb[^1] != '\n') sb.AppendLine();
         sb.AppendLine(SteamInfo(world, pos));
         return sb.ToString();

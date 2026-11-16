@@ -98,6 +98,18 @@ public static class GeneratorCommands
                 }))
             .EndSubCommand()
 
+            .BeginSubCommand("stand")
+                .WithDescription("Raise a steam main stand with its post starting at a position (or where you stand).")
+                .WithArgs(parsers.OptionalWorldPosition("position"))
+                .HandleWith(args =>
+                {
+                    var ground = CentreFrom(api, args);
+                    return FrostStory.Steam.BlockSteamMainStand.Raise(api.World, ground, null, out string why, out var fitting)
+                        ? TextCommandResult.Success($"Stand raised: fitting at {fitting.X} {fitting.Y} {fitting.Z}, {fitting.Y - ground.Y} blocks up.")
+                        : TextCommandResult.Error($"Could not raise a stand there ({why}).");
+                })
+            .EndSubCommand()
+
             .BeginSubCommand("steam")
                 .WithDescription("Say whether the pipe, fitting or port at a position (or the one you look at) is carrying steam.")
                 .WithArgs(parsers.OptionalWorldPosition("position"))

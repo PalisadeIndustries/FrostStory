@@ -101,9 +101,16 @@ Hull stage and go live with the rest.
 - An ordinary steam pipe can tap a main or a main fitting anywhere, or butt against the mouth of a
   large port, so a main can feed many small runs.
 - A main gives three times the warmth of a pipe.
+- A **steam main stand** carries a main fitting on a lattice post. Set it on the ground in line
+  with a large port or the end of a main (within 48 blocks along the compass, on either of the
+  two columns the main covers) and the fitting comes up at that pipe's height and lined up with
+  it, whatever the ground does, up to 40 blocks tall. Run the main out to it and carry on level,
+  or branch. Anywhere else the fitting stands 14 blocks up, the height of the large ports above
+  the pad. Breaking the fitting leaves the post; the post drops nothing.
 
 Recipes: two iron plates make four pipes; four iron plates make four fittings; eight iron plates
-in a ring make four mains; four mains make two main fittings.
+in a ring make four mains; four mains make two main fittings; a main fitting over four iron
+ingots makes a stand.
 
 A pipe is traced back to its port on demand, so the route has to be in loaded chunks. A run that
 leaves the loaded world keeps the state it last had until the server restarts.
@@ -123,6 +130,7 @@ leaves the loaded world keeps the state it last had until the server restarts.
 | `/frostgen fire [pos] [on]` | Fires or banks a finished generator |
 | `/frostgen status [pos]` | Reports a console's state |
 | `/frostgen steam [pos]` | Says whether a pipe, fitting or port is carrying steam |
+| `/frostgen stand [pos]` | Raises a steam main stand with its post starting there |
 
 Console commands take the console's position, or the one you are looking at.
 
@@ -192,12 +200,14 @@ build through the console, partial deliveries raise exactly the pieces they pay 
 a build resumes mid-stage after a restart, firing and banking swap the lit models and the steam ports, and the
 result matches the blueprint cell for cell. Pipes and mains laid from the ports report steam when
 the generator is fired, taps off a main work, a misaligned main stays cold, and everything goes cold
-downstream of a cut. Every shape file loads cleanly through the game's own
+downstream of a cut. Main stands come up level and in line with a port or another fitting, on
+higher and lower ground. Every shape file loads cleanly through the game's own
 shape class.
 
 Not yet checked in a game client: how the large segment models render and light in-engine, walking
 and climbing on the invisible collision cells, placing pipes and mains by hand (including a main
-lining itself up with a port), how the two-block mains look in the inventory, how much a pipe run actually
+lining itself up with a port, and setting down a stand), how the two-block mains, the stand and
+its post look in the game and the inventory, how much a pipe run actually
 warms a player, the footprint highlight, the console's hover text and the stack's steam particles. The preview page mirrors the engine's rotation and texture
 mapping rules, but it is not the engine.
 

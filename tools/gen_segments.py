@@ -1099,6 +1099,35 @@ def mainjunction():
     return m
 
 
+def mainpost():
+    """One metre of the lattice post under a main stand: four legs, a tie round the top and a brace on
+    each face. It fills the same 2 x 2 footprint as the fitting it carries, and stacks."""
+    m = Model("mainpost", (0, 1, 0))
+    c, r = 0.5, 0.72
+    corners = [(c + r, c + r), (c - r, c + r), (c - r, c - r), (c + r, c - r)]
+    for x, z in corners:
+        m.member((x, 0.0, z), (x, 1.0, z), 0.18, 0.18, "girder", chunk=1.0)
+    for i in range(4):
+        (x0, z0), (x1, z1) = corners[i], corners[(i + 1) % 4]
+        m.member((x0, 0.93, z0), (x1, 0.93, z1), 0.12, 0.12, "girder", chunk=2.0)      # tie
+        m.member((x0, 0.05, z0), (x1, 0.9, z1), 0.09, 0.09, "steel", chunk=2.0)        # brace
+    return m
+
+
+def mainstand():
+    """The stand as it is carried: a short post with a fitting on it, small enough to sit in one block."""
+    m = Model("mainstand", (0, 1, 0))
+    for sx in (0.26, -0.26):
+        for sz in (0.26, -0.26):
+            m.member((sx, 0.0, sz), (sx, 0.56, sz), 0.07, 0.07, "girder", chunk=1.0)
+    m.box((0, 0.05, 0), (0.7, 0.1, 0.7), "band")
+    m.box((0, 0.75, 0), (0.42, 0.42, 0.42), "band")
+    m.vprism(0, 0, 0.5, 1.0, 0.2, "pipe")
+    m.hprism((-0.45, 0.75, 0), (0.45, 0.75, 0), 0.2, "pipe")
+    m.hprism((0, 0.75, -0.45), (0, 0.75, 0.45), 0.2, "pipe")
+    return m
+
+
 MAIN_PORT_ANCHORS = {"east": (7, 15, 0), "south": (-1, 15, 7), "west": (-7, 15, -1), "north": (0, 15, -7)}
 
 
@@ -1191,7 +1220,7 @@ def main():
         total += n
         print(f"  {m.name:16s} {n:4d} elements")
     write_blocktype(models)
-    parts = [steamport(), mainjunction()] + [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
+    parts = [steamport(), mainjunction(), mainpost(), mainstand()] + [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:
         part.save(os.path.join(SHAPE_DIR, ".."))
     print(f"Wrote {len(parts)} steam fitting shapes")
