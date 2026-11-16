@@ -119,6 +119,9 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
           <button type="button" id="view-exterior" aria-pressed="true">Exterior</button>
           <button type="button" id="view-section" aria-pressed="false">Section</button>
         </div>
+        <div class="seg" role="group" aria-label="Extras">
+          <button type="button" id="pipework" aria-pressed="true">Pipework example</button>
+        </div>
         <div class="seg" role="group" aria-label="Focus">
           <button type="button" id="focus-tower" aria-pressed="true">Tower</button>
           <button type="button" id="focus-whole" aria-pressed="false">Whole</button>
@@ -152,6 +155,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
     </section>
   </div>
 
+  <p class="foot" id="pipework-note">The pipework example is not part of the generator: it shows what a player can build off it. From the east large port, steam mains run out level to two stands, with a branch and a riser off their fittings and an ordinary pipe tapping the main. From a base port, ordinary pipes and fittings run along the ground. Each group appears once its port has been built.</p>
   <p class="foot">Drawn from the mod's own blueprint, block shapes and textures, so what shows here is what the console builds in the world. Textures are procedural placeholders.</p>
 </div>
 
@@ -252,6 +256,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
   function key(x, y, z) { return (x + 64) + (z + 64) * 128 + (y + 128) * 16384; }
 
   var section = false;
+  var pipework = true;
   var group = null;
   var cache = {};
   var dirty = true;
@@ -274,6 +279,12 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
       if (map.get(hk) === D.swaps[h + 3]) map.set(hk, D.swaps[h + 4]);
     }
     map.set(key(0, 1, -D.consoleDistance), D.consoleCode);
+    if (pipework) D.pipework.forEach(function (group) {
+      var port = map.get(key(group.at[0], group.at[1], group.at[2]));
+      if (port === undefined || D.codes[port].indexOf(group.port) !== 0) return;     // its port is not built yet
+      var c = group.cells;
+      for (var i = 0; i < c.length; i += 4) map.set(key(c[i], c[i + 1], c[i + 2]), c[i + 3]);
+    });
     return { map: map, voids: voids };
   }
 
@@ -386,7 +397,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
     var stageCount = Math.min(current, D.stages.length), lit = current === STEPS.length - 1;
     var all = stageCount ? D.stages[stageCount - 1].steps.length : 0;
     var pieceCount = current >= 1 && current <= D.stages.length ? Math.min(pieces, all) : all;
-    var id = stageCount + "/" + pieceCount + (lit ? "L" : "") + (section ? "S" : "E");
+    var id = stageCount + "/" + pieceCount + (lit ? "L" : "") + (section ? "S" : "E") + (pipework ? "P" : "");
     if (!cache[id]) cache[id] = buildGroup(stageCount, pieceCount, lit, section);
     if (group) scene.remove(group);
     group = cache[id];
@@ -460,6 +471,12 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
 
   document.getElementById("view-exterior").addEventListener("click", function () { setSection(false); });
   document.getElementById("view-section").addEventListener("click", function () { setSection(true); });
+  document.getElementById("pipework").addEventListener("click", function () {
+    pipework = !pipework;
+    this.setAttribute("aria-pressed", String(pipework));
+    document.getElementById("pipework-note").hidden = !pipework;
+    showState();
+  });
   ["tower", "whole", "shaft"].forEach(function (name) {
     document.getElementById("focus-" + name).addEventListener("click", function () {
       if (name !== "tower" && !section) setSection(true);

@@ -191,7 +191,9 @@ python3 tools/build_preview.py
 ```
 
 Open `dist/generator-preview.html`. It draws the real blueprint with the mod's own shapes and
-textures, stage by stage, with a section view of the shaft. (`pip install pillow` for the Python tools.)
+textures, stage by stage and piece by piece, with a section view of the shaft. A "Pipework
+example" layer adds a sample of what a player can build off the ports (mains, stands, fittings,
+pipes), laid out in `pipework_example()` in `tools/build_preview.py`. (`pip install pillow` for the Python tools.)
 
 ## Status
 

@@ -218,6 +218,51 @@ def resolve_all(codes, atlas):
 
 # --------------------------------------------------------------------------- page
 
+def pipework_example(codes):
+    """A sample of what a player can build off the generator, so every steam part can be seen in place.
+
+    Each group hangs off one port and is only drawn once that port has been built. Positions are
+    blueprint cells: the east large port's mouth is at (7, 15, 0), the pad stands at y = 0."""
+    def idx(name):
+        code = "froststory:" + name
+        if code not in codes:
+            codes.append(code)
+        return codes.index(code)
+
+    def cells(*parts):
+        return [v for x, y, z, name in parts for v in (x, y, z, idx(name))]
+
+    def run(name, start, step, count):
+        return [(start[0] + step[0] * i, start[1] + step[1] * i, start[2] + step[2] * i, name) for i in range(count)]
+
+    def stand(x, z, top=15):
+        return run("mainpost", (x, 1, z), (0, 1, 0), top - 1) + [(x, top, z, "mainjunction")]
+
+    large = cells(
+        *run("steammain-we", (8, 15, 0), (1, 0, 0), 4),          # out from the large port, level
+        *stand(12, 0),                                           # a stand to carry it and branch from
+        *run("steammain-we", (14, 15, 0), (1, 0, 0), 4),
+        *stand(18, 0),
+        *run("steammain-ns", (12, 15, -1), (0, 0, -1), 4),       # a branch off the first stand
+        *run("steammain-ud", (18, 17, 0), (0, 1, 0), 3),         # and a riser off the second
+        *run("steampipe-ud", (9, 14, 0), (0, -1, 0), 4),         # an ordinary pipe tapping the main
+        (9, 10, 0, "pipejunction"),
+        *run("steampipe-ns", (9, 10, 1), (0, 0, 1), 4),
+    )
+    small = cells(
+        *run("steampipe-we", (8, 1, 3), (1, 0, 0), 3),           # from a base port, along the ground
+        (11, 1, 3, "pipejunction"),
+        *run("steampipe-ns", (11, 1, 4), (0, 0, 1), 3),
+        (11, 1, 7, "pipejunction"),
+        *run("steampipe-ud", (11, 2, 7), (0, 1, 0), 3),
+        *run("steampipe-we", (12, 1, 7), (1, 0, 0), 3),
+    )
+    return [
+        {"at": [7, 15, 0], "port": "mainport", "cells": large},
+        {"at": [7, 1, 3], "port": "steamport", "cells": small},
+    ]
+
+
 def main():
     blueprint_path = os.path.join(HERE, "preview", "blueprint.json")
     if not os.path.exists(blueprint_path):
@@ -246,6 +291,8 @@ def main():
         "height": blueprint["height"],
         "consoleDistance": blueprint["consoleDistance"],
         "swaps": blueprint["swaps"],
+        "pipework": pipework_example(blueprint["codes"]),
+        "codes": [c.split(":")[-1] for c in blueprint["codes"]],
         "consoleCode": blueprint["codes"].index("froststory:generatorconsole-north"),
         "figure": list(atlas.uv("block/generator/paint-red", 0.2, 0.2) + atlas.uv("block/generator/paint-red", 0.8, 0.8)),
         "atlas": atlas.data_uri(),
