@@ -1,0 +1,37 @@
+{
+	"code": "furtrousers",
+	"maxstacksize": 1,
+	"storageFlags": 128,
+	"behaviors": [
+		{ "name": "Wearable" },
+		{ "name": "FrostStoryGearInfo" }
+	],
+	"shape": { "base": "froststory:item/gear/furtrousers" },
+	"textures": {
+		"fstrousers": { "base": "froststory:item/gear/furtrousers" }
+	},
+	"attributes": {
+		"clothescategory": "lowerbody",
+		"wearableAttachment": true,
+		"warmth": 4.5,
+		"froststoryWindproof": 0.2,
+		"statModifiers": { "walkSpeed": -0.02 }
+	},
+	"creativeinventory": { "general": [ "*" ], "items": [ "*" ], "clothing": [ "*" ], "froststory": [ "*" ] },
+	"renderAlphaTest": 0.25,
+	"guiTransform": {
+		"rotation": { "x": -22, "y": 135, "z": 0 },
+		"origin": { "x": 0.16, "y": 0.3, "z": 0.19 },
+		"scale": 1.7
+	},
+	"tpHandTransform": {
+		"translation": { "x": -0.6, "y": -0.9, "z": -0.7 },
+		"rotation": { "x": -71, "y": 180, "z": 83 },
+		"scale": 0.55
+	},
+	"groundTransform": {
+		"translation": { "x": 0, "y": 0.1, "z": 0 },
+		"origin": { "x": 0.16, "y": 0, "z": 0.19 },
+		"scale": 2.2
+	}
+}

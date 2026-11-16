@@ -1,0 +1,566 @@
+{
+	"textureWidth": 64,
+	"textureHeight": 32,
+	"textureSizes": {
+		"fshood": [
+			64,
+			32
+		]
+	},
+	"textures": {
+		"fshood": "item/gear/furhood"
+	},
+	"elements": [
+		{
+			"name": "hoodshell",
+			"stepParentName": "Head",
+			"from": [
+				0.5,
+				-0.7,
+				-0.5
+			],
+			"to": [
+				6.0,
+				5.5,
+				5.5
+			],
+			"faces": {
+				"north": {
+					"texture": "#fshood",
+					"uv": [
+						30.5,
+						0.5,
+						36.0,
+						6.7
+					]
+				},
+				"east": {
+					"texture": "#fshood",
+					"uv": [
+						37.0,
+						0.5,
+						43.0,
+						6.7
+					]
+				},
+				"south": {
+					"texture": "#fshood",
+					"uv": [
+						44.0,
+						0.5,
+						49.5,
+						6.7
+					]
+				},
+				"up": {
+					"texture": "#fshood",
+					"uv": [
+						50.5,
+						0.5,
+						56.0,
+						6.5
+					]
+				},
+				"down": {
+					"texture": "#fshood",
+					"uv": [
+						57.0,
+						0.5,
+						62.5,
+						6.5
+					]
+				}
+			}
+		},
+		{
+			"name": "hoodpeak",
+			"stepParentName": "Head",
+			"from": [
+				-0.2,
+				4.7,
+				-0.5
+			],
+			"to": [
+				0.6,
+				5.5,
+				5.5
+			],
+			"faces": {
+				"north": {
+					"texture": "#fshood",
+					"uv": [
+						10.75,
+						15.5,
+						11.55,
+						16.3
+					]
+				},
+				"east": {
+					"texture": "#fshood",
+					"uv": [
+						12.75,
+						15.5,
+						18.75,
+						16.3
+					]
+				},
+				"south": {
+					"texture": "#fshood",
+					"uv": [
+						19.75,
+						15.5,
+						20.55,
+						16.3
+					]
+				},
+				"west": {
+					"texture": "#fshood",
+					"uv": [
+						21.75,
+						15.5,
+						27.75,
+						16.3
+					]
+				},
+				"up": {
+					"texture": "#fshood",
+					"uv": [
+						0.5,
+						8.5,
+						1.3,
+						14.5
+					]
+				},
+				"down": {
+					"texture": "#fshood",
+					"uv": [
+						2.5,
+						8.5,
+						3.3,
+						14.5
+					]
+				}
+			}
+		},
+		{
+			"name": "ruff-top",
+			"stepParentName": "Head",
+			"from": [
+				-0.6,
+				4.5,
+				-1.0
+			],
+			"to": [
+				0.6,
+				6.0,
+				6.0
+			],
+			"faces": {
+				"north": {
+					"texture": "#fshood",
+					"uv": [
+						54.0,
+						8.5,
+						55.2,
+						10.0
+					]
+				},
+				"east": {
+					"texture": "#fshood",
+					"uv": [
+						56.25,
+						8.5,
+						63.25,
+						10.0
+					]
+				},
+				"south": {
+					"texture": "#fshood",
+					"uv": [
+						0.5,
+						15.5,
+						1.7,
+						17.0
+					]
+				},
+				"west": {
+					"texture": "#fshood",
+					"uv": [
+						2.75,
+						15.5,
+						9.75,
+						17.0
+					]
+				},
+				"up": {
+					"texture": "#fshood",
+					"uv": [
+						0.5,
+						0.5,
+						1.7,
+						7.5
+					]
+				},
+				"down": {
+					"texture": "#fshood",
+					"uv": [
+						2.75,
+						0.5,
+						3.95,
+						7.5
+					]
+				}
+			}
+		},
+		{
+			"name": "ruff-l",
+			"stepParentName": "Head",
+			"from": [
+				-0.6,
+				-1.1,
+				-1.0
+			],
+			"to": [
+				0.6,
+				4.5,
+				0.0
+			],
+			"faces": {
+				"north": {
+					"texture": "#fshood",
+					"uv": [
+						4.5,
+						8.5,
+						5.7,
+						14.1
+					]
+				},
+				"east": {
+					"texture": "#fshood",
+					"uv": [
+						6.75,
+						8.5,
+						7.75,
+						14.1
+					]
+				},
+				"south": {
+					"texture": "#fshood",
+					"uv": [
+						8.75,
+						8.5,
+						9.95,
+						14.1
+					]
+				},
+				"west": {
+					"texture": "#fshood",
+					"uv": [
+						11.0,
+						8.5,
+						12.0,
+						14.1
+					]
+				},
+				"up": {
+					"texture": "#fshood",
+					"uv": [
+						28.75,
+						15.5,
+						29.95,
+						16.5
+					]
+				},
+				"down": {
+					"texture": "#fshood",
+					"uv": [
+						31.0,
+						15.5,
+						32.2,
+						16.5
+					]
+				}
+			}
+		},
+		{
+			"name": "ruff-r",
+			"stepParentName": "Head",
+			"from": [
+				-0.6,
+				-1.1,
+				5.0
+			],
+			"to": [
+				0.6,
+				4.5,
+				6.0
+			],
+			"faces": {
+				"north": {
+					"texture": "#fshood",
+					"uv": [
+						13.0,
+						8.5,
+						14.2,
+						14.1
+					]
+				},
+				"east": {
+					"texture": "#fshood",
+					"uv": [
+						15.25,
+						8.5,
+						16.25,
+						14.1
+					]
+				},
+				"south": {
+					"texture": "#fshood",
+					"uv": [
+						17.25,
+						8.5,
+						18.45,
+						14.1
+					]
+				},
+				"west": {
+					"texture": "#fshood",
+					"uv": [
+						19.5,
+						8.5,
+						20.5,
+						14.1
+					]
+				},
+				"up": {
+					"texture": "#fshood",
+					"uv": [
+						33.25,
+						15.5,
+						34.45,
+						16.5
+					]
+				},
+				"down": {
+					"texture": "#fshood",
+					"uv": [
+						35.5,
+						15.5,
+						36.7,
+						16.5
+					]
+				}
+			}
+		},
+		{
+			"name": "ruff-chin",
+			"stepParentName": "Head",
+			"from": [
+				-0.6,
+				-1.1,
+				0.0
+			],
+			"to": [
+				0.6,
+				-0.2,
+				5.0
+			],
+			"faces": {
+				"north": {
+					"texture": "#fshood",
+					"uv": [
+						37.75,
+						15.5,
+						38.95,
+						16.4
+					]
+				},
+				"east": {
+					"texture": "#fshood",
+					"uv": [
+						40.0,
+						15.5,
+						45.0,
+						16.4
+					]
+				},
+				"south": {
+					"texture": "#fshood",
+					"uv": [
+						46.0,
+						15.5,
+						47.2,
+						16.4
+					]
+				},
+				"west": {
+					"texture": "#fshood",
+					"uv": [
+						48.25,
+						15.5,
+						53.25,
+						16.4
+					]
+				},
+				"up": {
+					"texture": "#fshood",
+					"uv": [
+						21.5,
+						8.5,
+						22.7,
+						13.5
+					]
+				},
+				"down": {
+					"texture": "#fshood",
+					"uv": [
+						23.75,
+						8.5,
+						24.95,
+						13.5
+					]
+				}
+			}
+		},
+		{
+			"name": "hooddrape",
+			"stepParentName": "Head",
+			"from": [
+				1.2,
+				-2.4,
+				-0.8
+			],
+			"to": [
+				6.3,
+				-0.6,
+				5.8
+			],
+			"faces": {
+				"north": {
+					"texture": "#fshood",
+					"uv": [
+						26.0,
+						8.5,
+						31.1,
+						10.3
+					]
+				},
+				"east": {
+					"texture": "#fshood",
+					"uv": [
+						32.25,
+						8.5,
+						38.85,
+						10.3
+					]
+				},
+				"south": {
+					"texture": "#fshood",
+					"uv": [
+						40.0,
+						8.5,
+						45.1,
+						10.3
+					]
+				},
+				"west": {
+					"texture": "#fshood",
+					"uv": [
+						46.25,
+						8.5,
+						52.85,
+						10.3
+					]
+				},
+				"up": {
+					"texture": "#fshood",
+					"uv": [
+						18.0,
+						0.5,
+						23.1,
+						7.1
+					]
+				},
+				"down": {
+					"texture": "#fshood",
+					"uv": [
+						24.25,
+						0.5,
+						29.35,
+						7.1
+					]
+				}
+			}
+		},
+		{
+			"name": "drapehem",
+			"stepParentName": "Head",
+			"from": [
+				1.0,
+				-2.9,
+				-1.0
+			],
+			"to": [
+				6.5,
+				-2.2,
+				6.0
+			],
+			"faces": {
+				"north": {
+					"texture": "#fshood",
+					"uv": [
+						54.25,
+						15.5,
+						59.75,
+						16.2
+					]
+				},
+				"east": {
+					"texture": "#fshood",
+					"uv": [
+						0.5,
+						18.0,
+						7.5,
+						18.7
+					]
+				},
+				"south": {
+					"texture": "#fshood",
+					"uv": [
+						8.5,
+						18.0,
+						14.0,
+						18.7
+					]
+				},
+				"west": {
+					"texture": "#fshood",
+					"uv": [
+						15.0,
+						18.0,
+						22.0,
+						18.7
+					]
+				},
+				"up": {
+					"texture": "#fshood",
+					"uv": [
+						5.0,
+						0.5,
+						10.5,
+						7.5
+					]
+				},
+				"down": {
+					"texture": "#fshood",
+					"uv": [
+						11.5,
+						0.5,
+						17.0,
+						7.5
+					]
+				}
+			}
+		}
+	]
+}

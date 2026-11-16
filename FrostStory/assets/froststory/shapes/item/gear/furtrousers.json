@@ -1,0 +1,575 @@
+{
+	"textureWidth": 64,
+	"textureHeight": 32,
+	"textureSizes": {
+		"fstrousers": [
+			64,
+			32
+		]
+	},
+	"textures": {
+		"fstrousers": "item/gear/furtrousers"
+	},
+	"elements": [
+		{
+			"name": "seat",
+			"stepParentName": "LowerTorso",
+			"from": [
+				-0.25,
+				-0.25,
+				-0.25
+			],
+			"to": [
+				5.25,
+				3.8,
+				6.25
+			],
+			"faces": {
+				"north": {
+					"texture": "#fstrousers",
+					"uv": [
+						47.0,
+						11.0,
+						52.5,
+						15.05
+					]
+				},
+				"east": {
+					"texture": "#fstrousers",
+					"uv": [
+						53.5,
+						11.0,
+						60.0,
+						15.05
+					]
+				},
+				"south": {
+					"texture": "#fstrousers",
+					"uv": [
+						0.5,
+						21.25,
+						6.0,
+						25.3
+					]
+				},
+				"west": {
+					"texture": "#fstrousers",
+					"uv": [
+						7.0,
+						21.25,
+						13.5,
+						25.3
+					]
+				},
+				"up": {
+					"texture": "#fstrousers",
+					"uv": [
+						34.0,
+						11.0,
+						39.5,
+						17.5
+					]
+				},
+				"down": {
+					"texture": "#fstrousers",
+					"uv": [
+						40.5,
+						11.0,
+						46.0,
+						17.5
+					]
+				}
+			}
+		},
+		{
+			"name": "waistband",
+			"stepParentName": "LowerTorso",
+			"from": [
+				-0.32,
+				3.2,
+				-0.32
+			],
+			"to": [
+				5.32,
+				3.9,
+				6.32
+			],
+			"faces": {
+				"north": {
+					"texture": "#fstrousers",
+					"uv": [
+						19.0,
+						26.5,
+						24.64,
+						27.2
+					]
+				},
+				"east": {
+					"texture": "#fstrousers",
+					"uv": [
+						25.75,
+						26.5,
+						32.39,
+						27.2
+					]
+				},
+				"south": {
+					"texture": "#fstrousers",
+					"uv": [
+						33.5,
+						26.5,
+						39.14,
+						27.2
+					]
+				},
+				"west": {
+					"texture": "#fstrousers",
+					"uv": [
+						40.25,
+						26.5,
+						46.89,
+						27.2
+					]
+				},
+				"up": {
+					"texture": "#fstrousers",
+					"uv": [
+						20.5,
+						11.0,
+						26.14,
+						17.64
+					]
+				},
+				"down": {
+					"texture": "#fstrousers",
+					"uv": [
+						27.25,
+						11.0,
+						32.89,
+						17.64
+					]
+				}
+			}
+		},
+		{
+			"name": "thighL",
+			"stepParentName": "UpperFootL",
+			"from": [
+				-0.25,
+				-0.25,
+				-0.25
+			],
+			"to": [
+				4.45,
+				9.25,
+				3.45
+			],
+			"faces": {
+				"north": {
+					"texture": "#fstrousers",
+					"uv": [
+						0.5,
+						0.5,
+						5.2,
+						10.0
+					]
+				},
+				"east": {
+					"texture": "#fstrousers",
+					"uv": [
+						6.25,
+						0.5,
+						9.95,
+						10.0
+					]
+				},
+				"south": {
+					"texture": "#fstrousers",
+					"uv": [
+						11.0,
+						0.5,
+						15.7,
+						10.0
+					]
+				},
+				"west": {
+					"texture": "#fstrousers",
+					"uv": [
+						16.75,
+						0.5,
+						20.45,
+						10.0
+					]
+				},
+				"up": {
+					"texture": "#fstrousers",
+					"uv": [
+						14.5,
+						21.25,
+						19.2,
+						24.95
+					]
+				},
+				"down": {
+					"texture": "#fstrousers",
+					"uv": [
+						20.25,
+						21.25,
+						24.95,
+						24.95
+					]
+				}
+			}
+		},
+		{
+			"name": "shinL",
+			"stepParentName": "LowerFootL",
+			"from": [
+				-0.22,
+				1.2,
+				-0.22
+			],
+			"to": [
+				4.22,
+				10.22,
+				3.22
+			],
+			"faces": {
+				"north": {
+					"texture": "#fstrousers",
+					"uv": [
+						42.5,
+						0.5,
+						46.94,
+						9.52
+					]
+				},
+				"east": {
+					"texture": "#fstrousers",
+					"uv": [
+						48.0,
+						0.5,
+						51.44,
+						9.52
+					]
+				},
+				"south": {
+					"texture": "#fstrousers",
+					"uv": [
+						52.5,
+						0.5,
+						56.94,
+						9.52
+					]
+				},
+				"west": {
+					"texture": "#fstrousers",
+					"uv": [
+						58.0,
+						0.5,
+						61.44,
+						9.52
+					]
+				},
+				"up": {
+					"texture": "#fstrousers",
+					"uv": [
+						37.5,
+						21.25,
+						41.94,
+						24.69
+					]
+				},
+				"down": {
+					"texture": "#fstrousers",
+					"uv": [
+						43.0,
+						21.25,
+						47.44,
+						24.69
+					]
+				}
+			}
+		},
+		{
+			"name": "kneepadL",
+			"stepParentName": "LowerFootL",
+			"from": [
+				-0.42,
+				7.6,
+				0.4
+			],
+			"to": [
+				-0.18,
+				10.4,
+				2.6
+			],
+			"faces": {
+				"north": {
+					"texture": "#fstrousers",
+					"uv": [
+						59.5,
+						21.25,
+						59.74,
+						24.05
+					]
+				},
+				"east": {
+					"texture": "#fstrousers",
+					"uv": [
+						60.75,
+						21.25,
+						62.95,
+						24.05
+					]
+				},
+				"south": {
+					"texture": "#fstrousers",
+					"uv": [
+						0.5,
+						26.5,
+						0.74,
+						29.3
+					]
+				},
+				"west": {
+					"texture": "#fstrousers",
+					"uv": [
+						1.75,
+						26.5,
+						3.95,
+						29.3
+					]
+				},
+				"up": {
+					"texture": "#fstrousers",
+					"uv": [
+						14.0,
+						26.5,
+						14.24,
+						28.7
+					]
+				},
+				"down": {
+					"texture": "#fstrousers",
+					"uv": [
+						15.25,
+						26.5,
+						15.49,
+						28.7
+					]
+				}
+			}
+		},
+		{
+			"name": "thighR",
+			"stepParentName": "UpperFootR",
+			"from": [
+				-0.25,
+				-0.25,
+				-0.25
+			],
+			"to": [
+				4.45,
+				9.25,
+				3.45
+			],
+			"faces": {
+				"north": {
+					"texture": "#fstrousers",
+					"uv": [
+						21.5,
+						0.5,
+						26.2,
+						10.0
+					]
+				},
+				"east": {
+					"texture": "#fstrousers",
+					"uv": [
+						27.25,
+						0.5,
+						30.95,
+						10.0
+					]
+				},
+				"south": {
+					"texture": "#fstrousers",
+					"uv": [
+						32.0,
+						0.5,
+						36.7,
+						10.0
+					]
+				},
+				"west": {
+					"texture": "#fstrousers",
+					"uv": [
+						37.75,
+						0.5,
+						41.45,
+						10.0
+					]
+				},
+				"up": {
+					"texture": "#fstrousers",
+					"uv": [
+						26.0,
+						21.25,
+						30.7,
+						24.95
+					]
+				},
+				"down": {
+					"texture": "#fstrousers",
+					"uv": [
+						31.75,
+						21.25,
+						36.45,
+						24.95
+					]
+				}
+			}
+		},
+		{
+			"name": "shinR",
+			"stepParentName": "LowerFootR",
+			"from": [
+				-0.22,
+				1.2,
+				-0.22
+			],
+			"to": [
+				4.22,
+				10.22,
+				3.22
+			],
+			"faces": {
+				"north": {
+					"texture": "#fstrousers",
+					"uv": [
+						0.5,
+						11.0,
+						4.94,
+						20.02
+					]
+				},
+				"east": {
+					"texture": "#fstrousers",
+					"uv": [
+						6.0,
+						11.0,
+						9.44,
+						20.02
+					]
+				},
+				"south": {
+					"texture": "#fstrousers",
+					"uv": [
+						10.5,
+						11.0,
+						14.94,
+						20.02
+					]
+				},
+				"west": {
+					"texture": "#fstrousers",
+					"uv": [
+						16.0,
+						11.0,
+						19.44,
+						20.02
+					]
+				},
+				"up": {
+					"texture": "#fstrousers",
+					"uv": [
+						48.5,
+						21.25,
+						52.94,
+						24.69
+					]
+				},
+				"down": {
+					"texture": "#fstrousers",
+					"uv": [
+						54.0,
+						21.25,
+						58.44,
+						24.69
+					]
+				}
+			}
+		},
+		{
+			"name": "kneepadR",
+			"stepParentName": "LowerFootR",
+			"from": [
+				-0.42,
+				7.6,
+				0.4
+			],
+			"to": [
+				-0.18,
+				10.4,
+				2.6
+			],
+			"faces": {
+				"north": {
+					"texture": "#fstrousers",
+					"uv": [
+						5.0,
+						26.5,
+						5.24,
+						29.3
+					]
+				},
+				"east": {
+					"texture": "#fstrousers",
+					"uv": [
+						6.25,
+						26.5,
+						8.45,
+						29.3
+					]
+				},
+				"south": {
+					"texture": "#fstrousers",
+					"uv": [
+						9.5,
+						26.5,
+						9.74,
+						29.3
+					]
+				},
+				"west": {
+					"texture": "#fstrousers",
+					"uv": [
+						10.75,
+						26.5,
+						12.95,
+						29.3
+					]
+				},
+				"up": {
+					"texture": "#fstrousers",
+					"uv": [
+						16.5,
+						26.5,
+						16.74,
+						28.7
+					]
+				},
+				"down": {
+					"texture": "#fstrousers",
+					"uv": [
+						17.75,
+						26.5,
+						17.99,
+						28.7
+					]
+				}
+			}
+		}
+	]
+}

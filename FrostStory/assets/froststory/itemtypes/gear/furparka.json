@@ -1,0 +1,37 @@
+{
+	"code": "furparka",
+	"maxstacksize": 1,
+	"storageFlags": 128,
+	"behaviors": [
+		{ "name": "Wearable" },
+		{ "name": "FrostStoryGearInfo" }
+	],
+	"shape": { "base": "froststory:item/gear/furparka" },
+	"textures": {
+		"fsparka": { "base": "froststory:item/gear/furparka" }
+	},
+	"attributes": {
+		"clothescategory": "upperbodyover",
+		"wearableAttachment": true,
+		"warmth": 5,
+		"froststoryWindproof": 0.35,
+		"disableElements": [ "glovefrill-r", "glovefrill-l" ]
+	},
+	"creativeinventory": { "general": [ "*" ], "items": [ "*" ], "clothing": [ "*" ], "froststory": [ "*" ] },
+	"renderAlphaTest": 0.25,
+	"guiTransform": {
+		"rotation": { "x": -22, "y": 135, "z": 0 },
+		"origin": { "x": 0.17, "y": 0.12, "z": 0.2 },
+		"scale": 2
+	},
+	"tpHandTransform": {
+		"translation": { "x": -0.6, "y": -0.9, "z": -0.7 },
+		"rotation": { "x": -71, "y": 180, "z": 83 },
+		"scale": 0.55
+	},
+	"groundTransform": {
+		"translation": { "x": 0, "y": 0.1, "z": 0 },
+		"origin": { "x": 0.17, "y": 0, "z": 0.2 },
+		"scale": 2.4
+	}
+}
