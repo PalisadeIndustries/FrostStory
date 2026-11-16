@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FrostStory.Generator;
 using FrostStory.Steam;
+using FrostStory.Stove;
 using FrostStory.Tent;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
@@ -44,6 +45,9 @@ public class FrostStoryModSystem : ModSystem
         api.RegisterBlockClass("FrostStoryTentCloth", typeof(BlockTentCloth));
         api.RegisterBlockClass("FrostStoryTentFill", typeof(BlockTentFill));
         api.RegisterBlockEntityClass("FrostStoryTentRod", typeof(BlockEntityTentRod));
+        api.RegisterBlockClass("FrostStoryTentStove", typeof(BlockTentStove));
+        api.RegisterBlockClass("FrostStoryStoveFlue", typeof(BlockStoveFlue));
+        api.RegisterBlockEntityClass("FrostStoryTentStove", typeof(BlockEntityTentStove));
         api.RegisterBlockEntityClass("FrostStoryGeneratorConsole", typeof(BlockEntityGeneratorConsole));
     }
 
@@ -139,4 +143,10 @@ public class FrostStoryConfig
 
     /// <summary>Warmth given off by each pipe, fitting or port carrying steam. A firepit is 10.</summary>
     public float PipeHeatStrength = 2f;
+
+    /// <summary>Warmth given off by a lit tent stove. A firepit is 10.</summary>
+    public float StoveHeatStrength = 10f;
+
+    /// <summary>How many times longer fuel lasts in a tent stove than in a firepit.</summary>
+    public float StoveFuelEfficiency = 3f;
 }

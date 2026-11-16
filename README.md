@@ -187,6 +187,20 @@ Tent rods and tent cloth make simple shelters.
   the ground, lay a rail of rods along it.
 - Two sticks make two rods; two linen make four cloth.
 
+**Tent stove.** A small pot-bellied stove that needs no steam, for a tent or a hut before the
+pipes reach it.
+
+- Put fuel in by hand (anything a firepit burns), one piece a click, then light it the way you
+  light a firepit. Fuel lasts three times as long as in a firepit and the stove holds about half
+  an hour of it. Look at it to see how long is left.
+- It only draws with a **stove flue** standing on it, stacked until the top is in the open. The
+  flue can go up through tent cloth, and closes the hole it makes. If the top ends up under
+  cover the fire goes out.
+- Lit, it gives the warmth of a firepit and a little light.
+- An iron plate over two iron plates over three iron ingots makes a stove; four iron plates in
+  two columns make eight flues. `StoveHeatStrength` and `StoveFuelEfficiency` in the config
+  change the warmth and how long fuel lasts.
+
 ### Admin commands (`controlserver` privilege)
 
 | Command | Does |
@@ -202,6 +216,7 @@ Tent rods and tent cloth make simple shelters.
 | `/frostgen fire [pos] [on]` | Fires or banks a finished generator |
 | `/frostgen status [pos]` | Reports a console's state |
 | `/frostgen steam [pos]` | Says whether a pipe, fitting or port is carrying steam |
+| `/frostgen stove <pos> [seconds]` | Reports on a tent stove; with a number, adds that much fuel and lights it |
 | `/frostgen stand [pos]` | Raises a steam main stand with its post starting there |
 | `/frostgen run <from> <to> [main]` | Strings a pipe run between two fittings or ports, or takes it down |
 | `/frostgen cloth <rod> <rod> [triangle]` | Stretches a tent cloth panel between two rods, or takes it down |
@@ -284,11 +299,12 @@ steam. Tent panels go up between rods, come down, and follow a rod that is remov
 higher and lower ground. Both distributors carry steam from a main to a pipe on each of their four
 outlets and to four pipe runs (a fifth is refused), and stay shut to pipes and mains on every other side. A wall passthrough carries steam between its two mounts by pipe or by run,
 stays shut on its other four sides, and counts as a solid, heat-keeping block. A radiator takes steam at the two hookups on its back and from
-underneath, by pipe or by run, passes it on, and stays shut on its front, ends and top. Underfloor grates take steam from underneath or the side, pass it
+underneath, by pipe or by run, passes it on, and stays shut on its front, ends and top. A tent stove lights with fuel and a flue to open sky, refuses without a flue or with the flue top under
+cover, burns its fuel down and goes out, and goes out when its flue is removed. Underfloor grates take steam from underneath or the side, pass it
 along a row, take one run underneath, and stay shut on top. Every shape file loads cleanly through the game's own
 shape class.
 
-Not yet checked in a game client: whether tent cloth draws and moves in the wind (it uses the same
+Not yet checked in a game client: fuelling and lighting the tent stove by hand, its smoke and glow; whether tent cloth draws and moves in the wind (it uses the same
 chunk-mesh approach as pipe runs, with the engine's wind flags on the cloth), whether a closed tent
 really registers as a room, how the heating pipe's arms line up, and whether pipe runs draw at all, and correctly (they are built into
 the chunk mesh from short straight pieces using the game's tesselator, which I could only check

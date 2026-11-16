@@ -1,0 +1,53 @@
+{
+	"code": "stoveflue",
+	"class": "FrostStoryStoveFlue",
+	"creativeinventory": {
+		"general": [
+			"*"
+		],
+		"froststory": [
+			"*"
+		]
+	},
+	"drawtype": "json",
+	"shape": {
+		"base": "block/generator/stoveflue"
+	},
+	"textures": {
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		}
+	},
+	"collisionSelectionBox": {
+		"x1": 0.34,
+		"y1": 0,
+		"z1": 0.34,
+		"x2": 0.66,
+		"y2": 1,
+		"z2": 0.66
+	},
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 3,
+	"requiredMiningTier": 1,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

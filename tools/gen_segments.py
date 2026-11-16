@@ -1281,6 +1281,45 @@ def floorgrate():
     return m
 
 
+def tentstove(state):
+    """A pot-bellied cast-iron stove: four splayed legs, an ash box, a swelling belly banded top and
+    bottom, a fire door with a window on the north side, a rimmed top and a flue collar in the middle
+    of it. The window glows when it is lit."""
+    lit = state == "lit"
+    m = Model("tentstove-" + state, (0, 1, 0))
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            m.member((sx * 0.3, 0.0, sz * 0.3), (sx * 0.2, 0.16, sz * 0.2), 0.07, 0.07, "band", chunk=1.0)
+            m.box((sx * 0.3, 0.02, sz * 0.3), (0.11, 0.04, 0.11), "band")
+    m.vprism(0, 0, 0.14, 0.2, 0.3, "band", caps=(True, True), captex="band")              # hearth plate
+    m.vprism(0, 0, 0.2, 0.3, 0.24, "darkplate")                                           # ash box
+    m.vprism(0, 0, 0.3, 0.42, 0.29, "darkplate", caps=(True, False), captex="darkplate")
+    m.vprism(0, 0, 0.42, 0.62, 0.34, "darkplate", caps=(True, True), captex="darkplate")  # belly
+    m.vprism(0, 0, 0.62, 0.72, 0.29, "darkplate")
+    for y in (0.42, 0.62):
+        m.vprism(0, 0, y - 0.025, y + 0.025, 0.36, "band", caps=(True, True), captex="band")
+    m.vprism(0, 0, 0.72, 0.78, 0.33, "band", caps=(True, True), captex="band")            # top plate
+    m.vprism(0, 0, 0.78, 0.84, 0.2, "darkplate", caps=(False, True), captex="darkplate")
+    m.vprism(0, 0, 0.84, 1.0, 0.12, "pipe")                                               # flue collar
+    m.vprism(0, 0, 0.84, 0.88, 0.15, "band", caps=(True, True), captex="band")
+    m.box((0, 0.52, -0.35), (0.26, 0.2, 0.04), "band")                                    # fire door
+    m.box((0, 0.52, -0.375), (0.15, 0.1, 0.02), "coillit" if lit else "black", glow=200 if lit else 0)
+    for x in (-0.11, 0.11):
+        m.box((x, 0.52, -0.375), (0.03, 0.14, 0.03), "steel")                             # hinge and latch
+    m.box((0.11, 0.52, -0.4), (0.03, 0.04, 0.03), "brass")
+    m.box((0, 0.25, -0.245), (0.2, 0.06, 0.03), "band")                                   # ash door
+    m.box((0, 0.25, -0.265), (0.04, 0.03, 0.02), "brass")
+    return m
+
+
+def stoveflue():
+    """A length of stove flue: a thin pipe up the middle of its block, with a joint ring at the foot."""
+    m = Model("stoveflue", (0, 1, 0))
+    m.vprism(0, 0, 0.0, 1.0, 0.12, "pipe")
+    m.vprism(0, 0, 0.0, 0.07, 0.15, "band", caps=(True, True), captex="band")
+    return m
+
+
 def wallpass(axis):
     """A wall passthrough: a solid block of plate that stands in for one block of a wall, with a pipe
     mount (a collar round an open bore) on each of two opposite sides. The collars stand a little proud
@@ -1398,7 +1437,7 @@ def main():
     parts += [distributor(k, s) for k in ("straight", "drop") for s in DISTRIBUTOR_SIDES]
     parts += [wallpass(a) for a in ("ud", "ns", "we")]
     parts += [radiator(b) for b in RADIATOR_SIDES]
-    parts += [floorgrate()]
+    parts += [floorgrate(), tentstove("cold"), tentstove("lit"), stoveflue()]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:
         part.save(os.path.join(SHAPE_DIR, ".."))

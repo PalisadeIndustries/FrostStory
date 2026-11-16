@@ -128,6 +128,25 @@ public static class GeneratorCommands
                 })
             .EndSubCommand()
 
+            .BeginSubCommand("stove")
+                .WithDescription("Report on a tent stove; with a number, add that many seconds of fuel and light it.")
+                .WithArgs(parsers.WorldPosition("position"), parsers.OptionalFloat("fuelSeconds"))
+                .HandleWith(args =>
+                {
+                    if (api.World.BlockAccessor.GetBlockEntity(((Vec3d)args[0]).AsBlockPos) is not FrostStory.Stove.BlockEntityTentStove stove)
+                        return TextCommandResult.Error("There is no tent stove there.");
+                    string lit = "";
+                    if (!args.Parsers[1].IsMissing)
+                    {
+                        stove.AddFuelSeconds((float)args[1]);
+                        string? problem = stove.TryLight();
+                        lit = problem == null ? "Lit. " : "Not lit: " + Vintagestory.API.Config.Lang.Get("froststory:" + problem) + " ";
+                    }
+
+                    return TextCommandResult.Success(lit + stove.Summary());
+                })
+            .EndSubCommand()
+
             .BeginSubCommand("stand")
                 .WithDescription("Raise a steam main stand with its post starting at a position (or where you stand).")
                 .WithArgs(parsers.OptionalWorldPosition("position"))

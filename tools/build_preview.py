@@ -367,6 +367,8 @@ def pipework_example(codes, atlas):
         + [(x, 1, z, "tentrod-ns") for x in rails for z in range(z0, z1 + 1)]
         + [(ridge[0], y, z, "tentrod-ud") for z in (z0, z1) for y in range(1, ridge[1])]
     )
+    stove = (15, 1, 12)
+    rods = rods + [(*stove, "tentstove-lit-west")] + [(stove[0], y, stove[2], "stoveflue") for y in range(2, 6)]
     small_cells = cells((*e, "pipejunction"), (*f, "pipejunction"), *[(x, 1, z, heat_code(x, z)) for x, z in heat], *rods)
 
     canvas = [atlas.uv("block/generator/canvas", u, v) for u, v in ((0, 0), (1, 0), (1, 1), (0, 1))]

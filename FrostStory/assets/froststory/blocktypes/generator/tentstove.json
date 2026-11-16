@@ -1,0 +1,131 @@
+{
+	"code": "tentstove",
+	"class": "FrostStoryTentStove",
+	"entityClass": "FrostStoryTentStove",
+	"variantgroups": [
+		{
+			"code": "state",
+			"states": [
+				"cold",
+				"lit"
+			]
+		},
+		{
+			"code": "side",
+			"states": [
+				"north",
+				"east",
+				"south",
+				"west"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-cold-north"
+		],
+		"froststory": [
+			"*-cold-north"
+		]
+	},
+	"drawtype": "json",
+	"shapeByType": {
+		"*-cold-north": {
+			"base": "block/generator/tentstove-cold",
+			"rotateY": 0
+		},
+		"*-cold-west": {
+			"base": "block/generator/tentstove-cold",
+			"rotateY": 90
+		},
+		"*-cold-south": {
+			"base": "block/generator/tentstove-cold",
+			"rotateY": 180
+		},
+		"*-cold-east": {
+			"base": "block/generator/tentstove-cold",
+			"rotateY": 270
+		},
+		"*-lit-north": {
+			"base": "block/generator/tentstove-lit",
+			"rotateY": 0
+		},
+		"*-lit-west": {
+			"base": "block/generator/tentstove-lit",
+			"rotateY": 90
+		},
+		"*-lit-south": {
+			"base": "block/generator/tentstove-lit",
+			"rotateY": 180
+		},
+		"*-lit-east": {
+			"base": "block/generator/tentstove-lit",
+			"rotateY": 270
+		}
+	},
+	"textures": {
+		"darkplate": {
+			"base": "block/generator/segment/darkplate"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"black": {
+			"base": "block/generator/segment/black"
+		},
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		},
+		"brass": {
+			"base": "block/generator/segment/brass"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"coillit": {
+			"base": "block/generator/segment/coil-lit"
+		}
+	},
+	"lightHsvByType": {
+		"*-lit-*": [
+			5,
+			6,
+			9
+		]
+	},
+	"collisionSelectionBox": {
+		"x1": 0.125,
+		"y1": 0,
+		"z1": 0.125,
+		"x2": 0.875,
+		"y2": 1,
+		"z2": 0.875
+	},
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 5,
+	"requiredMiningTier": 2,
+	"drops": [
+		{
+			"type": "block",
+			"code": "tentstove-cold-north"
+		}
+	],
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}
