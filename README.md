@@ -145,11 +145,15 @@ see if it is.
   step lets 5 more through, so 3 of 8 passes 15 however much is drawn beyond it. A pointer over
   the handwheel lies along the pipe when open and across it when shut.
 - A **steam gauge station** goes in a line of pipe (pipes join on three sides and underneath;
-  the dial faces you). Its needle shows the steam that can reach that point, on a scale of 60.
-  The green zone starts at what everything further along the line draws and runs a quarter
-  above it, so it moves as you build; above that is red, more than is needed. With the needle
-  below the green, the line beyond is starved. Close a valve upstream until the needle sits in
-  the green and that branch takes no more than it needs.
+  its panel faces you). It carries three small dials, each on a scale of 60:
+  - left, the steam that can reach that point. Its green zone starts at what everything further
+    along the line draws and runs a quarter above it, so it moves as you build; above that is
+    red, more than is needed. With the needle below the green, the line beyond is starved.
+  - middle, what everything further along draws.
+  - right, how well that draw is being met, from nothing to all of it; red under half.
+
+  Close a valve upstream until the left needle sits in its green and that branch takes no more
+  than it needs.
 - The sums assume lines branch out from their ports. A ring is followed one way round.
 - Red costs nothing yet: there is no fuel or wear behind the steam. Large ports and mains have
   no valve or gauge of their own yet; a gauge on a pipe tapped off a main reads off the scale.
@@ -341,7 +345,7 @@ only while the hub has steam and weaker further out, and takes it up again when 
 along a row, take one run underneath, and stay shut on top. Every shape file loads cleanly through the game's own
 shape class.
 
-Not yet checked in a game client: turning a stop valve by hand, its pointer, and the gauge's needle and coloured marks (drawn into the chunk mesh; if they are wrong the reading is still in the hover text); fuelling and lighting the tent stove by hand, its smoke and glow; whether tent cloth draws and moves in the wind (it uses the same
+Not yet checked in a game client: turning a stop valve by hand, its pointer, and the gauge's needles and coloured marks (drawn into the chunk mesh; if they are wrong the reading is still in the hover text); fuelling and lighting the tent stove by hand, its smoke and glow; whether tent cloth draws and moves in the wind (it uses the same
 chunk-mesh approach as pipe runs, with the engine's wind flags on the cloth), whether a closed tent
 really registers as a room, how the heating pipe's arms line up, and whether pipe runs draw at all, and correctly (they are built into
 the chunk mesh from short straight pieces using the game's tesselator, which I could only check

@@ -1450,34 +1450,41 @@ def valvepointer():
     return m
 
 
+GAUGE_DIALS = (0.29, 0.0, -0.29)     # supply, draw, fed: left to right as you face the north side
+GAUGE_Y, GAUGE_Z = 0.7, -0.3
+
+
 def steamgauge():
-    """A gauge station: a cast pedestal with pipe mounts east, west, south and underneath, and a big
-    brass-cased dial facing north. The game draws the marks and the needle on the dial."""
+    """A gauge station: a cast pedestal with pipe mounts east, west, south and underneath, carrying a
+    panel of three small brass-cased dials facing north. The game draws each dial's marks and needle."""
     m = Model("steamgauge", (0, 1, 0))
     m.box((0, 0.03, 0.04), (0.7, 0.06, 0.6), "band")                                      # foot
-    m.box((0, 0.36, 0.06), (0.5, 0.62, 0.46), "darkplate")                                # pedestal
+    m.box((0, 0.28, 0.06), (0.5, 0.5, 0.46), "darkplate")                                 # pedestal
     m.hprism((-0.5, 0.5, 0.06), (0.5, 0.5, 0.06), PIPE_BORE, "pipe")                      # the line through it
     m.hprism((0, 0.5, 0.06), (0, 0.5, 0.5), PIPE_BORE, "pipe")
     m.vprism(0, 0.06, 0.0, 0.2, PIPE_BORE, "pipe")
     for a, b in ((-0.5, -0.43), (0.43, 0.5)):
         m.hprism((a, 0.5, 0.06), (b, 0.5, 0.06), PIPE_FLANGE, "band", caps=(True, True), captex="band")
     m.hprism((0, 0.5, 0.43), (0, 0.5, 0.5), PIPE_FLANGE, "band", caps=(True, True), captex="band")
-    m.vprism(0, 0.06, 0.66, 0.74, 0.1, "brass")                                           # neck up to the dial
-    m.hprism((0, 0.62, -0.42), (0, 0.62, -0.2), 0.31, "brass", caps=(True, True), captex="brass")   # dial case
-    m.hprism((0, 0.62, -0.435), (0, 0.62, -0.42), 0.27, "canvas", caps=(True, True), captex="canvas")  # dial face
-    m.hprism((0, 0.62, -0.47), (0, 0.62, -0.435), 0.03, "black", caps=(True, True), captex="black")    # needle boss
+    m.box((0, 0.6, -0.1), (0.12, 0.2, 0.2), "band")                                       # bracket up to the panel
+    m.box((0, GAUGE_Y, -0.2), (0.94, 0.36, 0.1), "darkplate")                             # the panel
+    for y in (GAUGE_Y - 0.19, GAUGE_Y + 0.19):
+        m.box((0, y, -0.2), (0.98, 0.04, 0.13), "band")
+    for x in GAUGE_DIALS:
+        m.hprism((x, GAUGE_Y, GAUGE_Z), (x, GAUGE_Y, -0.25), 0.135, "brass", caps=(True, True), captex="brass")              # case
+        m.hprism((x, GAUGE_Y, GAUGE_Z - 0.01), (x, GAUGE_Y, GAUGE_Z), 0.115, "canvas", caps=(True, True), captex="canvas")  # face
+        m.hprism((x, GAUGE_Y, GAUGE_Z - 0.04), (x, GAUGE_Y, GAUGE_Z - 0.01), 0.018, "black", caps=(True, True), captex="black")
     return m
 
 
 def gaugepart(kind):
     """The moving parts of a gauge dial, each at the block centre pointing up: a mark for the ring
-    (plain, green or red) and the needle. The game sets them out on the dial."""
+    (plain, green or red) and the needle. The game sets them out on the dials."""
     m = Model("gaugeneedle" if kind == "needle" else "gaugemark-" + kind, (0, 1, 0))
     if kind == "needle":
-        m.box((0, 0.59, 0), (0.022, 0.2, 0.012), "black")
-        m.box((0, 0.48, 0), (0.04, 0.06, 0.012), "black")
+        m.box((0, 0.54, 0), (0.014, 0.1, 0.01), "black")
     else:
-        m.box((0, 0.5, 0), (0.036, 0.07, 0.012), {"plain": "steel", "green": "green", "red": "red"}[kind])
+        m.box((0, 0.5, 0), (0.02, 0.034, 0.01), {"plain": "steel", "green": "green", "red": "red"}[kind])
     return m
 
 

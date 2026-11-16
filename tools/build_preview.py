@@ -293,6 +293,41 @@ def run_quads(piece, start, face, end, other_face, big):
     return quads, length
 
 
+def gauge_quads(parts, cell, side, available, demand, ratio):
+    """Mirrors BlockEntitySteamGauge.OnTesselation: the marks and needles of a gauge station's three dials."""
+    yaw = math.radians({"north": 0, "west": 90, "south": 180, "east": 270}[side])
+    sweep, full, marks = math.radians(240), 60.0, 12
+    quads = []
+
+    def place(piece, fraction, radius, dial_x, depth):
+        angle = (max(0.0, min(1.0, fraction)) - 0.5) * sweep
+        ca, sa, cy, sy = math.cos(angle), math.sin(angle), math.cos(yaw), math.sin(yaw)
+        for q in piece:
+            corners, uvs = [], []
+            for j in range(4):
+                o = 3 + j * 5
+                x, y, z = q[o] - 0.5, q[o + 1] - 0.5 + radius, q[o + 2] - 0.5
+                x, y = x * ca - y * sa, x * sa + y * ca                 # round the dial's middle
+                x, y, z = x + dial_x, y + 0.2, z + depth
+                x, z = x * cy + z * sy, -x * sy + z * cy                # turned with the block
+                corners.append(((x + 0.5 + cell[0]) * 16, (y + 0.5 + cell[1]) * 16, (z + 0.5 + cell[2]) * 16))
+                uvs.append((q[o + 3], q[o + 4]))
+            quads.append(quad(corners, uvs, -1))
+
+    needle = demand * ratio if ratio < 0.995 else available
+    green_top = demand * 1.25 + 2
+    for i in range(marks):
+        at = (i + 0.5) / marks
+        value = at * full
+        place(parts["red"] if value > green_top else parts["green"] if value >= demand > 0 else parts["plain"], at, 0.088, 0.29, -0.315)
+        place(parts["plain"], at, 0.088, 0.0, -0.315)
+        place(parts["red"] if at < 0.5 else parts["green"] if at > 0.9 else parts["plain"], at, 0.088, -0.29, -0.315)
+    place(parts["needle"], needle / full, 0, 0.29, -0.325)
+    place(parts["needle"], demand / full, 0, 0.0, -0.325)
+    place(parts["needle"], ratio if available > 0 else 0, 0, -0.29, -0.325)
+    return quads
+
+
 def pipework_example(codes, atlas):
     """A sample of what a player can build off the generator, so every steam part can be seen in place.
 
@@ -307,7 +342,9 @@ def pipework_example(codes, atlas):
 
     def piece(shape):
         bt = {"drawtype": "json", "shape": {"base": "block/generator/" + shape},
-              "textures": {"pipe": {"base": "block/generator/segment/pipe"}}}
+              "textures": {"pipe": {"base": "block/generator/segment/pipe"}, "steel": {"base": "block/generator/steel"},
+                           "green": {"base": "block/generator/segment/green"}, "red": {"base": "block/generator/paint-red"},
+                           "black": {"base": "block/generator/segment/black"}, "brass": {"base": "block/generator/segment/brass"}}}
         return resolve_block(bt, shape, {}, atlas)["q"]
 
     pieces = {False: piece("pipeseg"), True: piece("mainseg")}
@@ -415,7 +452,11 @@ def pipework_example(codes, atlas):
         (wall_x + 1, 0, gate[2], "steampipe-we"), (wall_x + 1, 0, gate[2] - 1, "pipejunction"), 
         *[(wall_x, y, z, "hullplate-riveted" if y == 3 else "hullplate-plain")
           for y in (1, 2, 3) for z in range(gate[2] - 2, gate[2] + 3) if (y, z) != (1, gate[2])])
-    wall_runs = []
+    # the gauge as the game would draw it here: 40 reaching it, and the radiator, grates and pipe beyond drawing 24.5
+    gauge_parts = {"needle": piece("gaugeneedle"), "plain": piece("gaugemark-plain"), "green": piece("gaugemark-green"), "red": piece("gaugemark-red")}
+    wall_runs = gauge_quads(gauge_parts, (gate[0] + 2, 1, gate[2]), "north", 40.0, 24.5, 1.0)
+    pointer = piece("valvepointer")       # and the valve's pointer, lying along the pipe: fully open
+    wall_runs += place_piece(pointer, (1, 1, 1), (1, 0, 0), (gate[0] + 1.5, 1.99, gate[2] + 0.5))
 
     return [
         {"at": list(gate), "port": "steamport", "cells": wall_cells, "quads": wall_runs},

@@ -58,7 +58,7 @@
 	"block-steamvalve-*": "Stop valve",
 	"blockdesc-steamvalve-*": "A length of pipe with a valve in it. Each click opens it a step, each sneak-click closes it a step, from shut to fully open in eight. Part open it holds steam back: each step lets 5 more through. The pointer over the wheel lies along the pipe when it is open and across it when it is shut.",
 	"block-steamgauge-*": "Steam gauge station",
-	"blockdesc-steamgauge-*": "Put it in a line of pipe. The needle shows the steam that can reach it. The green zone starts at what everything further along the line draws and moves as you build; above it is red, more than is needed. Below the green the line is starved and runs cool. Pipes join on three sides and underneath; the dial faces you.",
+	"blockdesc-steamgauge-*": "Put it in a line of pipe. It carries three small dials. Left: the steam that can reach it, with a green zone that starts at what everything further along the line draws and moves as you build, and red above for more than is needed. Middle: what everything further along draws. Right: how well that draw is being met. Pipes join on three sides and underneath; the dials face you.",
 	"valve-shut": "Valve shut.",
 	"valve-open": "Valve fully open.",
 	"valve-part": "Valve open {0} of {1}: lets {2} through.",

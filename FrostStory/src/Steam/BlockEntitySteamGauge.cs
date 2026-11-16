@@ -7,15 +7,20 @@ using Vintagestory.API.MathTools;
 namespace FrostStory.Steam;
 
 /// <summary>
-/// A gauge station's dial. The server reads the run every couple of seconds; the client draws a needle
-/// for the steam that can reach this point, over a ring of marks: green from what everything beyond
-/// draws up to a quarter more, red above that, plain below.
+/// A gauge station's three dials. The server reads the run every couple of seconds; the client draws
+/// each dial's marks and needle. Left: the steam that can reach this point, over marks that are green
+/// from what everything beyond draws up to a quarter more and red above that. Middle: what everything
+/// beyond draws. Right: how well that draw is being met.
 /// </summary>
 public class BlockEntitySteamGauge : BlockEntity
 {
     /// <summary>Full scale: a little over what one base port supplies.</summary>
     public const float FullScale = 60f;
-    private const int Marks = 24;
+    private const int Marks = 12;
+
+    // the three dials, as offsets from the block centre on a station whose panel faces north
+    public const float SupplyX = 0.29f, DrawX = 0f, FedX = -0.29f;
+    public const float DialY = 0.2f, MarkRadius = 0.088f, MarkDepth = -0.315f, NeedleDepth = -0.325f;
     private const float Sweep = 240f * GameMath.DEG2RAD;
 
     private static readonly Vec3f BlockCentre = new(0.5f, 0.5f, 0.5f);
@@ -59,16 +64,15 @@ public class BlockEntitySteamGauge : BlockEntity
             return mesh;
         }
 
-        // Each piece is drawn at the block centre, pointing up. It is moved out along the dial, swung
-        // round the dial's middle, set on the north-facing dial, and turned with the block.
-        void Place(MeshData? piece, float value, float radius, float depth)
+        // Each piece is drawn at the block centre, pointing up. It is moved out along its dial, swung
+        // round the dial's middle, set on that dial (they face north), and turned with the block.
+        void Place(MeshData? piece, float fraction, float radius, float dialX, float depth)
         {
             if (piece == null) return;
             var mesh = piece.Clone();
-            float angle = (Math.Clamp(value / FullScale, 0f, 1f) - 0.5f) * Sweep;
             mesh.Translate(0f, radius, 0f);
-            mesh.Rotate(BlockCentre, 0f, 0f, angle);
-            mesh.Translate(0f, 0.12f, depth);
+            mesh.Rotate(BlockCentre, 0f, 0f, (Math.Clamp(fraction, 0f, 1f) - 0.5f) * Sweep);
+            mesh.Translate(dialX, DialY, depth);
             mesh.Rotate(BlockCentre, 0f, yaw, 0f);
             mesher.AddMeshData(mesh);
         }
@@ -76,13 +80,24 @@ public class BlockEntitySteamGauge : BlockEntity
         var plain = Piece("gaugemark-plain");
         var green = Piece("gaugemark-green");
         var red = Piece("gaugemark-red");
+        var needle = Piece("gaugeneedle");
+
         for (int i = 0; i < Marks; i++)
         {
-            float value = (i + 0.5f) / Marks * FullScale;
-            Place(value > GreenTop ? red : value >= Demand && Demand > 0f ? green : plain, value, 0.2f, -0.44f);
+            float at = (i + 0.5f) / Marks;
+            float value = at * FullScale;
+
+            // supply: green from what is drawn beyond up to a quarter more, red above
+            Place(value > GreenTop ? red : value >= Demand && Demand > 0f ? green : plain, at, MarkRadius, SupplyX, MarkDepth);
+            // draw: a plain scale
+            Place(plain, at, MarkRadius, DrawX, MarkDepth);
+            // fed: red under half, green at the top
+            Place(at < 0.5f ? red : at > 0.9f ? green : plain, at, MarkRadius, FedX, MarkDepth);
         }
 
-        Place(Piece("gaugeneedle"), Needle, 0f, -0.455f);
+        Place(needle, Needle / FullScale, 0f, SupplyX, NeedleDepth);
+        Place(needle, Demand / FullScale, 0f, DrawX, NeedleDepth);
+        Place(needle, Available > 0f ? Ratio : 0f, 0f, FedX, NeedleDepth);
         return false;
     }
 
