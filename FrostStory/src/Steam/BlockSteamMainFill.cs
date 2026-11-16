@@ -18,7 +18,8 @@ public class BlockSteamMainFill : Block
     {
         base.OnLoaded(api);
         string offset = Variant["offset"] ?? "o000";
-        if (offset.Length == 4) Offset = new Vec3i(offset[1] - '0', offset[2] - '0', offset[3] - '0');
+        // "oXYZ" counts up from the owner's cell; "dXYZ" is Y cells below it
+        if (offset.Length == 4) Offset = new Vec3i(offset[1] - '0', (offset[0] == 'd' ? -1 : 1) * (offset[2] - '0'), offset[3] - '0');
     }
 
     public BlockPos OwnerPos(BlockPos pos) => pos.AddCopy(-Offset.X, -Offset.Y, -Offset.Z);

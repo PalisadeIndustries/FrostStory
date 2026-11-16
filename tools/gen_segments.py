@@ -1321,32 +1321,31 @@ def stoveflue():
 
 
 def steamhub():
-    """A steam hub: a street heater two blocks square and four high. A cast plinth with a flanged
-    inlet for a steam main on each side and underneath; on it a finned column that throws the heat
-    out, under a stepped cap with a vent finial. Its cell is the minimum corner of the plinth."""
+    """A steam hub: a main fitting with a heater hanging under it, for a main carried overhead. The
+    fitting joins mains on every side and on top, like any other. From its underside hangs a finned
+    column that throws the heat down and out, ending in a stepped cap and a drain finial two blocks
+    below. Its cell is the minimum corner of the fitting; the heater is below that."""
     m = Model("steamhub", (0, 1, 0))
     c = 0.5
-    m.vprism(c, c, 0.0, 0.14, 1.0, "band", caps=(True, True), captex="band")              # foot
-    m.box((c, 1.0, c), (1.6, 1.72, 1.6), "darkplate")                                    # plinth
+    m.vprism(c, c, 0.0, 2.0, MAIN_BORE, "pipe")                                           # the fitting
+    m.hprism((-0.5, 1.0, c), (1.5, 1.0, c), MAIN_BORE, "pipe")
+    m.hprism((c, 1.0, -0.5), (c, 1.0, 1.5), MAIN_BORE, "pipe")
+    m.box((c, 1.0, c), (1.5, 1.5, 1.5), "band")
+    m.vprism(c, c, 1.88, 2.0, MAIN_FLANGE, "band", caps=(True, True), captex="band")
     for a, b in ((-0.5, -0.38), (1.38, 1.5)):
-        m.hprism((min(a, b), 1.0, c), (max(a, b), 1.0, c), MAIN_FLANGE, "band", caps=(True, True), captex="band")
-        m.hprism((c, 1.0, min(a, b)), (c, 1.0, max(a, b)), MAIN_FLANGE, "band", caps=(True, True), captex="band")
-    m.hprism((-0.38, 1.0, c), (1.38, 1.0, c), MAIN_BORE, "pipe")
-    m.hprism((c, 1.0, -0.38), (c, 1.0, 1.38), MAIN_BORE, "pipe")
-    for sx in (-1, 1):                                                                    # corner pilasters
-        for sz in (-1, 1):
-            m.box((c + sx * 0.8, 1.0, c + sz * 0.8), (0.16, 1.86, 0.16), "band")
-    m.vprism(c, c, 1.86, 2.0, 0.95, "band", caps=(True, True), captex="band")             # cornice
-    m.vprism(c, c, 2.0, 3.5, 0.45, "pipe")                                                # column
+        m.hprism((a, 1.0, c), (b, 1.0, c), MAIN_FLANGE, "band", caps=(True, True), captex="band")
+        m.hprism((c, 1.0, a), (c, 1.0, b), MAIN_FLANGE, "band", caps=(True, True), captex="band")
+    m.vprism(c, c, -0.12, 0.12, 0.95, "band", caps=(True, True), captex="band")           # hanger collar
+    m.vprism(c, c, -1.6, -0.12, 0.45, "pipe")                                             # heater column
     for i in range(7):
-        y = 2.12 + i * 0.21
-        m.vprism(c, c, y, y + 0.07, 0.86, "band", caps=(True, True), captex="band")       # fins
+        y = -0.33 - i * 0.2
+        m.vprism(c, c, y - 0.07, y, 0.86, "band", caps=(True, True), captex="band")       # fins
     for sx, sz in ((1, 0), (-1, 0), (0, 1), (0, -1)):                                     # tie rods through the fins
-        m.box((c + sx * 0.7, 2.75, c + sz * 0.7), (0.06, 1.5, 0.06), "brass")
-    m.vprism(c, c, 3.5, 3.62, 0.92, "band", caps=(True, True), captex="band")             # cap, stepping in
-    m.vprism(c, c, 3.62, 3.76, 0.66, "darkplate", caps=(False, True), captex="darkplate")
-    m.vprism(c, c, 3.76, 3.88, 0.38, "darkplate", caps=(False, True), captex="darkplate")
-    m.vprism(c, c, 3.88, 4.0, 0.14, "brass", caps=(False, True), captex="black")          # vent finial
+        m.box((c + sx * 0.7, -0.86, c + sz * 0.7), (0.06, 1.5, 0.06), "brass")
+    m.vprism(c, c, -1.7, -1.6, 0.9, "band", caps=(True, True), captex="band")             # cap, stepping in
+    m.vprism(c, c, -1.82, -1.7, 0.62, "darkplate", caps=(True, False), captex="darkplate")
+    m.vprism(c, c, -1.92, -1.82, 0.34, "darkplate", caps=(True, False), captex="darkplate")
+    m.vprism(c, c, -2.0, -1.92, 0.12, "brass", caps=(True, False), captex="black")        # drain finial
     return m
 
 

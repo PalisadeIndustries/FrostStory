@@ -6,13 +6,14 @@ using Vintagestory.API.MathTools;
 namespace FrostStory.Steam;
 
 /// <summary>
-/// A steam hub warms the open ground round it. The game only feels for heat within three blocks of a
+/// A steam hub warms the open ground below and round it. The game only feels for heat within three blocks of a
 /// player, so the hub keeps unseen cells of warm air on a grid over the ground out to its radius; each
 /// is a heat source while the hub has steam, weaker the further out it is.
 /// </summary>
 public static class SteamHub
 {
     private const int Spacing = 4;
+    private const int Drop = 30;      // how far below the fitting the ground may be
 
     private static IEnumerable<(BlockPos Cell, float Share)> Cells(IWorldAccessor world, BlockPos hub, int radius)
     {
@@ -24,10 +25,11 @@ public static class SteamHub
                 double distance = Math.Sqrt(dx * dx + dz * dz);
                 if (distance > radius + 0.5 || (dx == 0 && dz == 0)) continue;
 
-                // chest height over the ground: the first open cell with something to stand on, near the hub's level
-                var pos = new BlockPos(hub.X + dx, hub.Y + 4, hub.Z + dz, hub.dimension);
+                // head height over the ground: the first open cell with something to stand on, from the
+                // fitting's level down (a hub hangs from a main overhead)
+                var pos = new BlockPos(hub.X + dx, hub.Y + 2, hub.Z + dz, hub.dimension);
                 if (ba.GetChunkAtBlockPos(pos) == null) continue;
-                for (int i = 0; i < 9; i++, pos.Down())
+                for (int i = 0; i < Drop; i++, pos.Down())
                 {
                     if (!Open(world, pos) || Open(world, pos.DownCopy())) continue;
                     var cell = pos.UpCopy();
@@ -41,7 +43,7 @@ public static class SteamHub
     private static bool Open(IWorldAccessor world, BlockPos pos)
     {
         var block = world.BlockAccessor.GetBlock(pos);
-        return block.Id == 0 || block is BlockPipeWarmth;
+        return block.Id == 0 || block is BlockPipeWarmth or BlockSteamConduit or BlockSteamMainFill;      // pipework overhead is not ground
     }
 
     /// <summary>Lays the hub's warm air afresh, following the ground as it is now.</summary>

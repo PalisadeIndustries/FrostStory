@@ -63,14 +63,14 @@ public class BlockSteamConduit : Block, IHeatSource
     public bool IsFloorGrate { get; private set; }
 
     /// <summary>
-    /// True for steam hubs: fed by a steam main at the foot, they warm the open ground round them
-    /// (see <see cref="SteamHub"/>). The foot joins mains like a main fitting; the column above it is
-    /// two blocks more of the same block.
+    /// True for steam hubs: a main fitting with a heater hanging under it, which warms the open ground
+    /// below and around (see <see cref="SteamHub"/>). The fitting joins mains on its sides and top; the
+    /// heater is two blocks more of the same block, underneath.
     /// </summary>
     public bool IsHub { get; private set; }
 
-    /// <summary>Blocks a conduit stands above the part of it that steam flows through.</summary>
-    private int extraHeight;
+    /// <summary>Blocks a conduit hangs below the part of it that steam flows through.</summary>
+    private int hangs;
 
     /// <summary>True for the posts of a main stand: they carry a fitting but no steam.</summary>
     public bool IsStructural { get; private set; }
@@ -139,8 +139,8 @@ public class BlockSteamConduit : Block, IHeatSource
             case "steamhub":
                 IsBig = managesFill = IsHub = true;
                 Size = new Vec3i(2, 2, 2);
-                extraHeight = 2;
-                foreach (var face in BlockFacing.ALLFACES) connects[face.Index] = face != BlockFacing.UP;
+                hangs = 2;
+                foreach (var face in BlockFacing.ALLFACES) connects[face.Index] = face != BlockFacing.DOWN;
                 break;
 
             case "radiator":
@@ -211,14 +211,14 @@ public class BlockSteamConduit : Block, IHeatSource
     /// </summary>
     private AssetLocation FillCode(int x, int y, int z) =>
         IsRadiator ? new AssetLocation("froststory", $"radiatorfill-o{x}{y}{z}")
-        : IsHub ? new AssetLocation("froststory", $"hubfill-o{x}{y}{z}")
+        : IsHub ? new AssetLocation("froststory", y < 0 ? $"hubfill-d{x}{-y}{z}" : $"hubfill-o{x}{y}{z}")
         : BlockSteamMainFill.CodeFor(x, y, z);
 
-    /// <summary>Every cell the conduit fills, including any column standing above the part steam flows through.</summary>
+    /// <summary>Every cell the conduit fills, including anything hanging below the part steam flows through.</summary>
     public IEnumerable<BlockPos> Bulk(BlockPos anchor)
     {
         for (int x = 0; x < Size.X; x++)
-            for (int y = 0; y < Size.Y + extraHeight; y++)
+            for (int y = -hangs; y < Size.Y; y++)
                 for (int z = 0; z < Size.Z; z++)
                     yield return anchor.AddCopy(x, y, z);
     }
@@ -472,10 +472,10 @@ public class BlockSteamConduit : Block, IHeatSource
         if (managesFill && world.Side == EnumAppSide.Server)
         {
             for (int x = 0; x < Size.X; x++)
-                for (int y = 0; y < Size.Y + extraHeight; y++)
+                for (int y = -hangs; y < Size.Y; y++)
                     for (int z = 0; z < Size.Z; z++)
                     {
-                        if (x + y + z == 0) continue;
+                        if (x == 0 && y == 0 && z == 0) continue;
                         var fill = world.GetBlock(FillCode(x, y, z));
                         if (fill != null) world.BlockAccessor.SetBlock(fill.Id, blockPos.AddCopy(x, y, z));
                     }
