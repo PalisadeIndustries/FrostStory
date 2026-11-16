@@ -1226,7 +1226,7 @@ def radiator(back):
     """A cast-iron column radiator, two blocks long, one high and half a block deep, standing on four
     feet in the middle of its cells. Each section is a front and a back column joined in a loop top
     and bottom; a header runs through them top and bottom. The hookups are behind it, at a right angle
-    to its length: a tail out of the back of each block at pipe height, one of them with the valve.
+    to its length: a tail out of the back of each block at pipe height. The valve is on the front, facing the room.
     Drawn lying east-west with its back to the north, and turned."""
     turn = RADIATOR_SIDES.index(back)
     turned = []
@@ -1254,9 +1254,10 @@ def radiator(back):
         m.box((x, 0.5, -0.18), (0.3, 0.2, 0.1), "band")              # boss across the columns
         m.hprism((x, 0.5, -0.5), (x, 0.5, -0.2), 0.085, "pipe")
         m.hprism((x, 0.5, -0.5), (x, 0.5, -0.43), 0.16, "band", caps=(True, True), captex="band")
-    m.vprism(1.0, -0.33, 0.4, 0.62, 0.1, "brass", caps=(True, True), captex="brass")      # the valve
-    m.vprism(1.0, -0.33, 0.62, 0.72, 0.03, "steel")
-    m.handwheel(1.0, 0.74, -0.33, a=0.09)
+    m.box((1.0, 0.5, 0.18), (0.3, 0.2, 0.1), "band")                 # the valve, on the front, away from the wall
+    m.vprism(1.0, 0.33, 0.4, 0.62, 0.1, "brass", caps=(True, True), captex="brass")
+    m.vprism(1.0, 0.33, 0.62, 0.72, 0.03, "steel")
+    m.handwheel(1.0, 0.74, 0.33, a=0.09)
     return m
 
 
