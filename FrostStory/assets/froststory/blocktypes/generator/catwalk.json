@@ -1,0 +1,129 @@
+{
+	"code": "catwalk",
+	"behaviors": [
+		{
+			"name": "NWOrientable"
+		}
+	],
+	"variantgroups": [
+		{
+			"code": "side",
+			"states": [
+				"ns",
+				"we"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-ns"
+		],
+		"froststory": [
+			"*-ns"
+		]
+	},
+	"shapeByType": {
+		"*-ns": {
+			"base": "block/generator/catwalk-run"
+		},
+		"*-we": {
+			"base": "block/generator/catwalk-run",
+			"rotateY": 90
+		}
+	},
+	"collisionSelectionBoxesByType": {
+		"*-ns": [
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0,
+				"x2": 1,
+				"y2": 0.08,
+				"z2": 1
+			},
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0,
+				"x2": 0.06,
+				"y2": 1,
+				"z2": 1
+			},
+			{
+				"x1": 0.94,
+				"y1": 0,
+				"z1": 0,
+				"x2": 1,
+				"y2": 1,
+				"z2": 1
+			}
+		],
+		"*-we": [
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0,
+				"x2": 1,
+				"y2": 0.08,
+				"z2": 1
+			},
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0,
+				"x2": 1,
+				"y2": 1,
+				"z2": 0.06
+			},
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0.94,
+				"x2": 1,
+				"y2": 1,
+				"z2": 1
+			}
+		]
+	},
+	"drawtype": "json",
+	"renderPass": "OpaqueNoCull",
+	"faceCullMode": "NeverCull",
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"lightAbsorption": 0,
+	"rainPermeable": true,
+	"replaceable": 90,
+	"resistance": 4,
+	"requiredMiningTier": 2,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	},
+	"textures": {
+		"grating": {
+			"base": "block/generator/segment/grating"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"girder": {
+			"base": "block/generator/segment/girder"
+		},
+		"checker": {
+			"base": "block/generator/segment/checker"
+		}
+	}
+}

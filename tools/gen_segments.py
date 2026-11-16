@@ -1489,6 +1489,42 @@ def gaugepart(kind):
     return m
 
 
+def crossover(kind):
+    """A crossover for stepping over pipework. 'run' is a metre of catwalk for the block above the
+    pipes: a grated deck at the foot of its block on four legs that reach down to the ground, with a
+    handrail down each side; it runs north-south. 'stair' is the flight up to it, one block high: four
+    checker-plate treads between two stringers, low end to the north, with a handrail each side."""
+    m = Model("catwalk-" + kind, (0, 1, 0))
+    if kind == "run":
+        m.box((0, 0.04, 0), (1.0, 0.08, 1.0), "grating")
+        for sx in (-1, 1):
+            x = sx * 0.47
+            m.box((x, 0.06, 0), (0.06, 0.12, 1.0), "band")                                # toe board
+            for z in (-0.44, 0.44):
+                m.box((x, 0.52, z), (0.05, 0.92, 0.05), "steel")                          # posts
+                m.member((sx * 0.44, -1.0, z), (sx * 0.44, 0.0, z), 0.08, 0.08, "girder", chunk=1.0)   # legs to the ground
+            m.box((x, 0.97, 0), (0.06, 0.06, 1.0), "band")                                # handrail
+            m.box((x, 0.55, 0), (0.035, 0.035, 1.0), "steel")                             # knee rail
+        for z in (-0.44, 0.44):
+            m.box((0, -0.06, z), (0.88, 0.06, 0.06), "girder")                            # bearers under the deck
+        return m
+
+    steps = 4
+    for i in range(steps):
+        top = (i + 1) / steps
+        z = -0.5 + (i + 0.5) / steps
+        m.box((0, top - 0.02, z), (0.86, 0.04, 1 / steps + 0.02), "checker")              # tread
+        m.box((0, top - 0.13, z + 0.5 / steps - 0.01), (0.86, 0.2, 0.02), "band")         # riser
+    for sx in (-1, 1):
+        x = sx * 0.46
+        m.member((x, 0.0, -0.5), (x, 1.0, 0.5), 0.05, 0.22, "band", chunk=2.0)            # stringer
+        m.box((x, 0.5, -0.45), (0.05, 1.0, 0.05), "steel")                                # low post
+        m.box((x, 1.0, 0.45), (0.05, 2.0, 0.05), "steel")                                 # high post, up to the run's rail
+        m.member((x, 0.98, -0.45), (x, 1.97, 0.45), 0.06, 0.06, "band", chunk=2.0)        # handrail, rising with the flight
+        m.member((x, 0.55, -0.45), (x, 1.55, 0.45), 0.035, 0.035, "steel", chunk=2.0)     # knee rail
+    return m
+
+
 def wallpass(axis):
     """A wall passthrough: a solid block of plate that stands in for one block of a wall, with a pipe
     mount (a collar round an open bore) on each of two opposite sides. The collars stand a little proud
@@ -1607,6 +1643,7 @@ def main():
     parts += [wallpass(a) for a in ("ud", "ns", "we")]
     parts += [radiator(b) for b in RADIATOR_SIDES]
     parts += [steamhub(), hubframe("leg"), hubframe("head"), floorgrate(), tentstove("cold"), tentstove("lit"), stoveflue(), stoveflue("cap"), stoveflue("elbow"), stoveflue("upturn"), pipe()]
+    parts += [crossover("run"), crossover("stair")]
     parts += [steamvalve(), valvepointer(), steamgauge()] + [gaugepart(k) for k in ("needle", "plain", "green", "red")]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:

@@ -1,0 +1,163 @@
+{
+	"code": "catwalkstair",
+	"behaviors": [
+		{
+			"name": "HorizontalOrientable",
+			"properties": {
+				"dropBlockFace": "north"
+			}
+		}
+	],
+	"variantgroups": [
+		{
+			"code": "side",
+			"states": [
+				"north",
+				"east",
+				"south",
+				"west"
+			]
+		}
+	],
+	"creativeinventory": {
+		"general": [
+			"*-north"
+		],
+		"froststory": [
+			"*-north"
+		]
+	},
+	"shapeByType": {
+		"*-north": {
+			"base": "block/generator/catwalk-stair",
+			"rotateY": 0
+		},
+		"*-west": {
+			"base": "block/generator/catwalk-stair",
+			"rotateY": 90
+		},
+		"*-south": {
+			"base": "block/generator/catwalk-stair",
+			"rotateY": 180
+		},
+		"*-east": {
+			"base": "block/generator/catwalk-stair",
+			"rotateY": 270
+		}
+	},
+	"collisionSelectionBoxesByType": {
+		"*-north": [
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0,
+				"x2": 1,
+				"y2": 0.5,
+				"z2": 0.5
+			},
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0.5,
+				"x2": 1,
+				"y2": 1,
+				"z2": 1
+			}
+		],
+		"*-south": [
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0.5,
+				"x2": 1,
+				"y2": 0.5,
+				"z2": 1
+			},
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0,
+				"x2": 1,
+				"y2": 1,
+				"z2": 0.5
+			}
+		],
+		"*-west": [
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0,
+				"x2": 0.5,
+				"y2": 0.5,
+				"z2": 1
+			},
+			{
+				"x1": 0.5,
+				"y1": 0,
+				"z1": 0,
+				"x2": 1,
+				"y2": 1,
+				"z2": 1
+			}
+		],
+		"*-east": [
+			{
+				"x1": 0.5,
+				"y1": 0,
+				"z1": 0,
+				"x2": 1,
+				"y2": 0.5,
+				"z2": 1
+			},
+			{
+				"x1": 0,
+				"y1": 0,
+				"z1": 0,
+				"x2": 0.5,
+				"y2": 1,
+				"z2": 1
+			}
+		]
+	},
+	"drawtype": "json",
+	"renderPass": "OpaqueNoCull",
+	"faceCullMode": "NeverCull",
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"lightAbsorption": 0,
+	"rainPermeable": true,
+	"replaceable": 90,
+	"resistance": 4,
+	"requiredMiningTier": 2,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	},
+	"textures": {
+		"grating": {
+			"base": "block/generator/segment/grating"
+		},
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"steel": {
+			"base": "block/generator/steel"
+		},
+		"girder": {
+			"base": "block/generator/segment/girder"
+		},
+		"checker": {
+			"base": "block/generator/segment/checker"
+		}
+	}
+}

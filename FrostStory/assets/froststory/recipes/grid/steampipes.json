@@ -278,5 +278,41 @@
 			"type": "block",
 			"code": "froststory:steamgauge-north"
 		}
+	},
+	{
+		"ingredientPattern": "P_P,GGG",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"G": {
+				"type": "block",
+				"code": "froststory:grating"
+			}
+		},
+		"width": 3,
+		"height": 2,
+		"output": {
+			"type": "block",
+			"code": "froststory:catwalk-ns",
+			"quantity": 3
+		}
+	},
+	{
+		"ingredientPattern": "P__,PP_,PPP",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			}
+		},
+		"width": 3,
+		"height": 3,
+		"output": {
+			"type": "block",
+			"code": "froststory:catwalkstair-north",
+			"quantity": 4
+		}
 	}
 ]

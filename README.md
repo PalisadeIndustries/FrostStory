@@ -133,6 +133,13 @@ arrive with the Steam Core stage and go live when the generator is fired.
   three times the warmth of a pipe, and is solid for closing a room. Nothing joins on top.
 - Look at a pipe to see whether it is carrying steam.
 
+**Crossing pipework.** Pipes on the ground are in the way. **Pipe crossover steps** are a flight
+one block high with handrails; set one down facing the way you want to climb. A **crossover
+catwalk** is a metre of railed deck that goes in the block above the pipe, standing on legs that
+come down either side of it. Steps, as many catwalks as the pipework is wide, steps: you walk
+over without jumping. Two iron plates over three gratings make three catwalks; six iron plates
+in a staircase make four flights of steps.
+
 **Supply, draw, valves and gauges.** Steam comes in quantities. A live base port supplies 40
 and a large port 250 (`PortSupply`, `MainPortSupply` in the config). Everything on a line draws
 some: a pipe 0.25 a block, a main 0.5, a heating pipe 1, an underfloor grate 3, a radiator 6, a
