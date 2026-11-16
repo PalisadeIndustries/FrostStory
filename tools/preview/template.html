@@ -113,7 +113,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
 
   <div class="work">
     <div class="viewport">
-      <canvas id="view" tabindex="0" aria-label="3D model of the generator. Drag or use arrow keys to turn, scroll or plus and minus to zoom."></canvas>
+      <canvas id="view" tabindex="0" aria-label="3D model of the generator. Drag or use arrow keys to turn; right-drag, shift-drag or W A S D to move, Q and E to go down and up; scroll or plus and minus to zoom."></canvas>
       <div class="bar top">
         <div class="seg" role="group" aria-label="View">
           <button type="button" id="view-exterior" aria-pressed="true">Exterior</button>
@@ -129,7 +129,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
         </div>
       </div>
       <div class="bar bottom">
-        <p class="hint">Drag to turn &middot; scroll or pinch to zoom &middot; red figure is 1.85 m</p>
+        <p class="hint">Drag: turn &middot; right-drag or two fingers: move &middot; scroll: zoom</p>
         <div class="seg" role="group" aria-label="Zoom">
           <button type="button" id="zoom-out" aria-label="Zoom out">&minus;</button>
           <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
@@ -430,17 +430,27 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
 
   // ---------------------------------------------------------------- camera
   var FOCUS = { tower: { y: 19, r: 105 }, whole: { y: -22, r: 250 }, shaft: { y: -52, r: 130 } };
-  var cam = { theta: 0.62, phi: 1.27, r: FOCUS.tower.r, y: FOCUS.tower.y };
+  var cam = { theta: 0.62, phi: 1.27, r: FOCUS.tower.r, y: FOCUS.tower.y, x: 0.5, z: 0.5 };
   var autoTurn = !reduceMotion;
 
   function applyCamera() {
     var maxPhi = section ? Math.PI - 0.2 : Math.PI / 2 - 0.03;
     cam.phi = Math.min(maxPhi, Math.max(0.2, cam.phi));
-    cam.r = Math.min(520, Math.max(18, cam.r));
+    cam.r = Math.min(520, Math.max(6, cam.r));
+    cam.x = Math.min(160, Math.max(-160, cam.x));
+    cam.z = Math.min(160, Math.max(-160, cam.z));
+    cam.y = Math.min(80, Math.max(-110, cam.y));
     var sp = Math.sin(cam.phi);
-    camera.position.set(0.5 + cam.r * sp * Math.sin(cam.theta), cam.y + cam.r * Math.cos(cam.phi), 0.5 + cam.r * sp * Math.cos(cam.theta));
-    camera.lookAt(0.5, cam.y, 0.5);
+    camera.position.set(cam.x + cam.r * sp * Math.sin(cam.theta), cam.y + cam.r * Math.cos(cam.phi), cam.z + cam.r * sp * Math.cos(cam.theta));
+    camera.lookAt(cam.x, cam.y, cam.z);
     dirty = true;
+  }
+
+  // Slide the point the camera looks at: right and forward are across the ground as seen from the camera.
+  function pan(right, forward, up) {
+    cam.x += right * Math.cos(cam.theta) - forward * Math.sin(cam.theta);
+    cam.z += -right * Math.sin(cam.theta) - forward * Math.cos(cam.theta);
+    cam.y += up;
   }
 
   function press(ids, active) {
@@ -450,6 +460,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
   function setFocus(name) {
     cam.y = FOCUS[name].y;
     cam.r = FOCUS[name].r;
+    cam.x = cam.z = 0.5;      // back to the tower
     press(["focus-tower", "focus-whole", "focus-shaft"], "focus-" + name);
     applyCamera();
   }
@@ -495,23 +506,29 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
   var pointers = new Map(), pinch = 0;
   canvas.addEventListener("pointerdown", function (e) {
     canvas.setPointerCapture(e.pointerId);
-    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, pan: e.button !== 0 || e.shiftKey });
     autoTurn = false;
     pinch = 0;
   });
+  canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   canvas.addEventListener("pointermove", function (e) {
     var p = pointers.get(e.pointerId);
     if (!p) return;
     var dx = e.clientX - p.x, dy = e.clientY - p.y;
     p.x = e.clientX; p.y = e.clientY;
+    var slide = cam.r * 0.0016;      // the further out, the further a drag moves
     if (pointers.size === 1) {
-      cam.theta -= dx * 0.006;
-      cam.phi -= dy * 0.005;
+      if (p.pan || e.shiftKey) pan(-dx * slide, dy * slide, 0);
+      else {
+        cam.theta -= dx * 0.006;
+        cam.phi -= dy * 0.005;
+      }
     } else if (pointers.size === 2) {
       var pts = Array.from(pointers.values());
       var dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
       if (pinch) cam.r *= pinch / dist;
       pinch = dist;
+      pan(-dx * slide / 2, dy * slide / 2, 0);      // two fingers dragged together slide the view
     }
     applyCamera();
   });
@@ -530,6 +547,12 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
     else if (e.key === "ArrowRight") cam.theta += 0.12;
     else if (e.key === "ArrowUp") cam.phi -= 0.08;
     else if (e.key === "ArrowDown") cam.phi += 0.08;
+    else if (e.key === "w" || e.key === "W") pan(0, cam.r * 0.06, 0);
+    else if (e.key === "s" || e.key === "S") pan(0, -cam.r * 0.06, 0);
+    else if (e.key === "a" || e.key === "A") pan(-cam.r * 0.06, 0, 0);
+    else if (e.key === "d" || e.key === "D") pan(cam.r * 0.06, 0, 0);
+    else if (e.key === "e" || e.key === "E") pan(0, 0, cam.r * 0.05);
+    else if (e.key === "q" || e.key === "Q") pan(0, 0, -cam.r * 0.05);
     else if (e.key === "+" || e.key === "=") cam.r *= 0.85;
     else if (e.key === "-") cam.r *= 1.18;
     else used = false;
@@ -567,6 +590,6 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 
   requestAnimationFrame(frame);
 
   // test hook for screenshots
-  window.__preview = { setPieces: function (n) { pieces = n; renderPieces(); showState(); }, setStep: setStep, setSection: setSection, setFocus: setFocus, cam: cam, apply: applyCamera, stop: function () { autoTurn = false; } };
+  window.__preview = { pan: pan, setPieces: function (n) { pieces = n; renderPieces(); showState(); }, setStep: setStep, setSection: setSection, setFocus: setFocus, cam: cam, apply: applyCamera, stop: function () { autoTurn = false; } };
 })();
 </script>
