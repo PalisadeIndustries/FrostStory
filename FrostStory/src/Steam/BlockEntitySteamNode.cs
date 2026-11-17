@@ -118,6 +118,18 @@ public class BlockEntitySteamNode : BlockEntity
     {
         var points = SteamRuns.Sample(run.Start, run.Face, run.End, run.OtherFace, run.Big);
 
+        // Straight pieces round a bend open up on the outside of it. Each piece is run on past its ends
+        // by what the bend there needs: the pipe's radius times the tangent of half the angle it turns.
+        float radius = run.Big ? SteamRuns.MainRadius : SteamRuns.PipeRadius;
+        float Reach(int at)
+        {
+            if (at <= 0 || at + 1 >= points.Count) return 0f;
+            var u = (points[at] - points[at - 1]).Normalize();
+            var v = (points[at + 1] - points[at]).Normalize();
+            float half = MathF.Acos(Math.Clamp(u.Dot(v), -1f, 1f)) / 2f;
+            return radius * MathF.Tan(Math.Min(half, 0.6f));
+        }
+
         for (int i = 0; i + 1 < points.Count; i++)
         {
             Vec3f a = points[i], b = points[i + 1];
@@ -125,11 +137,14 @@ public class BlockEntitySteamNode : BlockEntity
             float length = MathF.Sqrt(dx * dx + dy * dy + dz * dz);
             if (length < 1e-4f) continue;
 
+            float before = Reach(i) + 0.01f, after = Reach(i + 1) + 0.01f;
+            float shift = (after - before) / 2f / length;        // the piece's middle moves towards the longer overrun
+
             var mesh = piece.Clone();
-            mesh.Scale(BlockCentre, 1f, 1f, length / SteamRuns.PieceLength * 1.08f);              // a little overlap hides the joints
+            mesh.Scale(BlockCentre, 1f, 1f, (length + before + after) / SteamRuns.PieceLength);
             mesh.Rotate(BlockCentre, -MathF.Asin(Math.Clamp(dy / length, -1f, 1f)), 0f, 0f);       // pitch +Z up or down
             mesh.Rotate(BlockCentre, 0f, MathF.Atan2(dx, dz), 0f);                                 // then turn it to its heading
-            mesh.Translate((a.X + b.X) / 2 - 0.5f, (a.Y + b.Y) / 2 - 0.5f, (a.Z + b.Z) / 2 - 0.5f);
+            mesh.Translate((a.X + b.X) / 2 + dx * shift - 0.5f, (a.Y + b.Y) / 2 + dy * shift - 0.5f, (a.Z + b.Z) / 2 + dz * shift - 0.5f);
             mesher.AddMeshData(mesh);
         }
 

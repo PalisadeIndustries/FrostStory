@@ -280,13 +280,27 @@ def place_piece(piece, scale, direction, centre):
 def run_quads(piece, start, face, end, other_face, big):
     points, length = run_sample(start, face, end, other_face, big)
     quads = []
-    for a, b in zip(points, points[1:]):
+    # as the game does: each straight piece runs on past its ends by what the bend there needs
+    radius = 0.9 if big else 0.18
+
+    def reach(at):
+        if at <= 0 or at + 1 >= len(points):
+            return 0.0
+        u = [points[at][i] - points[at - 1][i] for i in range(3)]
+        v = [points[at + 1][i] - points[at][i] for i in range(3)]
+        lu, lv = math.sqrt(sum(c * c for c in u)) or 1, math.sqrt(sum(c * c for c in v)) or 1
+        dot = max(-1.0, min(1.0, sum(p * q for p, q in zip(u, v)) / (lu * lv)))
+        return radius * math.tan(min(math.acos(dot) / 2, 0.6))
+
+    for n, (a, b) in enumerate(zip(points, points[1:])):
         d = tuple(b[i] - a[i] for i in range(3))
         chord = math.sqrt(sum(c * c for c in d))
         if chord < 1e-4:
             continue
-        quads += place_piece(piece, (1, 1, chord / PIECE_LENGTH * 1.08), tuple(c / chord for c in d),
-                             tuple((a[i] + b[i]) / 2 for i in range(3)))
+        before, after = reach(n) + 0.01, reach(n + 1) + 0.01
+        shift = (after - before) / 2 / chord
+        quads += place_piece(piece, (1, 1, (chord + before + after) / PIECE_LENGTH), tuple(c / chord for c in d),
+                             tuple((a[i] + b[i]) / 2 + d[i] * shift for i in range(3)))
     for at, f in ((start, face), (end, other_face)):
         n = NORMALS[f]
         quads += place_piece(piece, (1.3, 1.3, 0.3), n, tuple(at[i] + n[i] * 0.08 for i in range(3)))

@@ -16,6 +16,9 @@ public static class SteamRuns
     /// <summary>Length of the straight piece a run is drawn from (shapes pipeseg and mainseg).</summary>
     public const float PieceLength = 0.5f;
 
+    /// <summary>How far the corners of a run's eight-sided tube stand from its middle line.</summary>
+    public const float PipeRadius = 0.18f, MainRadius = 0.9f;
+
     public const float MaxLengthSmall = 24f;
     public const float MaxLengthBig = 32f;
 
