@@ -1,5 +1,5 @@
 {
-	"game:tabname-froststory": "FrostStory",
+	"game:tabname-frostpunk": "Frostpunk",
 
 	"block-generatorconsole-*": "Generator control console",
 	"blockdesc-generatorconsole-*": "Place it facing the spot where the generator should stand: the tower rises eight blocks behind it, over a shaft sunk deep into the rock. Deliver materials here: each stage goes up piece by piece as its materials arrive. Breaking the console abandons the project.",

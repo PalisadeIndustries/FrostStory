@@ -63,7 +63,7 @@ it, and the stack steams.
 ## Playing
 
 - Craft a **generator control console** (4 iron plates, 2 rusty gears) or take it from the
-  FrostStory creative tab.
+  Frostpunk creative tab.
 - Place it facing where the tower should stand. The centre is 8 blocks behind the console.
   Right-click it empty-handed to see the footprint and what the current stage needs.
 - Right-click with the listed materials to deliver them, as much or as little as you have. The
