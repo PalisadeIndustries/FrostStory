@@ -396,5 +396,59 @@
 			"type": "block",
 			"code": "froststory:steamengine-north"
 		}
+	},
+	{
+		"ingredientPattern": "PMP,EGE,PPP",
+		"ingredients": {
+			"P": {
+				"type": "item",
+				"code": "game:metalplate-iron"
+			},
+			"M": {
+				"type": "block",
+				"code": "froststory:steammain-we"
+			},
+			"E": {
+				"type": "block",
+				"code": "froststory:steamengine-north"
+			},
+			"G": {
+				"type": "item",
+				"code": "game:gear-rusty"
+			}
+		},
+		"width": 3,
+		"height": 3,
+		"output": {
+			"type": "block",
+			"code": "froststory:millengine-north"
+		}
+	},
+	{
+		"ingredientPattern": "IJI,LGL,III",
+		"ingredients": {
+			"I": {
+				"type": "item",
+				"code": "game:ingot-iron"
+			},
+			"J": {
+				"type": "block",
+				"code": "froststory:mainjunction"
+			},
+			"L": {
+				"type": "block",
+				"code": "froststory:millengine-north"
+			},
+			"G": {
+				"type": "item",
+				"code": "game:gear-rusty"
+			}
+		},
+		"width": 3,
+		"height": 3,
+		"output": {
+			"type": "block",
+			"code": "froststory:grandengine-north"
+		}
 	}
 ]

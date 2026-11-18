@@ -1,0 +1,213 @@
+{
+	"code": "millengine",
+	"class": "FrostStoryLargeSteamEngine",
+	"entityClass": "FrostStorySteamNode",
+	"variantgroups": [
+		{
+			"code": "side",
+			"states": [
+				"north",
+				"east",
+				"south",
+				"west"
+			]
+		}
+	],
+	"attributes": {
+		"handbook": {
+			"groupBy": [
+				"millengine-*"
+			]
+		}
+	},
+	"attributesByType": {
+		"*-north": {
+			"engine": {
+				"size": [
+					9,
+					5,
+					3
+				],
+				"cells": "000 001 002 010 020 030 040 100 101 102 110 111 112 121 122 130 131 132 140 200 201 202 211 212 220 221 222 231 232 240 300 301 302 310 311 312 321 322 330 331 332 340 400 401 402 410 411 412 420 421 422 430 431 440 500 501 502 511 512 521 522 531 532 600 601 602 611 612 621 622 631 632 700 701 702 711 712 721 722 731 732 800 801 802 811 812 821 822 831 832",
+				"shaft": [
+					2,
+					2,
+					0
+				],
+				"inlet": {
+					"x": [
+						6,
+						7
+					],
+					"z": [
+						1,
+						2
+					],
+					"y": 4
+				},
+				"shaftBlock": "froststory:engineshaft-millengine-north-{toward}"
+			},
+			"steamDraw": 100
+		},
+		"*-east": {
+			"engine": {
+				"size": [
+					3,
+					5,
+					9
+				],
+				"cells": "200 100 000 210 220 230 240 201 101 001 211 111 011 121 021 231 131 031 241 202 102 002 112 012 222 122 022 132 032 242 203 103 003 213 113 013 123 023 233 133 033 243 204 104 004 214 114 014 224 124 024 234 134 244 205 105 005 115 015 125 025 135 035 206 106 006 116 016 126 026 136 036 207 107 007 117 017 127 027 137 037 208 108 008 118 018 128 028 138 038",
+				"shaft": [
+					2,
+					2,
+					2
+				],
+				"inlet": {
+					"x": [
+						0,
+						1
+					],
+					"z": [
+						6,
+						7
+					],
+					"y": 4
+				},
+				"shaftBlock": "froststory:engineshaft-millengine-east-{toward}"
+			},
+			"steamDraw": 100
+		},
+		"*-south": {
+			"engine": {
+				"size": [
+					9,
+					5,
+					3
+				],
+				"cells": "802 801 800 812 822 832 842 702 701 700 712 711 710 721 720 732 731 730 742 602 601 600 611 610 622 621 620 631 630 642 502 501 500 512 511 510 521 520 532 531 530 542 402 401 400 412 411 410 422 421 420 432 431 442 302 301 300 311 310 321 320 331 330 202 201 200 211 210 221 220 231 230 102 101 100 111 110 121 120 131 130 002 001 000 011 010 021 020 031 030",
+				"shaft": [
+					6,
+					2,
+					2
+				],
+				"inlet": {
+					"x": [
+						1,
+						2
+					],
+					"z": [
+						0,
+						1
+					],
+					"y": 4
+				},
+				"shaftBlock": "froststory:engineshaft-millengine-south-{toward}"
+			},
+			"steamDraw": 100
+		},
+		"*-west": {
+			"engine": {
+				"size": [
+					3,
+					5,
+					9
+				],
+				"cells": "008 108 208 018 028 038 048 007 107 207 017 117 217 127 227 037 137 237 047 006 106 206 116 216 026 126 226 136 236 046 005 105 205 015 115 215 125 225 035 135 235 045 004 104 204 014 114 214 024 124 224 034 134 044 003 103 203 113 213 123 223 133 233 002 102 202 112 212 122 222 132 232 001 101 201 111 211 121 221 131 231 000 100 200 110 210 120 220 130 230",
+				"shaft": [
+					0,
+					2,
+					6
+				],
+				"inlet": {
+					"x": [
+						1,
+						2
+					],
+					"z": [
+						1,
+						2
+					],
+					"y": 4
+				},
+				"shaftBlock": "froststory:engineshaft-millengine-west-{toward}"
+			},
+			"steamDraw": 100
+		}
+	},
+	"creativeinventory": {
+		"general": [
+			"*-north"
+		],
+		"mechanics": [
+			"*-north"
+		],
+		"froststory": [
+			"*-north"
+		]
+	},
+	"shape": {
+		"base": "block/generator/millengine-{side}"
+	},
+	"textures": {
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"brass": {
+			"base": "block/generator/segment/brass"
+		},
+		"checker": {
+			"base": "block/generator/segment/checker"
+		},
+		"darkplate": {
+			"base": "block/generator/segment/darkplate"
+		},
+		"lagging": {
+			"base": "block/generator/segment/lagging"
+		},
+		"livery": {
+			"base": "block/generator/segment/livery"
+		},
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		},
+		"polished": {
+			"base": "block/generator/segment/polished"
+		}
+	},
+	"drops": [
+		{
+			"type": "block",
+			"code": "millengine-north"
+		}
+	],
+	"drawtype": "json",
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"resistance": 12,
+	"requiredMiningTier": 3,
+	"heldTpIdleAnimation": "holdbothhandslarge",
+	"guiTransform": {
+		"origin": {
+			"x": 0.5,
+			"y": 0.4,
+			"z": 0.5
+		},
+		"scale": 0.22
+	},
+	"sounds": {
+		"place": "game:block/anvil",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

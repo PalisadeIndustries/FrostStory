@@ -601,10 +601,53 @@ def tex_seg_black():
     return Tex("segment/black", (16, 17, 20), grain=2, blotch=3)
 
 
+def tex_seg_lagging():
+    """Cylinder lagging, 1 x 2 blocks: varnished mahogany staves running the length of the cylinder."""
+    t = Tex("segment/lagging", (112, 54, 34), grain=5, blotch=8, size=(32, 64))
+    t.streaks(9)
+    for x in range(0, 32, 4):
+        t.rect_shade(x, 0, x + 1, 64, -26)
+        t.rect_shade(x + 1, 0, x + 2, 64, 14)
+    for x in range(32):
+        for y in range(64):
+            if (x * 7 + y * 3) % 23 == 0:
+                t.shade(x, y, 18)      # varnish catching the light
+    return t
+
+
+def tex_seg_livery():
+    """Engine livery, 2 x 2 blocks: deep green enamel, lined out in gold with a fine red line inside."""
+    t = Tex("segment/livery", (38, 72, 52), grain=3, blotch=6, size=(64, 64))
+    t.fill(0, 0, 64, 2, (24, 40, 30))
+    t.fill(0, 62, 64, 64, (24, 40, 30))
+    t.fill(0, 0, 2, 64, (24, 40, 30))
+    t.fill(62, 0, 64, 64, (24, 40, 30))
+    for i in (4,):
+        t.fill(i, i, 64 - i, i + 1, (204, 166, 76))
+        t.fill(i, 63 - i, 64 - i, 64 - i, (204, 166, 76))
+        t.fill(i, i, i + 1, 64 - i, (204, 166, 76))
+        t.fill(63 - i, i, 64 - i, 64 - i, (204, 166, 76))
+    for i in (7,):
+        t.fill(i, i, 64 - i, i + 1, (150, 40, 34), 0.8)
+        t.fill(i, 63 - i, 64 - i, 64 - i, (150, 40, 34), 0.8)
+        t.fill(i, i, i + 1, 64 - i, (150, 40, 34), 0.8)
+        t.fill(63 - i, i, 64 - i, 64 - i, (150, 40, 34), 0.8)
+    t.rect_shade(9, 9, 55, 20, 6)
+    return t
+
+
+def tex_seg_polished():
+    """Bright work: polished steel rods, crossheads and the faces of the flywheel."""
+    t = Tex("segment/polished", (168, 174, 182), grain=4, blotch=6, size=(32, 64))
+    t.streaks(10)
+    t.round_shade(26)
+    return t
+
+
 SEGMENT_TEXTURES = [
     tex_seg_plating, tex_seg_darkplate, tex_seg_band, tex_seg_girder, tex_seg_pipe, tex_seg_brass, tex_seg_tubbing,
     tex_seg_grating, tex_seg_checker, lambda: tex_seg_coil("coil-cold", False), lambda: tex_seg_coil("coil-lit", True),
-    tex_seg_green, tex_seg_black,
+    tex_seg_green, tex_seg_black, tex_seg_lagging, tex_seg_livery, tex_seg_polished,
 ]
 
 

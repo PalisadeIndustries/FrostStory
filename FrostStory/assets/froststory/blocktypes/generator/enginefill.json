@@ -1,0 +1,48 @@
+{
+	"code": "enginefill",
+	"class": "FrostStoryEngineFill",
+	"variantgroups": [
+		{
+			"code": "toward",
+			"states": [
+				"north",
+				"east",
+				"south",
+				"west",
+				"up",
+				"down"
+			]
+		}
+	],
+	"attributes": {
+		"handbook": {
+			"exclude": true
+		}
+	},
+	"shape": {
+		"base": "game:block/basic/nothing"
+	},
+	"drops": [],
+	"drawtype": "json",
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 12,
+	"requiredMiningTier": 3,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}

@@ -39,6 +39,9 @@ TEXTURES = {
     "coil": ("block/generator/segment/coil-cold", 16, 32),
     "coillit": ("block/generator/segment/coil-lit", 16, 32),
     "green": ("block/generator/segment/green", 32, 32),
+    "lagging": ("block/generator/segment/lagging", 16, 32),
+    "livery": ("block/generator/segment/livery", 32, 32),
+    "polished": ("block/generator/segment/polished", 16, 32),
     "black": ("block/generator/segment/black", 16, 16),
     "red": ("block/generator/paint-red", 16, 16),
     "steel": ("block/generator/steel", 16, 16),
@@ -1830,6 +1833,400 @@ def write_blocktype(models):
         f.write("\n")
 
 
+# =========================================================================== large steam engines
+#
+# Drawn in "engine space": metres from the engine's minimum corner, with the crankshaft coming out of
+# the north side (-z). Each engine is written turned for all four sides; its solid cells are worked
+# out from the model, and the block type carries them, so the game needs nothing else.
+
+LARGE_ENGINE_SIDES = ("north", "east", "south", "west")
+ENGINE_BLOCKTYPE_DIR = os.path.join(ROOT, "blocktypes", "generator")
+
+
+def engine_turn(side, size):
+    """The quarter turns for a side, and where the turned engine's minimum corner lands."""
+    t = LARGE_ENGINE_SIDES.index(side)
+    X, _, Z = size
+    corners = [yaw(-90 * t, x, z) for x in (0, X) for z in (0, Z)]
+    return t, (round(min(c[0] for c in corners)), round(min(c[1] for c in corners)))
+
+
+def engine_cell(side, size, i, k):
+    """Where design cell column (i, k) lands for a side, counted from the turned minimum corner."""
+    t, (mx, mz) = engine_turn(side, size)
+    x, z = yaw(-90 * t, i + 0.5, k + 0.5)
+    return int(math.floor(x - mx)), int(math.floor(z - mz))
+
+
+def flywheel(m, c, r, rim, thick, arms, armw, hub_a, hub_len, tex="livery", armtex="livery", hubtex="polished", grooves=0):
+    """A big flywheel turning about a north-south axis: a sixteen-sided rim, spoked arms and a hub.
+    grooves cuts rope grooves round the rim of a rope-race wheel."""
+    cx, cy, cz = c
+    n = 16
+    rc = r - rim / 2
+    tangent = 2 * r * math.tan(math.pi / n)
+    for k in range(n):
+        ang = k * 360 / n
+        a = math.radians(ang)
+        m.box((cx + rc * math.sin(a), cy + rc * math.cos(a), cz), (tangent, rim, thick), tex, (0, 0, -ang),
+              facetex={"north": "polished", "south": "polished"})
+        for g in range(grooves):
+            gz = cz - thick / 2 + (g + 1) * thick / (grooves + 1)
+            m.box((cx + (r + 0.005) * math.sin(a), cy + (r + 0.005) * math.cos(a), gz), (tangent, 0.03, 0.05), "black", (0, 0, -ang),
+                  faces=("up", "north", "south"))
+    for k in range(arms // 2):
+        ang = k * 360 / arms
+        m.box(c, (armw, 2 * (r - rim) + 0.05, armw * 0.6), armtex, (0, 0, -ang), faces=("east", "west", "north", "south"))
+    m.hprism((cx, cy, cz - hub_len / 2), (cx, cy, cz + hub_len / 2), hub_a, hubtex, caps=(True, True), captex="brass")
+
+
+def cylinder(m, x0, x1, y, z, a, bands=2):
+    """A horizontal engine cylinder lying east-west: mahogany lagging held by brass bands, polished end covers."""
+    m.hprism((x0 + 0.1, y, z), (x1 - 0.1, y, z), a, "lagging")
+    for x in (x0, x1 - 0.1):
+        m.hprism((x, y, z), (x + 0.1, y, z), a + 0.06, "polished", caps=(True, True), captex="polished")
+    for i in range(bands):
+        x = x0 + (x1 - x0) * (i + 1) / (bands + 1)
+        m.hprism((x - 0.04, y, z), (x + 0.04, y, z), a + 0.02, "brass")
+    # the four valve bonnets of the valve gear, on the side away from the crankshaft line's centre
+    for x in (x0 + 0.25, x1 - 0.25):
+        for dy in (-0.55 * a, 0.55 * a):
+            m.box((x, y + dy, z - a - 0.04), (0.22, 0.22, 0.14), "brass")
+    m.box(((x0 + x1) / 2, y, z - a - 0.05), (0.36, 0.36, 0.08), "polished")      # wrist plate
+
+
+def engine_line(m, crank_x, guide_x1, cyl_x0, cyl_x1, y, z, a, floor=0.2):
+    """One engine line running east from its crank: guide frame, crosshead, connecting rod, cylinder on its feet."""
+    gx = (crank_x + 0.9 + guide_x1) / 2
+    gl = guide_x1 - (crank_x + 0.9)
+    w = 0.9 * min(1.0, a)
+    top = y - 0.45
+    split = floor + (top - floor) * 0.45
+    m.box((gx, (floor + split) / 2, z), (gl + 0.2, split - floor, w * 1.45), "livery")                    # girder bed: a broad foot
+    m.box((gx, (split + top) / 2, z), (gl, top - split, w * 0.7), "livery")                               # and a narrower web
+    m.box((gx, split, z), (gl + 0.24, 0.1, w * 1.5), "brass", faces=("up", "north", "south", "east", "west"))   # brass beading
+    for dy in (-0.42, 0.42):
+        m.box((gx, y + dy, z), (gl, 0.12, 0.14), "polished")                                              # guide bars
+    for dz in (-0.42, 0.42):
+        m.box((gx, y, z + dz), (gl, 0.96, 0.06), "livery", faces=("north", "south", "up", "down"))       # guide cheeks
+    m.box((gx, y, z), (0.5, 0.6, 0.5), "polished")                                                         # crosshead
+    m.member((crank_x + 0.35, y, z), (gx, y, z), 0.2, 0.14, "polished", chunk=8.0)                         # connecting rod
+    m.hprism((gx, y, z), (cyl_x0, y, z), 0.09, "polished")                                                 # piston rod
+    cylinder(m, cyl_x0, cyl_x1, y, z, a)
+    cx = (cyl_x0 + cyl_x1) / 2
+    m.box((cx, (floor + y - a * 0.6) / 2, z), (cyl_x1 - cyl_x0 - 0.3, y - a * 0.6 - floor, a * 1.3), "livery")   # cylinder feet
+
+
+def pedestal(m, x, z, y, floor=0.2, width=1.0, depth=0.4):
+    """A main bearing: a cast pedestal up to the shaft with a brass bearing cap."""
+    h = y - 0.1 - floor
+    base = floor + h * 0.35
+    m.box((x, (floor + base) / 2, z), (width * 1.2, base - floor, depth * 1.7), "livery")                 # plinth
+    m.box((x, (base + y - 0.1) / 2, z), (width * 0.7, y - 0.1 - base, depth), "livery")                   # column
+    m.box((x, base, z), (width * 1.24, 0.08, depth * 1.74), "brass", faces=("up", "north", "south", "east", "west"))
+    m.box((x, y, z), (width * 0.8, 0.42, depth + 0.06), "brass")
+    m.box((x, y + 0.28, z), (width * 0.5, 0.14, depth), "polished")
+
+
+def crank_guard(m, x, y, z0, z1, a, floor=0.2):
+    """The crank pit casting, closed over the top with a rounded guard."""
+    m.hprism((x, y, z0), (x, y, z1), a, "livery", caps=(True, True), captex="band")
+    m.box((x, (floor + y) / 2, (z0 + z1) / 2), (2 * a, y - floor, z1 - z0), "livery")
+
+
+def governor(m, x, z, y0, height=1.5):
+    """A flyball governor on a column: spindle, two brass balls on their arms and a collar."""
+    m.vprism(x, z, y0, y0 + 0.3, 0.12, "livery", caps=(True, True), captex="band")
+    m.vprism(x, z, y0, y0 + height, 0.035, "polished", caps=(False, True), captex="brass")
+    top = y0 + height
+    for sx in (-1, 1):
+        bx = x + sx * 0.32
+        by = top - 0.55
+        m.member((x, top - 0.08, z), (bx, by, z), 0.04, 0.04, "polished", chunk=8.0)
+        m.box((bx, by, z), (0.17, 0.17, 0.17), "brass", (0, 45, 0))
+    m.vprism(x, z, top - 0.75, top - 0.65, 0.09, "brass", caps=(True, True), captex="brass")
+
+
+def floorplate(m, size):
+    X, _, Z = size
+    m.box((X / 2, 0.1, Z / 2), (X, 0.2, Z), "checker", facetex={"north": "darkplate", "south": "darkplate", "east": "darkplate", "west": "darkplate"})
+
+
+def inlet_standpipe(m, x, z, y0, y1):
+    """The steam inlet: a standpipe up to a main flange for a steam main to stand on."""
+    m.vprism(x, z, y0, y1 - 0.15, 0.55, "pipe")
+    m.vprism(x, z, y1 - 0.15, y1, MAIN_FLANGE, "band", caps=(True, True), captex="band")
+    m.box((x, y0 + 0.45, z), (1.15, 0.55, 1.15), "livery")                                                # stop valve chest
+    m.vprism(x, z, y0 + 0.72, y0 + 0.82, 0.3, "brass", caps=(True, True), captex="brass")
+
+
+# ---------------------------------------------------------------------------- the mill engine
+
+MILL = {
+    "size": (9, 5, 3),
+    "shaft": (2, 2, 0),
+    "axis": (2.5, 2.5),
+    "inlet": {"x": (6, 7), "z": (1, 2), "y": 4},
+}
+
+
+def mill_static(m):
+    """A horizontal tandem compound mill engine: a five-metre flywheel at the crank end, the crank in its
+    pit between two main bearings, a guide frame with crosshead and connecting rod, then the high and
+    low pressure cylinders in line on one piston rod. Steam comes in at a standpipe between them."""
+    ax, ay = MILL["axis"]
+    floorplate(m, MILL["size"])
+    pedestal(m, ax, 1.25, ay)
+    pedestal(m, ax, 2.75, ay)
+    crank_guard(m, ax, ay, 1.5, 2.5, 0.72)
+    engine_line(m, ax, 5.4, 5.5, 6.9, ay, 2.0, 0.72)
+    m.hprism((6.9, ay, 2.0), (7.25, ay, 2.0), 0.4, "livery")                                             # distance piece
+    cylinder(m, 7.25, 8.95, ay, 2.0, 0.92)
+    m.box((8.1, (0.2 + ay - 0.55) / 2, 2.0), (1.4, ay - 0.55 - 0.2, 1.2), "livery")                      # LP feet
+    m.box((6.2, ay + 0.85, 2.0), (1.0, 0.3, 0.8), "livery")                                               # HP steam chest
+    m.hprism((7.0, 3.3, 2.0), (6.2, 3.3, 2.0), 0.22, "pipe")
+    inlet_standpipe(m, 7.0, 2.0, 2.95, MILL["inlet"]["y"])
+    governor(m, 4.3, 1.25, 2.95, 1.6)
+    m.vprism(8.6, 2.0, ay + 0.85, ay + 1.4, 0.1, "brass", caps=(True, True), captex="brass")              # snifting valve on the LP
+    m.box((4.3, 1.3, 1.52), (1.1, 0.32, 0.04), "brass")                                                   # maker's plate
+
+
+def mill_drive(m):
+    ax, ay = MILL["axis"]
+    m.box((ax, ay, 1.5), (0.3, 0.3, 3.0), "polished")                                                     # crankshaft
+    m.hprism((ax, ay, 0.0), (ax, ay, 0.14), 0.3, "band", caps=(True, True), captex="band")                # coupling flange
+    flywheel(m, (ax, ay, 0.72), 2.3, 0.3, 0.42, 6, 0.22, 0.38, 0.6)
+
+
+# ---------------------------------------------------------------------------- the grand engine
+
+GRAND = {
+    "size": (10, 9, 10),
+    "shaft": (4, 4, 0),
+    "axis": (4.5, 4.5),
+    "inlet": {"x": (7, 8), "z": (1, 2), "y": 7},
+}
+
+
+def grand_static(m):
+    """A cross-compound engine: two horizontal engines, high pressure north and low pressure south, on
+    one crankshaft with a seven-and-a-half-metre rope-race flywheel between them. The high pressure
+    cylinder exhausts through a lagged receiver over the top into the low pressure one. A gauge board
+    stands beside the flywheel."""
+    ax, ay = GRAND["axis"]
+    floorplate(m, GRAND["size"])
+    for z in (0.7, 2.5, 4.0, 6.0, 7.5, 9.3):
+        pedestal(m, ax, z, ay, width=1.4, depth=0.5)
+    crank_guard(m, ax, ay, 1.0, 2.2, 1.0)
+    crank_guard(m, ax, ay, 7.8, 9.0, 1.0)
+    engine_line(m, ax, 7.0, 7.1, 9.4, ay, 1.6, 1.0)                                                       # high pressure
+    engine_line(m, ax, 7.0, 7.1, 9.85, ay, 8.4, 1.4)                                                      # low pressure
+    # receiver: up from the high pressure cylinder, over the flywheel side, down into the low pressure one
+    m.vprism(9.2, 1.6, ay + 0.8, 6.6, 0.4, "lagging")
+    m.hprism((9.2, 6.6, 1.2), (9.2, 6.6, 8.8), 0.4, "lagging", caps=(True, True), captex="polished")
+    m.vprism(9.2, 8.4, ay + 1.2, 6.6, 0.4, "lagging")
+    for z in (2.6, 4.0, 5.0, 6.0, 7.4):
+        m.hprism((9.2, 6.6, z - 0.04), (9.2, 6.6, z + 0.04), 0.42, "brass")
+    m.box((8.2, ay + 1.1, 1.6), (1.6, 0.4, 1.0), "livery")                                                # HP steam chest
+    inlet_standpipe(m, 8.0, 2.0, ay + 1.3, GRAND["inlet"]["y"])
+    governor(m, 6.2, 2.75, ay + 0.6, 1.9)
+    m.vprism(7.6, 8.4, ay + 1.35, ay + 2.2, 0.15, "brass", caps=(True, True), captex="brass")             # LP snifting valve
+    # gauge board beside the flywheel
+    m.box((9.65, 2.2, 5.0), (0.2, 4.0, 2.2), "livery")
+    m.box((9.65, 4.3, 5.0), (0.26, 0.2, 2.4), "brass")
+    for z in (4.35, 5.0, 5.65):
+        m.box((9.52, 3.4, z), (0.08, 0.46, 0.46), "brass")
+        m.box((9.47, 3.4, z), (0.03, 0.36, 0.36), "canvas")
+        m.box((9.45, 3.47, z), (0.02, 0.16, 0.03), "black")
+    m.box((4.5, 1.6, 0.42), (1.6, 0.4, 0.04), "brass")                                                    # maker's plate
+
+
+def grand_drive(m):
+    ax, ay = GRAND["axis"]
+    m.box((ax, ay, 4.8), (0.5, 0.5, 9.6), "polished")                                                     # crankshaft
+    m.hprism((ax, ay, 0.0), (ax, ay, 0.16), 0.42, "band", caps=(True, True), captex="band")              # coupling flange
+    flywheel(m, (ax, ay, 5.0), 3.8, 0.45, 0.9, 8, 0.32, 0.65, 1.1, grooves=5)
+
+
+# ---------------------------------------------------------------------------- writing them out
+
+def element_aabb(el):
+    """An element's box in engine space (shape units / 16), after its rotations."""
+    f = [v / 16 for v in el["from"]]
+    t = [v / 16 for v in el["to"]]
+    o = [v / 16 for v in el.get("rotationOrigin", [0, 0, 0])]
+    rx, ry, rz = (math.radians(el.get("rotation" + a, 0)) for a in "XYZ")
+
+    def rot(p):
+        x, y, z = p[0] - o[0], p[1] - o[1], p[2] - o[2]
+        x, y = x * math.cos(rz) - y * math.sin(rz), x * math.sin(rz) + y * math.cos(rz)        # Rz first,
+        x, z = x * math.cos(ry) + z * math.sin(ry), -x * math.sin(ry) + z * math.cos(ry)       # then Ry,
+        y, z = y * math.cos(rx) - z * math.sin(rx), y * math.sin(rx) + z * math.cos(rx)        # then Rx
+        return x + o[0], y + o[1], z + o[2]
+
+    pts = [rot((x, y, z)) for x in (f[0], t[0]) for y in (f[1], t[1]) for z in (f[2], t[2])]
+    return [min(p[i] for p in pts) for i in range(3)], [max(p[i] for p in pts) for i in range(3)]
+
+
+def engine_cells(models, spec, solid=0.15):
+    """The design cells the engine fills: any cell an element's box reaches well into, the whole floor,
+    and the cells under the inlet."""
+    X, Y, Z = spec["size"]
+    cells = set()
+    for m in models:
+        for el in m.elements:
+            lo, hi = element_aabb(el)
+            for i in range(max(0, math.floor(lo[0])), min(X, math.ceil(hi[0]))):
+                for j in range(max(0, math.floor(lo[1])), min(Y, math.ceil(hi[1]))):
+                    for k in range(max(0, math.floor(lo[2])), min(Z, math.ceil(hi[2]))):
+                        if min(hi[0], i + 1) - max(lo[0], i) >= solid and min(hi[1], j + 1) - max(lo[1], j) >= solid \
+                                and min(hi[2], k + 1) - max(lo[2], k) >= solid:
+                            cells.add((i, j, k))
+    cells |= {(i, 0, k) for i in range(X) for k in range(Z)}
+    inlet = spec["inlet"]
+    for i in range(inlet["x"][0], inlet["x"][1] + 1):
+        for k in range(inlet["z"][0], inlet["z"][1] + 1):
+            cells.add((i, inlet["y"] - 1, k))
+            assert (i, inlet["y"], k) not in cells, "something stands in the way of the inlet"
+    cells.add(tuple(spec["shaft"]))
+    return cells
+
+
+def write_large_engine(code, spec, static, drive, stats, name):
+    """Writes an engine's turned models and its block type, with its cells worked out per side."""
+    X, Y, Z = spec["size"]
+    plain = Model(code + "-design", (0.5, 1, 0.5))
+    static(plain)
+    driven = Model(code + "-designdrive", (0.5, 1, 0.5))
+    drive(driven)
+    cells = engine_cells([plain, driven], spec)
+
+    attributes = {}
+    written = []
+    for side in LARGE_ENGINE_SIDES:
+        t, (mx, mz) = engine_turn(side, spec["size"])
+        size = (X, Y, Z) if t % 2 == 0 else (Z, Y, X)
+        body = Model(f"{code}-{side}", (mx + 0.5, 1, mz + 0.5), turn=t)
+        static(body)
+        sx, sy, sz = spec["shaft"]
+        scx, scz = yaw(-90 * t, sx + 0.5, sz + 0.5)
+        turning = Model(f"{code}-drive-{side}", (scx, sy + 1, scz), turn=t)
+        drive(turning)
+        written += [body, turning]
+
+        offsets = []
+        for (i, j, k) in sorted(cells):
+            x, z = engine_cell(side, spec["size"], i, k)
+            offsets.append(f"{x}{j}{z}")
+        shaft_x, shaft_z = engine_cell(side, spec["size"], sx, sz)
+        ix = [engine_cell(side, spec["size"], i, k) for i in spec["inlet"]["x"] for k in spec["inlet"]["z"]]
+        attributes[f"*-{side}"] = {
+            "engine": {
+                "size": list(size),
+                "cells": " ".join(offsets),
+                "shaft": [shaft_x, sy, shaft_z],
+                "inlet": {"x": [min(c[0] for c in ix), max(c[0] for c in ix)], "z": [min(c[1] for c in ix), max(c[1] for c in ix)],
+                          "y": spec["inlet"]["y"]},
+                "shaftBlock": f"froststory:engineshaft-{code}-{side}-{{toward}}",
+            },
+            "steamDraw": stats["draw"],
+        }
+
+    textures = sorted(set().union(*(m.used for m in written)))
+    block = {
+        "code": code,
+        "class": "FrostStoryLargeSteamEngine",
+        "entityClass": "FrostStorySteamNode",
+        "variantgroups": [{"code": "side", "states": list(LARGE_ENGINE_SIDES)}],
+        "attributes": {"handbook": {"groupBy": [code + "-*"]}},
+        "attributesByType": attributes,
+        "creativeinventory": {"general": ["*-north"], "mechanics": ["*-north"], "froststory": ["*-north"]},
+        "shape": {"base": f"block/generator/{code}-{{side}}"},
+        "textures": {c: {"base": TEXTURES[c][0]} for c in textures},
+        "drops": [{"type": "block", "code": code + "-north"}],
+        "drawtype": "json",
+        "blockmaterial": "Metal",
+        "sidesolid": {"all": False},
+        "sideopaque": {"all": False},
+        "emitSideAo": {"all": False},
+        "faceCullMode": "NeverCull",
+        "lightAbsorption": 0,
+        "resistance": 12,
+        "requiredMiningTier": 3,
+        "heldTpIdleAnimation": "holdbothhandslarge",
+        "guiTransform": {"origin": {"x": 0.5, "y": 0.4, "z": 0.5}, "scale": stats["guiScale"]},
+        "sounds": {"place": "game:block/anvil", "break": "game:block/chute", "hit": "game:block/chute", "walk": "game:walk/stone"},
+    }
+    with open(os.path.join(ENGINE_BLOCKTYPE_DIR, code + ".json"), "w") as f:
+        json.dump(block, f, indent="\t")
+        f.write("\n")
+
+    print(f"  {code:16s} {len(plain.elements)} + {len(driven.elements)} elements, {len(cells)} solid cells of {X * Y * Z}")
+    return written, {code: {"textures": textures, "stats": stats}}
+
+
+def write_engine_shaft(engines):
+    """The shaft cells of every large engine: one block type, turned for the shaft's side and pointing
+    back to its engine, carrying each engine's drive and power."""
+    states = [c for c in engines]
+    textures = sorted(set().union(*(e["textures"] for e in engines.values())))
+    behaviors = {}
+    for code, e in engines.items():
+        s = e["stats"]
+        behaviors[f"*-{code}-*"] = [{"name": "FrostStorySteamEngine", "properties": {
+            "torque": s["torque"], "speed": s["speed"], "resistance": s["resistance"],
+            "driveShape": f"froststory:block/generator/{code}-drive-{{side}}",
+            "exhaust": s["exhaust"], "exhaustScale": s["exhaustScale"],
+            "sound": "game:sounds/effect/extinguish", "soundVolume": s["soundVolume"]}}]
+    block = {
+        "code": "engineshaft",
+        "class": "FrostStorySteamEngineShaft",
+        "entityClass": "Generic",
+        "variantgroups": [
+            {"code": "engine", "states": states},
+            {"code": "side", "states": list(LARGE_ENGINE_SIDES)},
+            {"code": "toward", "states": ["north", "east", "south", "west", "up", "down"]},
+        ],
+        "entityBehaviorsByType": behaviors,
+        "attributes": {"handbook": {"exclude": True}},
+        "shape": {"base": "game:block/basic/nothing"},
+        "textures": {c: {"base": TEXTURES[c][0]} for c in textures},
+        "drops": [],
+        "drawtype": "json",
+        "blockmaterial": "Metal",
+        "sidesolid": {"all": False},
+        "sideopaque": {"all": False},
+        "emitSideAo": {"all": False},
+        "faceCullMode": "NeverCull",
+        "lightAbsorption": 0,
+        "replaceable": 90,
+        "resistance": 12,
+        "requiredMiningTier": 3,
+        "sounds": {"place": "game:block/chute", "break": "game:block/chute", "hit": "game:block/chute", "walk": "game:walk/stone"},
+    }
+    with open(os.path.join(ENGINE_BLOCKTYPE_DIR, "engineshaft.json"), "w") as f:
+        json.dump(block, f, indent="\t")
+        f.write("\n")
+
+
+ENGINE_STATS = {
+    "millengine": {"draw": 100, "torque": 9, "speed": 0.8, "resistance": 0.008,
+                   "exhaust": [6.1, 1.45, 1.5], "exhaustScale": 1.8, "soundVolume": 0.35, "guiScale": 0.22},
+    "grandengine": {"draw": 200, "torque": 24, "speed": 0.9, "resistance": 0.012,
+                    "exhaust": [3.1, 2.25, 7.9], "exhaustScale": 2.6, "soundVolume": 0.6, "guiScale": 0.12},
+}
+
+
+def build_large_engines():
+    models, engines = [], {}
+    for code, spec, static, drive in (("millengine", MILL, mill_static, mill_drive), ("grandengine", GRAND, grand_static, grand_drive)):
+        written, info = write_large_engine(code, spec, static, drive, ENGINE_STATS[code], code)
+        models += written
+        engines.update(info)
+    write_engine_shaft(engines)
+    return models
+
+
 def main():
     os.makedirs(SHAPE_DIR, exist_ok=True)
     models = build_all()
@@ -1849,6 +2246,7 @@ def main():
     parts += [panel(k) for k in PANEL_TYPES] + [panel("door", True), roofslope()]
     parts += [crossover("run"), crossover("stair"), borer(), bucketconveyor()] + [coalheap(n) for n in range(1, 9)]
     parts += [steamengine(s) for s in ENGINE_SIDES] + [steamengine_drive(s) for s in ENGINE_SIDES]
+    parts += build_large_engines()
     parts += [steamvalve(), valvepointer(), steamgauge()] + [gaugepart(k) for k in ("needle", "plain", "green", "red")]
     parts += [steammain(a) for a in ("ud", "ns", "we")] + [mainport(s) for s in MAIN_PORT_ANCHORS]
     for part in parts:

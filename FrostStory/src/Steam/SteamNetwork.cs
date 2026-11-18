@@ -47,7 +47,7 @@ public sealed class SteamNetwork
         var block = ba.GetBlock(pos);
         if (block is BlockSteamMainFill fill)
         {
-            anchor = fill.OwnerPos(pos);
+            anchor = fill.OwnerPos(ba, pos);
             block = ba.GetBlock(anchor);
         }
         else
@@ -84,8 +84,11 @@ public sealed class SteamNetwork
         return true;
     }
 
-    private static bool Joined(BlockSteamConduit a, BlockPos aAnchor, BlockSteamConduit b, BlockPos bAnchor, BlockFacing faceOfA)
+    private static bool Joined(BlockSteamConduit a, BlockPos aAnchor, BlockPos aCell, BlockSteamConduit b, BlockPos bAnchor, BlockFacing faceOfA)
     {
+        // a large engine takes steam only at its inlet
+        if (a is BlockLargeSteamEngine engine) return engine.JoinsAt(aAnchor, aCell, faceOfA, b, bAnchor);
+        if (b is BlockLargeSteamEngine other) return other.JoinsAt(bAnchor, aCell.AddCopy(faceOfA), faceOfA.Opposite, a, aAnchor);
         if (a.IsBig && b.IsBig) return MeetSquarely(a, aAnchor, b, bAnchor, faceOfA);
         if (a.IsBig) return a.AcceptsTapOn(faceOfA) && b.ConnectsOn(faceOfA.Opposite);
         if (b.IsBig) return a.ConnectsOn(faceOfA) && b.AcceptsTapOn(faceOfA.Opposite);
@@ -190,7 +193,7 @@ public sealed class SteamNetwork
                     var next = cell.AddCopy(face);
                     if (ba.GetChunkAtBlockPos(next) == null) { incomplete = true; continue; }
                     if (!Resolve(ba, next, out var neighbour, out var nextAnchor)) continue;
-                    if (nextAnchor.Equals(anchor) || !Joined(conduit, anchor, neighbour, nextAnchor, face)) continue;
+                    if (nextAnchor.Equals(anchor) || !Joined(conduit, anchor, cell, neighbour, nextAnchor, face)) continue;
 
                     int other = Add(nextAnchor);
                     if (other >= 0 && !links[i].Contains(other)) { links[i].Add(other); links[other].Add(i); }

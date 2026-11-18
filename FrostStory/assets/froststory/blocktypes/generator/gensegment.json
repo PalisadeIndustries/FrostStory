@@ -112,6 +112,12 @@
 		"green": {
 			"base": "block/generator/segment/green"
 		},
+		"lagging": {
+			"base": "block/generator/segment/lagging"
+		},
+		"livery": {
+			"base": "block/generator/segment/livery"
+		},
 		"pipe": {
 			"base": "block/generator/segment/pipe"
 		},
@@ -120,6 +126,9 @@
 		},
 		"pole": {
 			"base": "block/generator/pole"
+		},
+		"polished": {
+			"base": "block/generator/segment/polished"
 		},
 		"red": {
 			"base": "block/generator/paint-red"

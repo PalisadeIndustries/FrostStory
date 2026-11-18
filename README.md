@@ -197,8 +197,8 @@ and anything from another mod that runs off them.
 - It is one block: a small vertical engine on a bedplate, with a flywheel and a crankshaft that
   comes out of one side. That side takes an axle, a gear or any other mechanical power block; pipes
   join it on every other side, and pipe runs can be strung to it like a fitting.
-- Set it beside an axle or a gear and the shaft turns to meet it. Otherwise the shaft points the way
-  you are facing, so the axle goes on beyond it.
+- Set it beside an axle or a gear and the shaft turns to meet it. Otherwise the shaft points back
+  towards you.
 - It draws 20 steam. With all of it, it drives with 1.5 times the torque of a four-sail windmill and
   brings its network up to a speed of 0.75 (a windmill in a gale manages 0.6). Starved, or throttled
   by a stop valve upstream, it gives that share of both: a valve at 2 of 8 passes 10 of its 20 and
@@ -208,6 +208,38 @@ and anything from another mod that runs off them.
   of engines on one network pull together, even two facing each other on the same axle (two
   windmills that way would fight to a standstill).
 - Look at it to see how well it is fed and what it is putting out.
+
+**Mill engines and grand engines.** For a works rather than a workshop, two big Victorian engines in
+green livery, lined out in gold, with mahogany-lagged cylinders, polished rods and brass. Each one
+is a single block that fills a great deal of space.
+
+| | Size (long x wide x high) | Flywheel | Draws | Torque | Speed |
+|---|---|---|---|---|---|
+| Steam engine | 1 x 1 x 1 | | 20 | 1.5 | 0.75 |
+| Mill engine | 9 x 3 x 5 | 5 m | 100 | 9 | 0.8 |
+| Grand engine | 10 x 10 x 9 | 7.6 m, rope race | 200 | 24 | 0.9 |
+
+- The **mill engine** is a horizontal tandem compound: the flywheel and crank at one end, then the
+  guide frame with its crosshead, then the high and low pressure cylinders in line, with a flyball
+  governor over the guides.
+- The **grand engine** is a cross-compound: a high pressure engine and a low pressure engine either
+  side of one crankshaft, a rope-race flywheel between them, and the lagged receiver arching
+  overhead from one cylinder to the other. A gauge board stands beside the flywheel.
+- **Placing:** click the ground where the shaft should come out. The engine stands beyond that spot,
+  away from you, with its shaft over it pointing back at you: two blocks up on a mill engine, four
+  on a grand engine. Lay the line shafting on from there. It needs all its space clear.
+- **Steam:** it comes in at one place, the flanged standpipe on top (over the high pressure cylinder on a
+  grand engine). Stand a steam main or a main fitting on it (it lines up by itself), stand a pipe on
+  it, or string a pipe or main run to it. Nothing else joins.
+- A mill engine wants more than a small port gives, and a grand engine most of a large one, so feed
+  them from the large ports with mains. Starved, they give that share of their power, like the small engine.
+- **Space:** the engine is solid where its machinery is, not as one big box. On a grand engine there
+  are bays to stand in between the flywheel and each engine line, and room round the crank end; the
+  flywheel's own space is solid. Its floor plate is a block high all over. Break any part of it and
+  the whole engine comes away as one item.
+- The flywheel and crankshaft turn; the engine chuffs and blows steam from its exhaust while it works.
+- Everything about them is an ordinary engine on the mechanical power network: they run either way
+  round, and several engines, of any size, can share a network.
 
 **Large ports and steam mains.** Four large ports, one to a side, come out of the hull through the
 frames with their mouths over the first gallery, 2 m above its deck. Each has a valve whose spindle
@@ -248,7 +280,7 @@ Hull stage and go live with the rest.
 
 Recipes: two iron plates make four pipes; four iron plates make four fittings; eight iron plates
 in a ring make four mains; four mains make two main fittings; a main fitting over four iron
-ingots makes a stand; a pipe with an iron plate on each of its four sides makes two wall passthroughs; three iron plates over pipe, plate, pipe make a radiator; two gratings over two pipes over two iron plates make two underfloor grates; six iron plates over a main fitting make a steam hub; a steam hub over two columns of two iron ingots makes a hub tower; an iron ingot over ingot, pipe, ingot over three iron plates makes a steam borer; ingot, gap, ingot over three plates over ingot, gap, ingot makes eight bucket conveyors; an iron plate over pipe, plate, pipe makes a stop valve, and a glass block over the same makes a gauge station; a pipe over a rusty gear, an iron plate and a rusty gear over three iron plates makes a steam engine; a main with four pipes makes a distributor (main and two pipes over two
+ingots makes a stand; a pipe with an iron plate on each of its four sides makes two wall passthroughs; three iron plates over pipe, plate, pipe make a radiator; two gratings over two pipes over two iron plates make two underfloor grates; six iron plates over a main fitting make a steam hub; a steam hub over two columns of two iron ingots makes a hub tower; an iron ingot over ingot, pipe, ingot over three iron plates makes a steam borer; ingot, gap, ingot over three plates over ingot, gap, ingot makes eight bucket conveyors; an iron plate over pipe, plate, pipe makes a stop valve, and a glass block over the same makes a gauge station; a pipe over a rusty gear, an iron plate and a rusty gear over three iron plates makes a steam engine; plate, main, plate over engine, gear, engine over three plates makes a mill engine; ingot, main fitting, ingot over mill engine, gear, mill engine over three ingots makes a grand engine; a main with four pipes makes a distributor (main and two pipes over two
 pipes) or a drop distributor (main over two rows of two pipes).
 
 A pipe is traced back to its port on demand, so the route has to be in loaded chunks. A run that
@@ -364,6 +396,12 @@ Content mods can also make steam machines of their own from JSON alone, without 
   optional: `torque` (1.5), `speed` (0.75), `resistance` (0.004) and `driveShape`, the turning part,
   with `{side}` standing for the variant. `attributes.steamDraw` sets what it draws (20). See
   `blocktypes/generator/steamengine.json`.
+- **A big engine of your own.** A block of class `FrostStoryLargeSteamEngine` draws one big model and
+  fills the rest of its space with unseen cells. Its `engine` attribute, per side, gives its `size`,
+  its solid `cells`, the `shaft` cell, the `inlet` and the `shaftBlock` that carries its power (a block
+  of class `FrostStorySteamEngineShaft` with the `FrostStorySteamEngine` behaviour). The mill and grand
+  engines are written out by `tools/gen_segments.py`, which works all of that out from the model; see
+  `blocktypes/generator/millengine.json` and `engineshaft.json`.
 - **Anything that draws steam.** Any block of class `FrostStorySteamConduit` takes its draw from
   `attributes.steamDraw`, and a JSON patch can change the draw of FrostStory's own fittings the same
   way (`/attributes/steamDraw`).
@@ -436,7 +474,7 @@ FrostStory/
   src/Generator/BlockEntityGeneratorConsole.cs   deliveries, timed construction, firing
   src/Generator/GeneratorCommands.cs    /frostgen
   src/Steam/                            pipe runs, pipes, mains, fittings and ports; tracing back to a live port;
-                                        the steam engine (SteamEngine.cs) and the API for other mods (SteamApi.cs)
+                                        the steam engines (SteamEngine.cs, LargeSteamEngine.cs) and the API for other mods (SteamApi.cs)
   src/Tent/                             tent rods and stretched cloth panels
   assets/froststory/                    blocktypes, shapes, textures, lang, recipes, stage config
 tools/

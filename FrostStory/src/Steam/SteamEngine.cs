@@ -99,6 +99,13 @@ public class BEBehaviorSteamEngine : BEBehaviorMPRotor
     private float topSpeed = 0.75f;
     private float resistance = 0.004f;
     private string driveShape = "froststory:block/generator/steamengine-drive-{side}";
+    private Vec3f exhaust = new(0f, 0.5f, 0.17f);
+    private float exhaustScale = 1f;
+    private AssetLocation? sound;
+    private float soundVolume = 0.3f;
+
+    protected override AssetLocation? Sound => sound;
+    protected override float GetSoundVolume() => soundVolume * Fed;
 
     /// <summary>How well fed with steam the engine is, from 0 to 1. Worked out by the server, sent to clients.</summary>
     public float Fed { get; private set; }
@@ -120,6 +127,12 @@ public class BEBehaviorSteamEngine : BEBehaviorMPRotor
         topSpeed = properties["speed"].AsFloat(topSpeed);
         resistance = properties["resistance"].AsFloat(resistance);
         driveShape = properties["driveShape"].AsString(driveShape);
+        var puff = properties["exhaust"].AsArray<float>(null);
+        if (puff is { Length: 3 }) exhaust = new Vec3f(puff[0], puff[1], puff[2]);
+        exhaustScale = properties["exhaustScale"].AsFloat(exhaustScale);
+        var chuff = properties["sound"].AsString(null);
+        if (chuff != null) sound = AssetLocation.Create(chuff, Block.Code.Domain);
+        soundVolume = properties["soundVolume"].AsFloat(soundVolume);
 
         base.Initialize(api, properties);
 
@@ -176,17 +189,25 @@ public class BEBehaviorSteamEngine : BEBehaviorMPRotor
         float speed = network?.Speed ?? 0f;
         if (Fed <= 0f || speed < 0.02f) return;
 
-        var back = ownFacing.Opposite.Normalf;
-        var at = new Vec3d(Position.X + 0.5 + back.X * 0.17, Position.InternalY + 1.0, Position.Z + 0.5 + back.Z * 0.17);
+        // the exhaust is given as if the shaft pointed north, from the middle of the shaft's cell
+        var (dx, dz) = ownFacing.Code switch
+        {
+            "east" => (-exhaust.Z, exhaust.X),
+            "south" => (-exhaust.X, -exhaust.Z),
+            "west" => (exhaust.Z, -exhaust.X),
+            _ => (exhaust.X, exhaust.Z)
+        };
+        var at = new Vec3d(Position.X + 0.5 + dx, Position.InternalY + 0.5 + exhaust.Y, Position.Z + 0.5 + dz);
+        float s = exhaustScale;
         var puff = new SimpleParticleProperties(
-            1, 1 + 2 * Math.Min(1f, speed),
+            1, (1 + 2 * Math.Min(1f, speed)) * s,
             ColorUtil.ToRgba(90, 235, 235, 240),
-            at.AddCopy(-0.06, 0, -0.06), at.AddCopy(0.06, 0.05, 0.06),
-            new Vec3f(-0.08f, 0.5f, -0.08f), new Vec3f(0.08f, 0.9f, 0.08f),
-            1.6f, -0.01f, 0.4f, 0.9f,
+            at.AddCopy(-0.06 * s, 0, -0.06 * s), at.AddCopy(0.06 * s, 0.05, 0.06 * s),
+            new Vec3f(-0.08f, 0.5f, -0.08f) * s, new Vec3f(0.08f, 0.9f, 0.08f) * s,
+            1.6f * s, -0.01f, 0.4f * s, 0.9f * s,
             EnumParticleModel.Quad)
         {
-            SizeEvolve = new EvolvingNatFloat(EnumTransformFunction.LINEAR, 2f),
+            SizeEvolve = new EvolvingNatFloat(EnumTransformFunction.LINEAR, 2f * s),
             OpacityEvolve = new EvolvingNatFloat(EnumTransformFunction.QUADRATIC, -16f),
             WindAffectednes = 0.6f,
             WithTerrainCollision = false

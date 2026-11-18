@@ -24,9 +24,12 @@ public class BlockSteamMainFill : Block
 
     public BlockPos OwnerPos(BlockPos pos) => pos.AddCopy(-Offset.X, -Offset.Y, -Offset.Z);
 
-    private BlockSteamConduit? Owner(IWorldAccessor world, BlockPos pos, out BlockPos ownerPos)
+    /// <summary>Where the owner is, looking in the world if need be (a large engine's cells are chained to it).</summary>
+    public virtual BlockPos OwnerPos(IBlockAccessor ba, BlockPos pos) => OwnerPos(pos);
+
+    protected BlockSteamConduit? Owner(IWorldAccessor world, BlockPos pos, out BlockPos ownerPos)
     {
-        ownerPos = OwnerPos(pos);
+        ownerPos = OwnerPos(world.BlockAccessor, pos);
         return world.BlockAccessor.GetBlock(ownerPos) as BlockSteamConduit;
     }
 

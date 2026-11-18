@@ -30,7 +30,7 @@ public class BlockSteamConduit : Block, IHeatSource
     public bool IsPort { get; private set; }
 
     /// <summary>True for the two-block-wide conduits.</summary>
-    public bool IsBig { get; private set; }
+    public bool IsBig { get; protected set; }
 
     /// <summary>True for fittings and ports: the places pipe runs are strung between.</summary>
     public bool IsNode { get; protected set; }
@@ -106,7 +106,7 @@ public class BlockSteamConduit : Block, IHeatSource
     public bool IsStructural { get; private set; }
 
     /// <summary>Cells occupied, counted from this block's own cell.</summary>
-    public Vec3i Size { get; private set; } = new(1, 1, 1);
+    public Vec3i Size { get; protected set; } = new(1, 1, 1);
 
     /// <summary>Mains and main fittings place and remove their own filler cells; ports are laid by the blueprint.</summary>
     private bool managesFill;
@@ -118,7 +118,7 @@ public class BlockSteamConduit : Block, IHeatSource
 
         string kind = FirstCodePart();
         IsNode = kind is "pipejunction" or "mainjunction" or "steamport" or "mainport" or "distributor" or "wallpass" or "radiator" or "floorgrate" or "steamhub"
-                 || this is BlockSteamEngine;
+                 || this is BlockSteamEngine || this is BlockLargeSteamEngine;
         if (IsNode && api.Side == EnumAppSide.Client)
         {
             PipeSegment = Vintagestory.API.Common.Shape.TryGet(api, new AssetLocation("froststory", "shapes/block/generator/pipeseg.json"));
@@ -322,7 +322,7 @@ public class BlockSteamConduit : Block, IHeatSource
                     yield return new Vec3i(x, y, z);
     }
 
-    public IEnumerable<(BlockFacing Face, Vec3d Point)> RunPoints(BlockPos anchor, bool big)
+    public virtual IEnumerable<(BlockFacing Face, Vec3d Point)> RunPoints(BlockPos anchor, bool big)
     {
         if (IsBorer || (IsHub && !big)) yield break;
 
@@ -374,7 +374,8 @@ public class BlockSteamConduit : Block, IHeatSource
         }
     }
 
-    public IEnumerable<BlockPos> Cells(BlockPos anchor)
+    /// <summary>The cells steam passes through, for finding what joins it.</summary>
+    public virtual IEnumerable<BlockPos> Cells(BlockPos anchor)
     {
         for (int x = 0; x < Size.X; x++)
             for (int y = 0; y < Size.Y; y++)
@@ -529,6 +530,13 @@ public class BlockSteamConduit : Block, IHeatSource
 
         if (blockSel.DidOffset
             && SteamNetwork.Resolve(world.BlockAccessor, target.AddCopy(face.Opposite), out var against, out var againstAnchor)
+            && against is BlockLargeSteamEngine engine && engine.InletAnchorFor(againstAnchor, face, this) is { } onInlet)
+        {
+            return onInlet;      // a main set on an engine's inlet sits squarely over it
+        }
+
+        if (blockSel.DidOffset
+            && SteamNetwork.Resolve(world.BlockAccessor, target.AddCopy(face.Opposite), out against, out againstAnchor)
             && against.IsBig && against.ConnectsOn(face) && ConnectsOn(face.Opposite))
         {
             int along = n.X + n.Y + n.Z > 0 ? Along(against.Size, face.Axis) : -Along(Size, face.Axis);

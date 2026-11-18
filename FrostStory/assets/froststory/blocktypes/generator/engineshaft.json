@@ -1,0 +1,137 @@
+{
+	"code": "engineshaft",
+	"class": "FrostStorySteamEngineShaft",
+	"entityClass": "Generic",
+	"variantgroups": [
+		{
+			"code": "engine",
+			"states": [
+				"millengine",
+				"grandengine"
+			]
+		},
+		{
+			"code": "side",
+			"states": [
+				"north",
+				"east",
+				"south",
+				"west"
+			]
+		},
+		{
+			"code": "toward",
+			"states": [
+				"north",
+				"east",
+				"south",
+				"west",
+				"up",
+				"down"
+			]
+		}
+	],
+	"entityBehaviorsByType": {
+		"*-millengine-*": [
+			{
+				"name": "FrostStorySteamEngine",
+				"properties": {
+					"torque": 9,
+					"speed": 0.8,
+					"resistance": 0.008,
+					"driveShape": "froststory:block/generator/millengine-drive-{side}",
+					"exhaust": [
+						6.1,
+						1.45,
+						1.5
+					],
+					"exhaustScale": 1.8,
+					"sound": "game:sounds/effect/extinguish",
+					"soundVolume": 0.35
+				}
+			}
+		],
+		"*-grandengine-*": [
+			{
+				"name": "FrostStorySteamEngine",
+				"properties": {
+					"torque": 24,
+					"speed": 0.9,
+					"resistance": 0.012,
+					"driveShape": "froststory:block/generator/grandengine-drive-{side}",
+					"exhaust": [
+						3.1,
+						2.25,
+						7.9
+					],
+					"exhaustScale": 2.6,
+					"sound": "game:sounds/effect/extinguish",
+					"soundVolume": 0.6
+				}
+			}
+		]
+	},
+	"attributes": {
+		"handbook": {
+			"exclude": true
+		}
+	},
+	"shape": {
+		"base": "game:block/basic/nothing"
+	},
+	"textures": {
+		"band": {
+			"base": "block/generator/segment/band"
+		},
+		"black": {
+			"base": "block/generator/segment/black"
+		},
+		"brass": {
+			"base": "block/generator/segment/brass"
+		},
+		"canvas": {
+			"base": "block/generator/canvas"
+		},
+		"checker": {
+			"base": "block/generator/segment/checker"
+		},
+		"darkplate": {
+			"base": "block/generator/segment/darkplate"
+		},
+		"lagging": {
+			"base": "block/generator/segment/lagging"
+		},
+		"livery": {
+			"base": "block/generator/segment/livery"
+		},
+		"pipe": {
+			"base": "block/generator/segment/pipe"
+		},
+		"polished": {
+			"base": "block/generator/segment/polished"
+		}
+	},
+	"drops": [],
+	"drawtype": "json",
+	"blockmaterial": "Metal",
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitSideAo": {
+		"all": false
+	},
+	"faceCullMode": "NeverCull",
+	"lightAbsorption": 0,
+	"replaceable": 90,
+	"resistance": 12,
+	"requiredMiningTier": 3,
+	"sounds": {
+		"place": "game:block/chute",
+		"break": "game:block/chute",
+		"hit": "game:block/chute",
+		"walk": "game:walk/stone"
+	}
+}
